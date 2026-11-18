@@ -1,5 +1,3 @@
-# RASCUNHO: ativa quando as pastas apps/* e os scripts existirem (Fase 0 do roadmap).
-# Ajuste os nomes dos workspaces e scripts conforme o setup final.
 name: CI
 
 on:
@@ -15,19 +13,26 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NODE_VERSION: 24
+
 jobs:
   lint-e-tipos:
     name: Lint e tipos
     runs-on: ubuntu-latest
+    env:
+      # Necessário só para `prisma generate` (não conecta ao banco).
+      DATABASE_URL: postgresql://taligado:taligado@localhost:5432/taligado
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - run: npm run lint --workspaces --if-present
-      - run: npm run typecheck --workspaces --if-present
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
 
   api:
     name: Testes da API
@@ -48,39 +53,42 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://taligado:taligado@localhost:5432/taligado_test
-      JWT_SECRET: segredo-apenas-para-testes
+      JWT_SECRET: segredo-apenas-para-testes-ci
+      SEED_OPERADOR_SENHA: senha-apenas-para-testes
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - run: npx prisma migrate deploy
-        working-directory: apps/api
-      - run: npm test -w apps/api -- --coverage
+      - name: Migrations e seed (valida o esquema inicial)
+        run: |
+          npm run db:deploy -w apps/api
+          npm run db:seed -w apps/api
+      - run: npm run test:coverage -w apps/api
 
   painel:
-    name: Testes do painel
+    name: Painel (testes e build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
       - run: npm test -w apps/painel
       - run: npm run build -w apps/painel
 
   mobile:
-    name: Testes do app
+    name: App (testes)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
       - run: npm test -w apps/mobile -- --ci
