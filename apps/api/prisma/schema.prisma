@@ -1,0 +1,138 @@
+// Esquema inicial do Tá Ligado? (docs/09-modelo-de-dados.md).
+// Restrições que o Prisma não expressa (índice único parcial e CHECKs) ficam em SQL na migration `init`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  CIDADAO
+  OPERADOR
+}
+
+enum TipoDenuncia {
+  SEM_ENERGIA
+  OSCILACAO
+}
+
+enum StatusDenuncia {
+  RECEBIDA
+  EM_ATENDIMENTO
+  RESOLVIDA
+  IMPROCEDENTE
+  CANCELADA
+}
+
+enum FaixaPessoas {
+  ATE_3
+  DE_4_A_8
+  DE_9_A_20
+  RUA_TODA
+}
+
+model Usuario {
+  id              String    @id @default(uuid()) @db.Uuid
+  nome            String
+  email           String    @unique
+  senhaHash       String
+  telefone        String?
+  papel           Papel     @default(CIDADAO)
+  consentimentoEm DateTime?
+  versaoTermos    String?
+  criadoEm        DateTime  @default(now())
+  atualizadoEm    DateTime  @updatedAt
+
+  denuncias  Denuncia[]
+  historicos HistoricoStatus[]
+  pushTokens PushToken[]
+}
+
+model Bairro {
+  id        Int     @id @default(autoincrement())
+  nome      String
+  folha     String?
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+
+  denuncias Denuncia[]
+
+  @@unique([nome, folha])
+}
+
+model Denuncia {
+  id                 String         @id @default(uuid()) @db.Uuid
+  protocolo          String         @unique
+  autorId            String?        @db.Uuid
+  bairroId           Int
+  tipo               TipoDenuncia
+  status             StatusDenuncia @default(RECEBIDA)
+  logradouro         String
+  cep                String?
+  pontoReferencia    String?
+  descricao          String?
+  latitude           Decimal?       @db.Decimal(9, 6)
+  longitude          Decimal?       @db.Decimal(9, 6)
+  faixaPessoas       FaixaPessoas?
+  necessidadeEspecial Boolean       @default(false)
+  detalheNecessidade String?
+  previsaoReparo     DateTime?
+  justificativa      String?
+  criadoEm           DateTime       @default(now())
+  atualizadoEm       DateTime       @updatedAt
+  finalizadaEm       DateTime?
+
+  autor      Usuario?          @relation(fields: [autorId], references: [id], onDelete: SetNull)
+  bairro     Bairro            @relation(fields: [bairroId], references: [id])
+  fotos      DenunciaFoto[]
+  historico  HistoricoStatus[]
+
+  @@index([status, bairroId])
+  @@index([bairroId, status, tipo])
+  @@index([criadoEm])
+}
+
+model DenunciaFoto {
+  id           String   @id @default(uuid()) @db.Uuid
+  denunciaId   String   @db.Uuid
+  arquivo      String
+  mimeType     String
+  tamanhoBytes Int
+  criadoEm     DateTime @default(now())
+
+  denuncia Denuncia @relation(fields: [denunciaId], references: [id], onDelete: Cascade)
+
+  @@index([denunciaId])
+}
+
+model HistoricoStatus {
+  id             String          @id @default(uuid()) @db.Uuid
+  denunciaId     String          @db.Uuid
+  statusAnterior StatusDenuncia?
+  statusNovo     StatusDenuncia
+  alteradoPorId  String?         @db.Uuid
+  papelAutor     Papel
+  justificativa  String?
+  criadoEm       DateTime        @default(now())
+
+  denuncia    Denuncia @relation(fields: [denunciaId], references: [id], onDelete: Cascade)
+  alteradoPor Usuario? @relation(fields: [alteradoPorId], references: [id], onDelete: SetNull)
+
+  @@index([denunciaId, criadoEm])
+}
+
+model PushToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  usuarioId  String   @db.Uuid
+  token      String   @unique
+  plataforma String
+  criadoEm   DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+}
