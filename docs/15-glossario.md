@@ -27,7 +27,7 @@
 | **Folha** | Subdivisão urbana típica da **Nova Marabá** (ex.: "Folha 28", "Folha 32"), usada como parte do endereço |
 | **Quadra / Lote** | Subdivisões do endereço dentro de uma folha (ex.: "Q. 2, Lote 14") |
 | **Marabá** | Município do sudeste do Pará, com núcleos urbanos: Velha Marabá, Nova Marabá, Cidade Nova, São Félix e Morada Nova |
-| **Velha Marabá (Orla)** | Núcleo histórico, na confluência dos rios Tocantins e Itacaiúnas |
+| **Marabá Pioneira / Velha Marabá (Orla)** | Núcleo histórico, na confluência dos rios Tocantins e Itacaiúnas. O seed usa "Marabá Pioneira"; o protótipo diz "Velha Marabá" |
 | **VP (Via Perimetral)** | Vias principais da Nova Marabá, citadas em endereços como "Av. VP-3" |
 | **Painel comunitário** | Indicadores dos últimos 30 dias exibidos na Home (RN-017) |
 | **GPS / Geolocalização** | Coordenadas do dispositivo, obtidas com permissão do usuário; dado pessoal (LGPD) |
@@ -47,5 +47,5 @@
 | **Minimização** | Princípio de coletar apenas o necessário (por isso não há CPF nem data de nascimento) |
 | **WCAG 2.2 AA** | Diretrizes de acessibilidade na versão 2.2, nível AA |
 | **ADR** | *Architecture Decision Record*: registro de decisão de arquitetura |
-| **ACGM** | Sigla do rodapé do protótipo, **a definir** (PEN-01) |
+| **ACGM** | Sigla do rodapé do protótipo, ainda sem significado definido (PEN-01); substituída por "Equipe Tá Ligado?" |
 | **Expo / EAS** | Plataforma e serviço de build para React Native; *development build* é um app de desenvolvimento com módulos nativos (necessário para push remoto) |

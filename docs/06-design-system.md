@@ -10,8 +10,8 @@ Extraído das telas do Figma. O arquivo **não define variáveis nem estilos** (
 |---|---|---|
 | `color.brand.900` | `#16382B` | Verde escuro institucional: logo, cartões escuros, formulários, painel de indicadores |
 | `color.brand.700` | `#466556` | Cabeçalhos de faixa ("Lista dos lugares"), banner de ação, rótulos secundários |
-| `color.primary` | `#34A853` | Botões primários, FAB, passo ativo, status "restabelecido" |
-| `color.primary.dark` | `#006E2C` | Botão "Enviar denúncia", links, aba ativa, ícones de perfil |
+| `color.primary` | `#34A853` | Elementos **sem texto**: FAB, pontos de status, ícones, status "restabelecido" |
+| `color.action` (= `color.primary.dark`) | `#006E2C` | **Fundo de botões com texto branco** (todos os botões primários, inclusive "Cadastrar" e "Registre sua denúncia"), links, aba ativa. Substitui o `#34A853` do Figma nesses botões (D-01) |
 | `color.accent.lime` | `#A3E635` | Destaque oficial do "?" sobre fundo escuro (as telas do protótipo usam `#84CC16`; por decisão do projeto vale `#A3E635`, o valor oficial do frame de identidade) |
 | `color.accent.mint` | `#89FA9B` | Textos de destaque sobre verde escuro |
 
@@ -37,12 +37,13 @@ Extraído das telas do Figma. O arquivo **não define variáveis nem estilos** (
 | Token | Hex | Status |
 |---|---|---|
 | `status.noPower` | `#BA1A1A` | Sem luz / Sem energia (selo claro `#FFDAD6`, texto `#93000A`) |
-| `status.flicker` | `#CE8300` | Oscilação (texto sobre claro `#855300`, fundo `#FFDDB8`) |
+| `status.flicker` | `#CE8300` | Oscilação: **somente pontos, ícones e bordas** (fundo `#FFDDB8`) |
+| `status.flicker.text` | `#855300` | Oscilação: **todo texto âmbar** (D-01); substitui o `#CE8300` usado em texto no Figma |
 | `status.restored` | `#34A853` | Restabelecido / Normal |
-| `status.inService` | `#CE8300` **[SUPOSIÇÃO]** | Em atendimento (reuso do âmbar) |
-| `status.rejected` | `#6E7A6D` **[SUPOSIÇÃO]** | Improcedente e Cancelada (cinza neutro) |
+| `status.inService` | `#CE8300` (S-26) | Em atendimento (reuso do âmbar) |
+| `status.rejected` | `#6E7A6D` (S-26) | Improcedente e Cancelada (cinza neutro) |
 
-> Não existe no protótipo um conjunto de cores para os status de **denúncia** (Recebida, Em atendimento, Resolvida, Improcedente, Cancelada). Proposta: Recebida = azul-petróleo `#466556`; Em atendimento = âmbar; Resolvida = verde; Improcedente/Cancelada = cinza. **[SUPOSIÇÃO]**
+> Não existe no protótipo um conjunto de cores para os status de **denúncia** (Recebida, Em atendimento, Resolvida, Improcedente, Cancelada). Proposta: Recebida = azul-petróleo `#466556`; Em atendimento = âmbar; Resolvida = verde; Improcedente/Cancelada = cinza (decisão S-26).
 
 ## 2. Tipografia
 
@@ -70,7 +71,7 @@ Respeitar **fontes dinâmicas** do sistema ([12](12-acessibilidade.md)): tamanho
 |---|---|
 | `space` (base 4) | 2, 4, 6, 8, 10, 12, 14, 16, 24, 32 (o protótipo usa gutter de **16** e respiro entre seções de **24**) |
 | `radius` | 8 (itens), 10 (ícone do logo), 12 (cartões, campos, botões), 16 (cartões grandes), 9999 (pílulas e círculos) |
-| `size.touch` | alvo mínimo 44; botões 48 a 56; FAB 56; avatar/ícone circular 32 a 48 |
+| `size.touch` | **alvo mínimo 48 dp** (D-02), com `hitSlop`/*padding* quando o visual for menor; botões 48 a 56; FAB 56; ícones circulares visuais de 32 a 48 |
 | `size.header` | 64 (header), 64 (barra inferior), 56 (barra do cadastro) |
 | `layout.width` | base 390 dp; conteúdo com padding horizontal 16 |
 | `shadow.sm` | `0 1 2 rgba(0,0,0,.05)` (cartões, campos) |
@@ -115,8 +116,22 @@ Respeitar **fontes dinâmicas** do sistema ([12](12-acessibilidade.md)): tamanho
 | `EmptyState`, `ErrorState`, `Skeleton`, `OfflineBanner` | **Não existem no Figma**; criar seguindo as cores e o espaçamento | todas |
 | `Toast` / `Banner` de alerta (painel) | Alerta de nova denúncia (a criar) | P-02 |
 
-## 6. Notas para a implementação
+## 6. Desvios deliberados do Figma (os tokens do código têm prioridade)
+
+Nos casos abaixo, **vale o token do código, não o Figma** (decisões D-01 e D-02 em [01](01-visao-e-escopo.md#811-decisões-de-contraste-toque-e-prioridade-de-tokens-2026-11-18)). Motivos em [12](12-acessibilidade.md).
+
+| Item | No Figma | No código |
+|---|---|---|
+| Fundo de botão com texto branco | `#34A853` (≈ 3,1:1 com branco) | `#006E2C` (≈ 6,4:1) |
+| Texto âmbar (legenda "Oscilação", selo de oscilação) | `#CE8300` (≈ 3,1:1 sobre branco) | `#855300` (≈ 6,5:1) |
+| Alvos de toque (barra inferior, chips, botões circulares, perfil) | 32 a 44 px | **≥ 48 dp** com `hitSlop`/*padding* |
+| Cor do "?" do logo | `#84CC16` nas telas | `#A3E635` (frame de identidade) |
+| Checkbox | `#0075FF` (padrão do navegador) | cor da marca `#006E2C` |
+
+Os tokens vivem em `apps/mobile/src/theme/` e `apps/painel/src/styles/tokens.css`.
+
+## 7. Notas para a implementação
 
 - Centralizar tokens em `apps/mobile/src/theme/` (`colors.ts`, `typography.ts`, `spacing.ts`) e em CSS variables no painel (`apps/painel/src/styles/tokens.css`). Nenhuma cor "solta" nos componentes.
-- Estilo: **`StyleSheet` do React Native + tema próprio** (sem biblioteca de UI), para manter o controle do visual do Figma e a escala de fontes. **[SUPOSIÇÃO]**
+- Estilo: **`StyleSheet` do React Native + tema próprio** (sem biblioteca de UI), para manter o controle do visual do Figma e a escala de fontes (decisão S-27).
 - Pontos do protótipo a corrigir ao implementar: checkbox azul (`#0075FF`), lima `#84CC16` → `#A3E635`, aba "Mapa" → "Ocorrências", textos citados em [05](05-telas-e-fluxos.md).

@@ -207,7 +207,7 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 { "status": "IMPROCEDENTE", "justificativa": "Local sem interrupção confirmada pela equipe." }
 // 200: denúncia atualizada (mesma forma do detalhe)
 ```
-Erros: 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, 409 se a denúncia mudou desde a última leitura (opcional: `If-Unmodified-Since`/`versao` **[SUPOSIÇÃO]**).
+Erros: 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
 Efeitos: status + histórico na mesma transação (RNF-010); emite `denuncia:status-atualizado` (autor e operadores), `ocorrencia:atualizada` e `bairro:status-atualizado`; envia push (RN-019).
 
 **`POST /painel/bairros/{bairroId}/resolver`** → `200 { "resolvidas": 4 }`. Aplica `RESOLVIDA` a cada denúncia em aberto (exceção de RN-004, RN-016); cada uma gera histórico e eventos.

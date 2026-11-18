@@ -3,7 +3,7 @@
 > **Tá Ligado?** é um aplicativo mobile para registrar denúncias de queda de energia elétrica em Marabá-PA e acompanhar a situação em tempo real. Projeto final da disciplina de **Desenvolvimento Mobile (UNIFESSPA)**.
 
 - Protótipo (Figma): <https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=0-1>
-- Convenção de rastreabilidade: requisitos `RF-xxx`, `RNF-xxx`, regras `RN-xxx`, histórias `US-xxx`, casos de uso `UC-xxx`, telas `T-xx` (app) e `P-xx` (painel), suposições `S-xx`, pendências `PEN-xx`.
+- Convenção de rastreabilidade: requisitos `RF-xxx`, `RNF-xxx`, regras `RN-xxx`, histórias `US-xxx`, casos de uso `UC-xxx`, telas `T-xx` (app) e `P-xx` (painel), decisões `S-xx`, pendências `PEN-xx`.
 - Regra do projeto: **escopo enxuto e viável para um MVP acadêmico**. Na dúvida, escolheu-se a opção mais simples e a escolha foi registrada (ver seção 8).
 
 ## 1. Problema
@@ -84,11 +84,13 @@ Avaliadores da disciplina também são usuários diretos da demonstração.
 - Fotos em armazenamento local do servidor (sem serviço de nuvem).
 - LGPD: coleta mínima de dados e consentimento explícito ([11](11-seguranca-e-lgpd.md)).
 
-## 8. Suposições e pendências
+## 8. Decisões e pendências
 
-### 8.1 Suposições (marcadas como **[SUPOSIÇÃO]** nos documentos)
+### 8.1 Decisões (lista de rastreabilidade)
 
-| ID | Suposição |
+Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 foram aprovadas** pela equipe em 2026-11-18 e são tratadas como decisões firmes. **S-22 a S-32 são decisões adicionais** tomadas durante a documentação para manter o escopo simples e **aguardam confirmação**.
+
+| ID | Decisão |
 |---|---|
 | S-01 | Transições de status permitidas: `RECEBIDA → EM_ATENDIMENTO`, `RECEBIDA → IMPROCEDENTE`, `EM_ATENDIMENTO → RESOLVIDA`, `EM_ATENDIMENTO → IMPROCEDENTE`. A resolução em lote por bairro é a única exceção e permite `RECEBIDA → RESOLVIDA` (RN-004, RN-016). |
 | S-02 | "Rede Estável" na Home = bairro com status Normal; "Instável" = Sem luz ou Oscilação (RN-008). |
@@ -111,18 +113,38 @@ Avaliadores da disciplina também são usuários diretos da demonstração.
 | S-19 | O alerta sonoro do painel exige um clique inicial do operador ("Ativar som"), por limitação dos navegadores. |
 | S-20 | As versões das tecnologias em [08](08-tecnologias.md) são **versões-alvo** e serão fixadas (`npm view`) no setup. |
 | S-21 | O chip "Restabelecidos" da lista pública conta ocorrências resolvidas nas últimas 24 horas (RN-007). |
+| S-22 | O e-mail é somente leitura no Perfil (RF-005). *(a confirmar)* |
+| S-23 | Editar o endereço mantém as coordenadas originais do GPS, salvo se o usuário mover o pino (RF-008). *(a confirmar)* |
+| S-24 | O botão de detalhe da lista pública (T-04) abre um resumo anonimizado em modal, e não T-07 (exclusivo do autor). *(a confirmar)* |
+| S-25 | O CEP é opcional na denúncia (T-05, `Denuncia.cep`). *(a confirmar)* |
+| S-26 | Cores dos status da denúncia: Recebida `#466556`, Em atendimento âmbar, Resolvida verde, Improcedente/Cancelada cinza `#6E7A6D` ([06](06-design-system.md)). *(a confirmar)* |
+| S-27 | Estilização com `StyleSheet` e tema próprio, sem biblioteca de UI. *(a confirmar)* |
+| S-28 | Pinos públicos usam coordenadas arredondadas (RN-014). *(a confirmar)* |
+| S-29 | Sem controle de versão otimista no `PATCH` de status; conflitos viram 422 `TRANSICAO_INVALIDA` ([10](10-api.md)). *(a confirmar)* |
+| S-30 | O e-mail do autor é visível ao operador apenas quando necessário ([11](11-seguranca-e-lgpd.md)). *(a confirmar)* |
+| S-31 | Portabilidade de dados atendida sob solicitação, por exportação em JSON feita pela equipe. *(a confirmar)* |
+| S-32 | Tipos compartilhados ficam duplicados de forma controlada; um pacote `packages/shared` só se necessário ([ADR-0003](adr/0003-monorepo-com-tres-aplicacoes.md)). *(a confirmar)* |
 
-### 8.2 Pendências (precisam de resposta ou insumo)
+### 8.1.1 Decisões de contraste, toque e prioridade de tokens (2026-11-18)
 
-| ID | Pendência |
+| ID | Decisão |
 |---|---|
-| PEN-01 | **ACGM** (rodapé de T-01): `[PREENCHER: nome da equipe ou significado da sigla]`. |
-| PEN-02 | Telefones oficiais da Ouvidoria e da Central, e horário de funcionamento. Hoje são placeholders (`(00) 0000-0000`, `0000 000 0000`), centralizados em `apps/mobile/src/config/constants.ts`. |
-| PEN-03 | Textos jurídicos finais de **Termos de Uso** e **Política de Privacidade**, e contato do encarregado/controlador. |
-| PEN-04 | Chave de API do Google Maps (builds Android) e credenciais de push (FCM/APNs). |
-| PEN-05 | Nome do repositório e visibilidade (público/privado). |
-| PEN-06 | Telas do Figma que **não existem**: Login, Perfil, Minhas denúncias, Detalhe, Sucesso e todo o Painel (ver [05](05-telas-e-fluxos.md#telas-a-criar-no-protótipo)), além dos estados vazio/carregando/erro. |
-| PEN-07 | Lista real de bairros e folhas de Marabá com coordenadas do centro (o seed inicial usa exemplos do protótipo). |
-| PEN-08 | Nome/holder do copyright do `LICENSE` (hoje "Equipe Tá Ligado?"). |
-| PEN-09 | Ícone e *splash screen* finais do app (o Figma traz o logo e o ícone 64/96 px). |
-| PEN-10 | Confirmar o Expo SDK e as versões das dependências na criação do projeto. |
+| D-01 | Botões com texto branco usam `#006E2C`; texto âmbar usa `#855300`. **Os tokens do código têm prioridade sobre o Figma** nesses casos ([06](06-design-system.md), [12](12-acessibilidade.md)). |
+| D-02 | Alvos de toque com no mínimo **48 dp**, com `hitSlop` ou *padding* quando o elemento visual for menor ([12](12-acessibilidade.md)). |
+| D-03 | Desenvolvimento com **Expo Go** (Must, tempo real por WebSocket). Push e *development build* ficam por último ([14](14-roadmap-e-backlog.md)). |
+| D-04 | Telas e estados que faltam no Figma são implementados a partir do design system e de [05](05-telas-e-fluxos.md); nada é criado no Figma por enquanto. |
+
+### 8.2 Pendências (dependem da equipe e não bloqueiam o desenvolvimento)
+
+| ID | Pendência | Situação |
+|---|---|---|
+| PEN-01 | **ACGM** (rodapé de T-01) | **Resolvida em parte.** A equipe é formada por Bruno Santos, Gustavo Borges e Marilia Francalino. O rodapé usa "© 2026 Equipe Tá Ligado?" até a sigla ACGM ser explicada |
+| PEN-02 | Telefones oficiais e horário da Ouvidoria e da Central | **Aberta.** Placeholders em `apps/mobile/src/config/constants.ts` |
+| PEN-03 | Termos de Uso e Política de Privacidade | **Rascunho feito** em [`docs/legal/`](legal/) (texto acadêmico). Falta o e-mail de contato: `[PREENCHER: e-mail da equipe]` |
+| PEN-04 | Chave do Google Maps e credenciais de push (FCM/APNs) | **Aberta.** Variáveis previstas nos `.env.example` (sem valor). Expo Go e Leaflet/OSM não precisam de chave. Necessárias só para o *development build* |
+| PEN-05 | Repositório remoto | A equipe cria no GitHub e faz o `git remote add origin` e o primeiro push (ver README) |
+| PEN-06 | Telas e estados faltantes no Figma | **Aberta.** Implementadas pelo design system; o desenho no Figma fica para depois, se der tempo |
+| PEN-07 | Lista real de bairros e folhas com coordenadas | **Seed aproximado** em `apps/api/prisma/seed-data/bairros.ts` ("dados aproximados para fins de demonstração"). A equipe revisa |
+| PEN-08 | Titular do copyright no `LICENSE` | Preenchido com os integrantes; confirmar |
+| PEN-09 | Ícone e *splash screen* finais | **Aberta.** O app usa os assets padrão do Expo |
+| PEN-10 | Versões das dependências | **Resolvida na Fase 0.** Versões fixadas e registradas em [08](08-tecnologias.md) |

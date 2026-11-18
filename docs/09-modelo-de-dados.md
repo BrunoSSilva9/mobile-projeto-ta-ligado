@@ -117,7 +117,7 @@ erDiagram
 | `tipo` | enum | `SEM_ENERGIA` / `OSCILACAO` (RN-002) |
 | `status` | enum | RN-003; padrão `RECEBIDA` |
 | `logradouro` | texto | obrigatório |
-| `cep` | texto? | opcional **[SUPOSIÇÃO]** |
+| `cep` | texto? | opcional (decisão S-25) |
 | `pontoReferencia`, `descricao` | texto? | descrição até 500 (S-07) |
 | `latitude`, `longitude` | decimal? | vazias sem GPS (RN-012) |
 | `faixaPessoas` | enum? | `ATE_3`, `DE_4_A_8`, `DE_9_A_20`, `RUA_TODA` |

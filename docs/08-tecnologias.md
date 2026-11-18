@@ -1,6 +1,6 @@
 # 08 – Tecnologias
 
-As **versões são alvo** (linha principal estável na data do projeto) e serão **fixadas no setup** com `npm view <pacote> version` (S-20, PEN-10). O Expo SDK define as versões compatíveis de React Native, React e módulos nativos: usar `npx expo install` para esses pacotes.
+As versões das tabelas abaixo eram **alvo**. Na Fase 0 elas foram **fixadas com `npm view`** (S-20, PEN-10) e estão registradas na seção [Versões fixadas na Fase 0](#versões-fixadas-na-fase-0) no fim deste documento, que **prevalece** sobre as colunas "Versão-alvo". O Expo SDK define as versões compatíveis de React Native, React e módulos nativos: usar `npx expo install` para esses pacotes.
 
 ## Concordância com a stack proposta
 
@@ -87,3 +87,34 @@ A stack preferida (React Native + Expo + TypeScript no app; Node.js + PostgreSQL
 - **Testes:** Vitest/Jest/Supertest com foco nas regras de negócio ([13](13-estrategia-de-testes.md)).
 - **Lint e formatação:** ESLint + Prettier com `.editorconfig`; Husky + commitlint para Conventional Commits.
 - **CI/CD:** GitHub Actions executando lint e testes em cada PR (rascunho em `.github/workflows/ci.yml`). CD fica fora do MVP; a entrega é um build de desenvolvimento via EAS e a demonstração local ou em uma VPS.
+
+## Versões fixadas na Fase 0
+
+Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. **Observação:** a instalação completa não pôde ser validada na máquina de desenvolvimento por falta de espaço em disco (ver `CHANGELOG.md`); estas versões ainda precisam ser confirmadas com `npm install` e os scripts de verificação.
+
+| Área | Pacote | Versão fixada | Observação |
+|---|---|---|---|
+| Monorepo | Node.js / npm | 24 LTS (mín. 22) / npm 11 | `engines.node >= 22` |
+| Todos | TypeScript | `~6.0.3` | Mesma versão do template do Expo SDK 58 |
+| App | Expo SDK | `~58.0.26` | Template oficial `create-expo-app` (SDK 58) |
+| App | React / React Native | `19.3.0` / `0.88.1` | Definidos pelo SDK |
+| App | Expo Router | `~58.0.32` | Rotas em `src/app/` |
+| App | Testes | `jest-expo` + Jest | Via `npx expo install` |
+| Painel | React / React DOM | `19.3.0` | Mesma versão do app (uma só cópia) |
+| Painel | Vite / plugin-react | `^7.3.8` / `^5.2.0` | A linha 8 do Vite existe, mas a 7 é a estável e conhecida do projeto |
+| Painel | Vitest / jsdom / Testing Library | `^3.2.7` / `^26.1.0` / `^16.3.3` | — |
+| Painel | React Router | `^7.18.5` | — |
+| API | Express | `^5.3.0` | — |
+| API | Socket.IO | `^4.8.4` | — |
+| API | **Prisma / @prisma/client** | **`^6.19.3`** | O `latest` do npm é 8.0.0-rc (pré-lançamento) e a 7.x exige `prisma.config.ts` e *driver adapters*; ficamos na 6.x estável (migração futura) |
+| API | PostgreSQL (Docker) | `17` | `docker-compose.yml` |
+| API | Zod | `^4.6.7` | — |
+| API | bcryptjs | `^3.0.3` | JS puro (evita compilação nativa no Windows) |
+| API | Vitest / Supertest / tsx | `^3.2.7` / `^7.3.2` / `^4.23.15` | — |
+| Qualidade | ESLint | `^9.39.5` | A 10.x existe; a 9 é a usada pelo `eslint-config-expo` |
+| Qualidade | typescript-eslint | `^8.73.0` | — |
+| Qualidade | Prettier | `^3.0.0` | Config em `.prettierrc.json` |
+
+**Diferenças em relação às tabelas acima**
+- **Pino** (logs) e **Husky + lint-staged + commitlint** foram **adiados**: na Fase 0 a API usa `console` e o padrão de commits é conferido na revisão do PR. Entram quando houver necessidade (Fase 2 ou depois).
+- **Leaflet**, **TanStack Query**, **Zustand**, **React Hook Form**, **React Native Maps**, `expo-location`, `expo-image-picker`, `expo-notifications` e `socket.io-client` (app e painel) ainda **não foram instalados**: entram quando a funcionalidade for implementada (Fase 1 e 2).

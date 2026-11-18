@@ -9,7 +9,7 @@ Meta: **WCAG 2.2 nível AA** no app (adaptado ao mobile) e no painel web (RNF-02
 | Contraste de texto | ≥ 4,5:1 (texto normal) e ≥ 3:1 (texto grande ≥ 18,66 px negrito ou ≥ 24 px) | 1.4.3 |
 | Contraste de componentes | ≥ 3:1 para bordas de campos, ícones e estados de foco | 1.4.11 |
 | Cor não é a única pista | Status também em texto/ícone ("Sem luz", "Oscilação"), não só vermelho/âmbar | 1.4.1 |
-| Alvos de toque | **≥ 44 × 44 pt** (iOS) / **48 × 48 dp** (Android) recomendado; nunca menos que 24 × 24 px | 2.5.8 (mín.), boas práticas |
+| Alvos de toque | **≥ 48 × 48 dp** no app (decisão D-02); nunca menos que 24 × 24 px | 2.5.8 (mín.), boas práticas |
 | Fontes dinâmicas | Texto escala até **200%** sem perda de conteúdo ou função | 1.4.4 |
 | Leitor de tela | Todas as telas navegáveis e compreensíveis com TalkBack e VoiceOver | 1.1.1, 1.3.1, 4.1.2 |
 | Foco e ordem | Ordem lógica de leitura; foco visível; sem armadilha de foco | 2.4.3, 2.4.7, 2.4.11 |
@@ -32,12 +32,14 @@ Meta: **WCAG 2.2 nível AA** no app (adaptado ao mobile) e no painel web (RNF-02
 
 ## 3. Contraste: análise do protótipo
 
+> **Os tokens do código têm prioridade sobre o Figma** nos dois casos reprovados abaixo ([06](06-design-system.md#6-desvios-deliberados-do-figma-os-tokens-do-código-têm-prioridade)).
+
 Razões calculadas com base nas cores do Figma ([06](06-design-system.md)). **Pontos a corrigir ao implementar:**
 
 | Combinação | Razão aprox. | Resultado | Ação |
 |---|---|---|---|
-| Branco sobre `#34A853` (botões primários, texto de 12 a 14 px) | **~3,1:1** | **Reprova** para texto normal (AA exige 4,5:1) | Usar `#006E2C` (≈ 6,4:1) em botões com texto pequeno, ou texto ≥ 18,66 px negrito. O botão "CADASTRAR" (18 px, ExtraBold) fica no limite |
-| Texto âmbar `#CE8300` sobre branco (legenda "Oscilação", 11 px) | **~3,1:1** | Reprova | Usar `#855300` (≈ 6,5:1) para texto, mantendo `#CE8300` só em ícones e pontos |
+| Branco sobre `#34A853` (botões primários, texto de 12 a 14 px) | **~3,1:1** | **Reprova** para texto normal (AA exige 4,5:1) | **Decidido (D-01):** botões com texto branco usam `#006E2C` (≈ 6,4:1). `#34A853` fica só em elementos sem texto (FAB, pontos de status) |
+| Texto âmbar `#CE8300` sobre branco (legenda "Oscilação", 11 px) | **~3,1:1** | Reprova | **Decidido (D-01):** texto âmbar usa `#855300` (≈ 6,5:1); `#CE8300` só em ícones, pontos e bordas |
 | Branco sobre `#BA1A1A` | ~6,5:1 | Passa | — |
 | `#6E7A6D` (placeholder) sobre branco | ~4,5:1 | No limite | Manter só em placeholders e, no formulário, **sempre ter rótulo visível** |
 | Lima `#A3E635` sobre `#16382B` | ~8,5:1 | Passa | — |
@@ -48,15 +50,17 @@ Razões calculadas com base nas cores do Figma ([06](06-design-system.md)). **Po
 
 ## 4. Alvos de toque no protótipo
 
+> **Decisão D-02:** todo alvo de toque do app tem no mínimo **48 × 48 dp**. A área tocável pode ser maior que o elemento visual, usando `hitSlop` ou *padding*, sem alterar o desenho. No código, o token `touch.min = 48` e o componente `Pressable` base aplicam a regra. O Figma não é alterado.
+
 | Elemento | Tamanho no Figma | Ação |
 |---|---|---|
-| Itens da barra inferior | 56 × 44 | Aumentar a área de toque para 48 dp de altura (`hitSlop`) |
-| Chips de filtro | altura 32 | Ampliar a área de toque (`hitSlop`) ou subir para 40+ |
-| Botão voltar | 44 × 44 | OK |
-| Botões circulares de detalhe | 40 × 40 | Aumentar para 48 dp ou `hitSlop` |
-| Botões do cabeçalho (perfil) | 32 × 32 | Aumentar para 44 dp com `hitSlop` |
-| Opções de pessoas afetadas | altura 44 | OK |
-| Excluir/substituir foto | 36 × 36 | Aumentar para 44 dp |
+| Itens da barra inferior | 56 × 44 | Área de toque de **no mínimo 48 dp** de altura (`minHeight: 48`) |
+| Chips de filtro | altura 32 | `hitSlop` vertical de 8 dp (área de 48 dp) |
+| Botão voltar | 44 × 44 | `hitSlop` de 2 dp (48 dp) |
+| Botões circulares de detalhe | 40 × 40 | `hitSlop` de 4 dp (48 dp) |
+| Botões do cabeçalho (perfil) | 32 × 32 | `hitSlop` de 8 dp (48 dp) |
+| Opções de pessoas afetadas | altura 44 | `hitSlop` de 2 dp (48 dp) |
+| Excluir/substituir foto | 36 × 36 | `hitSlop` de 6 dp (48 dp) |
 | Espaço entre alvos | — | Manter ≥ 8 dp entre alvos adjacentes |
 
 ## 5. Fontes dinâmicas
