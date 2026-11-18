@@ -1,0 +1,23 @@
+# Banco de dados local do Tá Ligado?
+# Uso: docker compose up -d
+services:
+  db:
+    image: postgres:17
+    container_name: taligado-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-taligado}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taligado}
+      POSTGRES_DB: ${POSTGRES_DB:-taligado}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - taligado-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-taligado} -d ${POSTGRES_DB:-taligado}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  taligado-pgdata:

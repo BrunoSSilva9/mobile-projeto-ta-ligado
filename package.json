@@ -1,0 +1,33 @@
+{
+  "name": "ta-ligado",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tá Ligado? Denúncias de queda de energia em Marabá-PA (monorepo)",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,painel,mobile -c blue,green,magenta \"npm:dev:api\" \"npm:dev:painel\" \"npm:dev:mobile\"",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:painel": "npm run dev -w apps/painel",
+    "dev:mobile": "npm run start -w apps/mobile",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "prettier": "^3.0.0"
+  }
+}
