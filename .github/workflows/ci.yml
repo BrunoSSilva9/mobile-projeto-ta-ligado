@@ -1,0 +1,86 @@
+# RASCUNHO: ativa quando as pastas apps/* e os scripts existirem (Fase 0 do roadmap).
+# Ajuste os nomes dos workspaces e scripts conforme o setup final.
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-e-tipos:
+    name: Lint e tipos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --workspaces --if-present
+      - run: npm run typecheck --workspaces --if-present
+
+  api:
+    name: Testes da API
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: taligado
+          POSTGRES_PASSWORD: taligado
+          POSTGRES_DB: taligado_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U taligado"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://taligado:taligado@localhost:5432/taligado_test
+      JWT_SECRET: segredo-apenas-para-testes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+        working-directory: apps/api
+      - run: npm test -w apps/api -- --coverage
+
+  painel:
+    name: Testes do painel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test -w apps/painel
+      - run: npm run build -w apps/painel
+
+  mobile:
+    name: Testes do app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test -w apps/mobile -- --ci

@@ -1,0 +1,25 @@
+name: Documentação
+description: Corrigir, atualizar ou criar documentação
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: arquivo
+    attributes:
+      label: Arquivo(s) afetado(s)
+      placeholder: "docs/02-requisitos/regras-de-negocio.md"
+    validations:
+      required: true
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que precisa mudar
+    validations:
+      required: true
+  - type: checkboxes
+    id: consistencia
+    attributes:
+      label: Consistência
+      options:
+        - label: Verifiquei se os IDs (RF, RNF, RN, US, UC, B) continuam consistentes entre os documentos
+        - label: Marquei suposições como **[SUPOSIÇÃO]** e atualizei a lista em `docs/01-visao-e-escopo.md`
