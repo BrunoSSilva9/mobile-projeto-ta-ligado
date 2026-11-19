@@ -27,6 +27,9 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - O app gera o bundle Android (`expo export`) e o Metro serve o manifesto do SDK 58; `npm run dev` sobe API, painel e Expo juntos. `expo-doctor`: 19 de 20 verificações (a restante depende da rede do Expo).
 - **Não verificado:** abrir o app no Expo Go em um celular (a equipe deve testar) e a execução do workflow no GitHub Actions.
 
+### Corrigido após o primeiro CI
+- O job da API falhava no seed com "@prisma/client did not initialize yet": o `prisma migrate deploy` não gera o client. Adicionados o script `postinstall` (`prisma generate`) em `apps/api` e um passo explícito de geração no workflow. Isso também evita o mesmo erro em clones novos do repositório.
+
 ### Corrigido durante a validação
 - Tipo da cor do ícone das abas (`ColorValue` no SDK 58) e formatação do Prettier em 3 arquivos.
 
