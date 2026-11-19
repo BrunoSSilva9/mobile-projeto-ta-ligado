@@ -21,6 +21,17 @@ export const erros = {
     new AppError(401, 'NAO_AUTENTICADO', mensagem),
   semPermissao: (mensagem = 'Você não tem permissão para isso.') =>
     new AppError(403, 'SEM_PERMISSAO', mensagem),
+  validacao: (detalhes: { campo?: string; mensagem: string }[]) =>
+    new AppError(400, 'VALIDACAO_ERRO', 'Dados inválidos.', detalhes),
+  credenciaisInvalidas: () =>
+    new AppError(401, 'CREDENCIAIS_INVALIDAS', 'E-mail ou senha incorretos.'),
+  emailJaCadastrado: () => new AppError(409, 'EMAIL_JA_CADASTRADO', 'E-mail já cadastrado.'),
+  muitasRequisicoes: () =>
+    new AppError(
+      429,
+      'MUITAS_REQUISICOES',
+      'Muitas tentativas. Aguarde um instante e tente novamente.',
+    ),
 };
 
 export type CorpoErro = {

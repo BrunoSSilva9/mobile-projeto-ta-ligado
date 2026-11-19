@@ -2,12 +2,17 @@ import { createServer } from 'node:http';
 
 import { createApp } from './app';
 import { loadEnvFromFile } from './config/env';
-import { checkDatabase, disconnectPrisma } from './db/prisma';
+import { checkDatabase, disconnectPrisma, getPrisma } from './db/prisma';
 import { createSocketServer } from './realtime/socket';
 
 const env = loadEnvFromFile();
 
-const app = createApp({ corsOrigins: env.CORS_ORIGINS, checkDb: checkDatabase });
+const app = createApp({
+  corsOrigins: env.CORS_ORIGINS,
+  checkDb: checkDatabase,
+  prisma: getPrisma(),
+  segredoJwt: env.JWT_SECRET,
+});
 const httpServer = createServer(app);
 const io = createSocketServer(httpServer, env.CORS_ORIGINS);
 
