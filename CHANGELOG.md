@@ -6,6 +6,12 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## [Não lançado]
 
+### Adicionado (Fase 1, branch `feature/fase-1`)
+- **Passo 1 – domínio da API** (`apps/api/src/domain`): status do bairro, transições de status (inclui cancelamento, justificativa e resolução em lote), limite de uma denúncia em aberto, permissões e projeção pública anonimizada, previsão de reparo, protocolo, prioridade, bairro mais próximo (Haversine) e taxa de resolução. 190 testes unitários novos, com cobertura de 100% do domínio e limiar de 90% exigido no `vitest.config.ts`.
+
+### Alterado
+- Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
+
 ### Adicionado (planejamento da Fase 1)
 - `docs/16-plano-fase-1.md`: plano detalhado em 13 passos (fatia vertical primeiro) numa única branch e num único PR, sem prazos fixos, com tarefas, arquivos, testes, critérios de aceite, marcos, roteiro de demonstração, riscos e opções de banco hospedado gratuito. Decisões S-33 a S-43.
 - `.vite/` no `.gitignore`.
