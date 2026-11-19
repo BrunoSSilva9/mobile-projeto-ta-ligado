@@ -52,6 +52,8 @@ npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 
 **Verificações:** `npm run lint`, `npm run typecheck` e `npm test` na raiz rodam todos os apps. Para a cobertura da API: `npm run test:coverage -w apps/api`.
 
+**Banco de teste:** os testes de integração da API usam o banco `taligado_test` (o mesmo servidor do Docker), **criado e migrado automaticamente** na primeira execução. Eles apagam as tabelas desse banco a cada teste, então **nunca** apontam para o banco de desenvolvimento: o `vitest.config.ts` troca o nome do banco para `*_test` e o `globalSetup` recusa qualquer banco cujo nome não termine em `_test`. Rode `npm run db:up` antes de `npm test`.
+
 **Observações**
 - No Expo Go o mapa funciona **sem chave** do Google Maps; no painel o mapa usa Leaflet com OpenStreetMap (também sem chave). `GOOGLE_MAPS_API_KEY` e as credenciais de push (FCM/APNs) ficam nos `.env.example` **sem valor** e só serão necessárias no *development build* (pendência PEN-04).
 - Push remoto não funciona no Expo Go: é o último item do roadmap e exige *development build* (decisão D-03).

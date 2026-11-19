@@ -9,6 +9,9 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 ### Adicionado (Fase 1, branch `feature/fase-1`)
 - **Passo 1 – domínio da API** (`apps/api/src/domain`): status do bairro, transições de status (inclui cancelamento, justificativa e resolução em lote), limite de uma denúncia em aberto, permissões e projeção pública anonimizada, previsão de reparo, protocolo, prioridade, bairro mais próximo (Haversine) e taxa de resolução. 190 testes unitários novos, com cobertura de 100% do domínio e limiar de 90% exigido no `vitest.config.ts`.
 
+- **Passo 2 – autenticação da API:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` e `GET /api/v1/me`; JWT (HS256) com validade de 7 dias para o cidadão e 8 horas para o operador; senhas com bcrypt; middlewares `autenticar` (confirma o usuário no banco) e `exigirPapel` (RBAC); validação com Zod em português; limite de 100 requisições/min por IP e de 5 logins com falha/min por IP e e-mail. O cadastro público só cria cidadão, grava o consentimento e não coleta CPF nem data de nascimento.
+- **Testes de integração com banco separado (`taligado_test`):** criado e migrado automaticamente pelo `globalSetup`, com trava que recusa qualquer banco cujo nome não termine em `_test`. 68 testes novos (cadastro, login, `/me`, limites de tentativas, RBAC e token).
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 
