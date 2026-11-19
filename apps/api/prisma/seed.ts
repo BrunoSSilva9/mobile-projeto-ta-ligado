@@ -25,7 +25,9 @@ async function seedBairros() {
       criados++;
     }
   }
-  console.log(`Bairros: ${criados} criados, ${atualizados} atualizados (dados aproximados de demonstração).`);
+  console.log(
+    `Bairros: ${criados} criados, ${atualizados} atualizados (dados aproximados de demonstração).`,
+  );
 }
 
 async function seedOperador() {
