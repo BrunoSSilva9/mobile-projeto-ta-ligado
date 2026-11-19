@@ -79,6 +79,7 @@ npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 | [13 – Estratégia de testes](docs/13-estrategia-de-testes.md) | Unitários, integração, E2E e cobertura |
 | [14 – Roadmap e backlog](docs/14-roadmap-e-backlog.md) | Fases e backlog priorizado |
 | [15 – Glossário](docs/15-glossario.md) | Termos do domínio |
+| [16 – Plano da Fase 1](docs/16-plano-fase-1.md) | PRs, tarefas, testes e critérios do MVP |
 | [ADRs](docs/adr/) | [0001 integração simulada](docs/adr/0001-integracao-simulada-com-operadora.md) · [0002 Socket.IO](docs/adr/0002-socketio-para-tempo-real.md) · [0003 monorepo](docs/adr/0003-monorepo-com-tres-aplicacoes.md) · [0004 JWT + RBAC](docs/adr/0004-autenticacao-jwt-com-rbac.md) · [0005 offline simples](docs/adr/0005-estrategia-offline-simples.md) |
 
 ## Contribuindo

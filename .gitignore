@@ -80,3 +80,6 @@ Thumbs.db
 
 # Claude Code (configuração local)
 .claude/settings.local.json
+
+# Cache do Vite/Vitest
+.vite/

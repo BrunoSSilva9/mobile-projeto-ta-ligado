@@ -34,6 +34,8 @@ Os últimos dias ficam reservados a **testes, ajustes e preparação da apresent
 
 > **Risco declarado:** a soma das estimativas das Fases 1 e 2 é maior que sete dias de uma única pessoa. Com **três integrantes** em paralelo (API, app, painel) é viável, mas, se o prazo apertar, corta-se nesta ordem: B-044, B-043, B-040 a B-042, B-030 (push), B-035 (lote), B-038 (indicadores). O **Must** não é cortado.
 
+> O **plano detalhado da Fase 1** (PRs, arquivos, testes e critérios) está em [16 – Plano de implementação da Fase 1](16-plano-fase-1.md).
+
 ## Backlog priorizado
 
 ### Fase 0 – Fundação
@@ -118,7 +120,7 @@ Os últimos dias ficam reservados a **testes, ajustes e preparação da apresent
 | RF-001 | B-011, B-012 | RF-013 | B-013, B-016 | RF-025 | B-030 |
 | RF-002 | B-012 | RF-014 | B-013, B-016 | RF-026 | B-011, B-020 |
 | RF-003 | B-011, B-012 | RF-015 | B-036 | RF-027 | B-014, B-021 |
-| RF-004 | B-037 | RF-016 | B-017, B-018 | RF-028 | B-019, B-020 |
+| RF-004 | B-016, B-037 | RF-016 | B-017, B-018 | RF-028 | B-019, B-020 |
 | RF-005 | B-037 | RF-017 | B-040 | RF-029 | B-020 |
 | RF-006 | B-037 | RF-018 | B-038 | RF-030 | B-019, B-022 |
 | RF-007 | B-013, B-015 | RF-019 | B-017, B-018 | RF-031 | B-019, B-022 |
