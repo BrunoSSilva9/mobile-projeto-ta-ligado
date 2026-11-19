@@ -1,11 +1,9 @@
 import { z } from 'zod';
 
+import { vazioOuNuloViraAusente } from '../../shared/validacao';
+
 /** Telefone brasileiro com DDD, com ou sem máscara: (94) 90000-0000, (94) 3322-1234, 94900000000. */
 const TELEFONE_BR = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
-
-/** Texto vazio vira "ausente" (o campo de telefone é opcional). */
-const vazioViraAusente = (valor: unknown) =>
-  typeof valor === 'string' && valor.trim() === '' ? undefined : valor;
 
 /**
  * Cadastro de cidadão (RN-020, RN-022). CPF e data de nascimento NÃO são coletados.
@@ -27,7 +25,7 @@ export const registerSchema = z.object({
     .min(8, 'A senha precisa ter pelo menos 8 caracteres.')
     .max(72, 'A senha pode ter no máximo 72 caracteres.'),
   telefone: z.preprocess(
-    vazioViraAusente,
+    vazioOuNuloViraAusente,
     z
       .string()
       .trim()

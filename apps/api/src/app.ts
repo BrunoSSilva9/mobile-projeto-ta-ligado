@@ -3,6 +3,7 @@ import cors from 'cors';
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import helmet from 'helmet';
 
+import type { Publicador } from './realtime/publicador';
 import { criarRotas } from './routes';
 import { AppError, corpoDeErro, erros } from './shared/errors';
 import type { LimitesDeTaxa } from './shared/rate-limit';
@@ -17,6 +18,10 @@ export type AppDeps = {
   segredoJwt?: string;
   limites?: Partial<LimitesDeTaxa>;
   bcryptCost?: number;
+  /** Emissor de eventos em tempo real (Passo 4). */
+  publicador?: Publicador;
+  /** Relógio injetável (testes). */
+  relogio?: () => Date;
 };
 
 /** Cria o app Express (sem abrir porta). */
@@ -27,6 +32,8 @@ export function createApp({
   segredoJwt,
   limites,
   bcryptCost,
+  publicador,
+  relogio,
 }: AppDeps = {}): Express {
   const app = express();
 
@@ -55,7 +62,10 @@ export function createApp({
   });
 
   if (prisma && segredoJwt) {
-    app.use('/api/v1', criarRotas({ prisma, segredoJwt, limites, bcryptCost }));
+    app.use(
+      '/api/v1',
+      criarRotas({ prisma, segredoJwt, limites, bcryptCost, publicador, relogio }),
+    );
   }
 
   app.use((_req, _res, next) => next(erros.naoEncontrado('Rota não encontrada.')));

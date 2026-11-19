@@ -136,3 +136,9 @@ model PushToken {
 
   @@index([usuarioId])
 }
+
+/// Sequência do protocolo por ano (RN-023, S-34). Incrementada de forma atômica no `INSERT ... ON CONFLICT`.
+model ProtocoloSequencia {
+  ano    Int @id
+  ultimo Int
+}
