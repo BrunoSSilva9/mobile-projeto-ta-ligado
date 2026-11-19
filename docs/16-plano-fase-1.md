@@ -1,8 +1,8 @@
 # 16 – Plano de implementação da Fase 1 (MVP Must)
 
-> **Estado:** proposta para aprovação, **antes de qualquer código**. Nada deste plano foi implementado.
+> **Estado:** plano aprovado com ajustes em 2026-11-19; **nada foi implementado ainda**.
 > **Base:** [14 – Roadmap e backlog](14-roadmap-e-backlog.md) (B-010 a B-025), contratos em [10 – API](10-api.md), dados em [09](09-modelo-de-dados.md), regras em [regras-de-negocio.md](02-requisitos/regras-de-negocio.md) e telas em [05](05-telas-e-fluxos.md).
-> **Início:** 2026-11-19 (dia 2 do cronograma). A Fase 0 já está na `develop`.
+> **Como será feito:** **uma única branch (`feature/fase-1`) e um único Pull Request** para toda a Fase 1, implementado por Bruno. **Sem prazos fixos:** o projeto avança por prioridade, conforme cada passo fica pronto. A Fase 0 já está na `develop`.
 
 ## 1. Objetivo e critério de pronto
 
@@ -37,7 +37,7 @@ sequenceDiagram
 
 | Item | Onde aparece | Tratamento na Fase 1 |
 |---|---|---|
-| Fotos (RF-009), pessoas afetadas e necessidade especial (RF-010) | T-05 | O formulário **não** mostra esses campos; a API já aceita os campos opcionais (S-38) |
+| Fotos (RF-009), pessoas afetadas e necessidade especial (RF-010) | T-05 | O formulário **não** mostra esses campos. **Upload de fotos só na Fase 2** (confirmado). A API já aceita os campos opcionais de pessoas e necessidade (S-38) |
 | Prioridade no painel (RF-035) | P-02 | A lista ordena por data; o campo `necessidadeEspecial` existe no banco |
 | Cancelar denúncia (RF-015) | T-07, T-09 | Sem botão; a regra RN-005 já fica no domínio, com testes |
 | Editar perfil e excluir conta (RF-005, RF-006) | T-08 | T-08 **mínimo**: dados, "Minhas denúncias" e "Sair" (S-37) |
@@ -48,12 +48,12 @@ sequenceDiagram
 
 ## 3. Decisões técnicas propostas (a confirmar)
 
-Seguem o padrão do projeto: na dúvida, a opção mais simples. Serão registradas em [01 – seção 8](01-visao-e-escopo.md#8-decisões-e-pendências) como **S-33 a S-41** (a confirmar) ao aprovar este plano.
+Seguem o padrão do projeto: na dúvida, a opção mais simples. Estão registradas em [01 – seção 8](01-visao-e-escopo.md#8-decisões-e-pendências) como **S-33 a S-41** (a confirmar, exceto S-33 e S-38, confirmadas) e **S-42 e S-43** (definidas por Bruno em 2026-11-19).
 
 | ID | Decisão | Motivo |
 |---|---|---|
 | S-33 | `POST /denuncias` aceita **JSON** na Fase 1; o `multipart` (fotos) entra com B-031 | Sem fotos na fase, JSON é mais simples. [10](10-api.md) será ajustado quando as fotos chegarem |
-| S-34 | O protocolo (RN-023) vem de uma tabela `ProtocoloSequencia(ano, ultimo)` com incremento **atômico** (`INSERT … ON CONFLICT DO UPDATE … RETURNING`), numa nova migration | Sequência por ano, sem corrida entre requisições. Atualizar [09](09-modelo-de-dados.md) no PR-3 |
+| S-34 | O protocolo (RN-023) vem de uma tabela `ProtocoloSequencia(ano, ultimo)` com incremento **atômico** (`INSERT … ON CONFLICT DO UPDATE … RETURNING`), numa nova migration | Sequência por ano, sem corrida entre requisições. Atualizar [09](09-modelo-de-dados.md) no Passo 3 |
 | S-35 | JWT com `jsonwebtoken`; validade por papel: **cidadão 7 dias, operador 8 horas** (S-08) | Simples e já decidido ([ADR-0004](adr/0004-autenticacao-jwt-com-rbac.md)) |
 | S-36 | Testes de integração usam o banco **`taligado_test`** (separado do de desenvolvimento), com migrations aplicadas no `globalSetup` e tabelas limpas entre testes | Não apaga os dados de desenvolvimento; a CI já usa esse nome |
 | S-37 | **T-08 mínimo** entra na Fase 1 (nome, e-mail, "Minhas denúncias", "Sair"). RF-004 passa a B-016 na rastreabilidade | "Sair" (RF-004) é Must e "Minhas denúncias" fica dentro do Perfil |
@@ -61,58 +61,76 @@ Seguem o padrão do projeto: na dúvida, a opção mais simples. Serão registra
 | S-39 | O `PATCH /painel/denuncias/:id/status` já aceita `previsaoReparo` | Campo pequeno; evita mexer no contrato depois |
 | S-40 | As regras de domínio recebem **dados simples** (sem Prisma) e o *service* faz a consulta | Mantém `domain/` puro e testável (RNF-020) |
 | S-41 | Rotas do app reorganizadas em `(auth)` e `(app)/(tabs)`, protegidas com `Stack.Protected` (a API exata será conferida na documentação do **SDK 58**) | O template do SDK 58 mudou muita coisa; confirmar antes de usar |
+| S-42 | **Uma branch (`feature/fase-1`) e um PR** para a Fase 1 inteira, em passos (grupos de commits). Sem prazos fixos | Decisão de Bruno; menos burocracia de PRs |
+| S-43 | **Banco de desenvolvimento e de testes: PostgreSQL local (Docker)**. Um PostgreSQL hospedado **gratuito** pode ser usado depois, para demonstração ([seção 3.1](#31-banco-de-dados-local-e-hospedado-gratuito)) | Docker já está validado e é gratuito; o hospedado entra só se for realmente de graça |
 
-## 4. Mapa de PRs e dependências
+### 3.1 Banco de dados: local e hospedado (gratuito)
 
-Cada PR sai de uma branch a partir da `develop` e **volta para a `develop`** (você aprova o merge). PRs pequenos, um assunto cada.
+**Recomendação:** continuar com o **PostgreSQL local em Docker** (já validado, gratuito, sem internet e sem conta) para desenvolvimento e **para todos os testes**. Um PostgreSQL **hospedado** só traz benefício na demonstração (dados acessíveis de qualquer lugar) e **não resolve sozinho** o acesso do celular, porque a API também precisa ser alcançável (mesma rede, `--tunnel` ou hospedada).
+
+Se quiserem usar um banco hospedado gratuito, o caminho é simples, pois o Prisma só precisa da `DATABASE_URL`:
+
+| Ponto | Como fica |
+|---|---|
+| Opções comuns | Neon, Supabase e similares oferecem plano gratuito de PostgreSQL. **Os limites e as regras mudam com frequência** (pausa por inatividade, armazenamento, número de bancos): conferir no site do provedor antes de escolher |
+| Conexão | Trocar `DATABASE_URL` em `apps/api/.env` pela URL do provedor, em geral com `?sslmode=require`. Se o provedor usar *pooler* (PgBouncer), o Prisma exige uma URL direta para as migrations (`directUrl` no `schema.prisma`) |
+| Esquema e dados | `npm run db:deploy -w apps/api` (migrations) e `npm run db:seed -w apps/api` (bairros e operador) |
+| Segurança | A URL tem senha: **só no `.env`** (ignorado pelo Git), nunca no repositório. Usar uma senha forte para o operador do seed fora do computador local. Dados reais de pessoas só com os Termos aprovados (PEN-03) |
+| Testes | **Nunca** apontar os testes para o banco hospedado: eles apagam tabelas. A CI continua usando o PostgreSQL de serviço do GitHub Actions |
+
+A escolha do hospedado fica para o fim da Fase 1 (Passo 13) ou para a Fase 2, quando houver uma demonstração em vista.
+
+## 4. Ordem dos passos e dependências
+
+Tudo acontece em **uma branch** (`feature/fase-1`, criada a partir da `develop`). Cada passo é um **grupo de commits** (as mensagens estão em cada passo) e **termina com `lint`, `typecheck` e testes passando**. No fim, abre-se **um único PR** para a `develop`.
 
 Ordem pensada em **duas fatias**: primeiro a **fatia vertical** (cidadão envia → painel recebe → operador atualiza → app mostra), que é o coração da demonstração; depois a **visão pública** (Home e Ocorrências).
 
 ```mermaid
 flowchart LR
   subgraph A["Fatia A: ciclo da denúncia"]
-    P1["PR-1<br/>api-dominio"] --> P2["PR-2<br/>api-auth"] --> P3["PR-3<br/>api-denuncias"] --> P4["PR-4<br/>api-tempo-real"] --> P5["PR-5<br/>api-painel"]
-    P2 --> P6["PR-6<br/>mobile-base-auth"] --> P7["PR-7<br/>mobile-denunciar"] --> P8["PR-8<br/>mobile-acompanhamento"]
-    P2 --> P9["PR-9<br/>painel-base"] --> P10["PR-10<br/>painel-tempo-real-status"]
+    P1["Passo 1<br/>api-dominio"] --> P2["Passo 2<br/>api-auth"] --> P3["Passo 3<br/>api-denuncias"] --> P4["Passo 4<br/>api-tempo-real"] --> P5["Passo 5<br/>api-painel"]
+    P2 --> P6["Passo 6<br/>mobile-base-auth"] --> P7["Passo 7<br/>mobile-denunciar"] --> P8["Passo 8<br/>mobile-acompanhamento"]
+    P2 --> P9["Passo 9<br/>painel-base"] --> P10["Passo 10<br/>painel-tempo-real-status"]
     P3 --> P7
     P4 --> P8
     P5 --> P10
   end
   subgraph B["Fatia B: visão pública"]
-    P11["PR-11<br/>api-ocorrencias"] --> P12["PR-12<br/>mobile-home-ocorrencias"]
+    P11["Passo 11<br/>api-ocorrencias"] --> P12["Passo 12<br/>mobile-home-ocorrencias"]
   end
-  P8 --> P13["PR-13<br/>estados-offline-testes"]
+  P8 --> P13["Passo 13<br/>estados-offline-testes"]
   P10 --> P13
   P12 --> P13
   P3 --> P11
   P6 --> P12
 ```
 
-| PR | Branch | Backlog | Requisitos | Esforço |
+| Passo | Tema | Backlog | Requisitos | Esforço |
 |---|---|---|---|---|
-| PR-1 | `feature/api-dominio` | B-010 | RN-004 a 007, 009, 014, 015, 023, 025 | M |
-| PR-2 | `feature/api-auth` | B-011 | RF-001 a 003, 026 · RN-001, 020, 022 | M |
-| PR-3 | `feature/api-denuncias` | B-013 (+ `GET /bairros` e `/proximo` de B-017) | RF-007, 011, 013, 014, 036 · RN-006, 011, 012, 023, 025 | G |
-| PR-4 | `feature/api-tempo-real` | B-014 | RF-024, 027 · ADR-0002 | M |
-| PR-5 | `feature/api-painel` | B-019 | RF-028, 030, 031, 032 | M |
-| PR-6 | `feature/mobile-base-auth` | B-012 | RF-001 a 003 | M |
-| PR-7 | `feature/mobile-denunciar` | B-015 | RF-007, 008, 012 · RNF-008 | G |
-| PR-8 | `feature/mobile-acompanhamento` | B-016 | RF-004, 013, 014, 024 | G |
-| PR-9 | `feature/painel-base` | B-020 | RF-026, 028, 029 | G |
-| PR-10 | `feature/painel-tempo-real-status` | B-021, B-022 | RF-027, 030 a 032 | M |
-| PR-11 | `feature/api-ocorrencias` | B-017 (restante) | RF-016, 019, 020, 023 · RN-007, 009, 014 | M |
-| PR-12 | `feature/mobile-home-ocorrencias` | B-018 | RF-016, 019, 020, 023 | G |
-| PR-13 | `feature/estados-offline-testes` | B-023, B-024, B-025 | RNF-006, 007, 009 | M |
+| Passo 1 | `api-dominio` | B-010 | RN-004 a 007, 009, 014, 015, 023, 025 | M |
+| Passo 2 | `api-auth` | B-011 | RF-001 a 003, 026 · RN-001, 020, 022 | M |
+| Passo 3 | `api-denuncias` | B-013 (+ `GET /bairros` e `/proximo` de B-017) | RF-007, 011, 013, 014, 036 · RN-006, 011, 012, 023, 025 | G |
+| Passo 4 | `api-tempo-real` | B-014 | RF-024, 027 · ADR-0002 | M |
+| Passo 5 | `api-painel` | B-019 | RF-028, 030, 031, 032 | M |
+| Passo 6 | `mobile-base-auth` | B-012 | RF-001 a 003 | M |
+| Passo 7 | `mobile-denunciar` | B-015 | RF-007, 008, 012 · RNF-008 | G |
+| Passo 8 | `mobile-acompanhamento` | B-016 | RF-004, 013, 014, 024 | G |
+| Passo 9 | `painel-base` | B-020 | RF-026, 028, 029 | G |
+| Passo 10 | `painel-tempo-real-status` | B-021, B-022 | RF-027, 030 a 032 | M |
+| Passo 11 | `api-ocorrencias` | B-017 (restante) | RF-016, 019, 020, 023 · RN-007, 009, 014 | M |
+| Passo 12 | `mobile-home-ocorrencias` | B-018 | RF-016, 019, 020, 023 | G |
+| Passo 13 | `estados-offline-testes` | B-023, B-024, B-025 | RNF-006, 007, 009 | M |
 
-**Paralelismo (se os três integrantes trabalharem juntos):** após o **PR-2** (contrato de autenticação), a trilha da **API** (PR-3 a 5), a do **app** (PR-6 a 8) e a do **painel** (PR-9 e 10) podem andar em paralelo, usando os contratos de [10](10-api.md). Para um desenvolvedor só (ou para mim), a ordem numérica acima já respeita as dependências.
+**Execução em sequência:** como é uma pessoa só em uma branch, a **ordem numérica** já respeita as dependências. Os contratos de [10](10-api.md) permitem que app e painel usem a API assim que cada rota existir.
 
 ---
 
-## 5. Plano detalhado por PR
+## 5. Plano detalhado por passo
 
-Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/api/tests/...`. Mensagens de commit seguem o Conventional Commits.
+Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/api/tests/...`. Mensagens de commit seguem o Conventional Commits. Cada passo pode virar 1 ou 2 commits (as mensagens sugeridas estão ao fim de cada passo).
 
-### PR-1 · `feature/api-dominio` (B-010)
+### Passo 1 · `api-dominio` (B-010)
 
 **Objetivo:** todas as regras de negócio como **funções puras**, com testes, antes de qualquer rota.
 
@@ -140,7 +158,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Config:** adicionar limiar de cobertura (`coverage.thresholds`) para `src/domain/**` no `vitest.config.ts`, para a CI falhar abaixo de 90%.
 **Commits:** `feat(api): adiciona regras de domínio de status, transições e permissões` · `test(api): cobre regras de domínio` (ou um só).
 
-### PR-2 · `feature/api-auth` (B-011)
+### Passo 2 · `api-auth` (B-011)
 
 **Dependências novas:** `jsonwebtoken`, `@types/jsonwebtoken`, `express-rate-limit`.
 
@@ -160,7 +178,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** requisitos RF-001 a 003 e RF-026 (lado da API) atendidos; sem dado pessoal em logs.
 **Commits:** `feat(api): adiciona cadastro, login com jwt e controle de acesso por papel` · `test(api): adiciona infraestrutura de testes de integração com banco`.
 
-### PR-3 · `feature/api-denuncias` (B-013)
+### Passo 3 · `api-denuncias` (B-013)
 
 **Migration nova** `protocolo_sequencia`: tabela `ProtocoloSequencia(ano int PK, ultimo int)` (S-34). Atualizar [09](09-modelo-de-dados.md).
 
@@ -169,8 +187,8 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 | `modules/denuncias/schemas.ts` | `criarDenunciaSchema`: `tipo`, `bairroId`, `logradouro` obrigatórios; `cep`, `pontoReferencia`, `descricao` (≤ 500), `latitude`/`longitude`, `faixaPessoas`, `necessidadeEspecial`, `detalheNecessidade` (obrigatório se `necessidadeEspecial`) opcionais |
 | `modules/denuncias/service.ts` | `criar()`: dentro de **uma transação** — checa `podeCriarDenuncia`, gera o protocolo atômico, cria a denúncia `RECEBIDA` e o 1º `HistoricoStatus`; **captura o erro de violação do índice parcial** (`P2002`) como `409 DENUNCIA_EM_ABERTO` (cobre a corrida entre duas requisições); `minhas()`, `detalhe()` (histórico com `por: "Você" \| "Equatorial Pará"`) |
 | `modules/denuncias/routes.ts` | `POST /denuncias`, `GET /denuncias/minhas`, `GET /denuncias/:id` (só do autor; 404 para outro usuário, sem revelar existência) |
-| `modules/bairros/routes.ts` | `GET /bairros` (lista fixa) e `GET /bairros/proximo?lat&lng` (centro mais próximo até 15 km, RN-025; 404 fora do raio). Entram aqui porque o formulário do PR-7 precisa deles |
-| `realtime/publicador.ts` | Interface `Publicador` (`denunciaCriada`, `statusAtualizado`, …) com implementação **vazia** por enquanto; o service a recebe por injeção e chama **depois do commit**. O PR-4 troca pela implementação real |
+| `modules/bairros/routes.ts` | `GET /bairros` (lista fixa) e `GET /bairros/proximo?lat&lng` (centro mais próximo até 15 km, RN-025; 404 fora do raio). Entram aqui porque o formulário do Passo 7 precisa deles |
+| `realtime/publicador.ts` | Interface `Publicador` (`denunciaCriada`, `statusAtualizado`, …) com implementação **vazia** por enquanto; o service a recebe por injeção e chama **depois do commit**. O Passo 4 troca pela implementação real |
 | `shared/protocolo-sequencia.ts` | Incremento atômico em SQL (`INSERT … ON CONFLICT … DO UPDATE SET ultimo = ultimo + 1 RETURNING ultimo`) |
 
 **Regras:** RN-006, RN-011, RN-012 (bairro obrigatório; coordenadas opcionais), RN-023.
@@ -178,7 +196,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-007, 011, 013, 014, 036 (lado da API).
 **Commits:** `feat(db): adiciona tabela de sequência de protocolo` · `feat(api): adiciona registro, listagem e detalhe de denúncias`.
 
-### PR-4 · `feature/api-tempo-real` (B-014)
+### Passo 4 · `api-tempo-real` (B-014)
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -190,7 +208,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-024 e RF-027 (lado da API); latência medida localmente ≤ 2 s (RNF-002).
 **Commit:** `feat(api): adiciona socket.io com autenticação, salas e eventos de denúncia`.
 
-### PR-5 · `feature/api-painel` (B-019)
+### Passo 5 · `api-painel` (B-019)
 
 | Rota (`/api/v1/painel`, só `OPERADOR`) | Comportamento |
 |---|---|
@@ -202,7 +220,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-028, 030, 031, 032 e RF-036 (lado da API).
 **Commit:** `feat(api): adiciona listagem, detalhe e atualização de status para o painel`.
 
-### PR-6 · `feature/mobile-base-auth` (B-012)
+### Passo 6 · `mobile-base-auth` (B-012)
 
 **Dependências (via `npx expo install`):** `@tanstack/react-query`, `zustand`, `react-hook-form`, `zod`, `@hookform/resolvers`, `expo-secure-store`, `socket.io-client`. Antes de usar `Stack.Protected` e a `Tabs` do SDK 58, **conferir a documentação do SDK 58** (S-41).
 
@@ -222,7 +240,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-001 a 003 ponta a ponta com a API local; abrir o app com sessão válida vai direto às abas; alvos ≥ 48 dp; contraste dos botões em `#006E2C`.
 **Commits:** `feat(mobile): adiciona infraestrutura de http, sessão e componentes base` · `feat(mobile): adiciona telas de cadastro e login`.
 
-### PR-7 · `feature/mobile-denunciar` (B-015)
+### Passo 7 · `mobile-denunciar` (B-015)
 
 **Dependências:** `expo-location`, `react-native-maps` (versão do SDK), `@react-native-async-storage/async-storage`.
 
@@ -236,12 +254,12 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 | `app/(app)/denuncia/sucesso.tsx` | T-06: protocolo (copiar), mensagem "Sua denúncia foi enviada à Equatorial Pará", botões "Acompanhar denúncia" e "Voltar ao início" |
 
 **Campos da Fase 1 (S-38):** tipo (Sem energia/Oscilação), logradouro, bairro (lista da API), CEP e ponto de referência opcionais, descrição opcional. **Sem** fotos, pessoas e necessidade especial.
-**Dependência de API:** `GET /bairros` e `GET /bairros/proximo`, entregues no **PR-3**.
+**Dependência de API:** `GET /bairros` e `GET /bairros/proximo`, entregues no **Passo 3**.
 **Testes (Jest):** schema; regra de rascunho (salva, restaura, limpa); mapeamento de erro 409; formatação do protocolo.
 **Aceite:** RF-007, 008, 012 e RNF-008; com GPS negado o envio funciona escolhendo o bairro; sem internet os dados continuam no formulário; mensagem do 409 leva à denúncia aberta.
 **Commits:** `feat(mobile): adiciona formulário de denúncia com localização por gps e rascunho` · `feat(mobile): adiciona tela de denúncia enviada com protocolo`.
 
-### PR-8 · `feature/mobile-acompanhamento` (B-016)
+### Passo 8 · `mobile-acompanhamento` (B-016)
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -255,7 +273,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-004, 013, 014, 024; com a tela de detalhe aberta, a mudança feita no painel aparece em ≤ 2 s sem recarregar (teste manual com os dois lados).
 **Commits:** `feat(mobile): adiciona socket com atualização do cache em tempo real` · `feat(mobile): adiciona minhas denúncias, detalhe com histórico e perfil mínimo`.
 
-### PR-9 · `feature/painel-base` (B-020)
+### Passo 9 · `painel-base` (B-020)
 
 **Dependências:** `leaflet`, `react-leaflet`, `@types/leaflet`, `@tanstack/react-query`, `socket.io-client`, `zustand` (ou contexto simples).
 
@@ -271,7 +289,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-026, 028, 029; navegação por teclado e foco visível ([12](12-acessibilidade.md)).
 **Commits:** `feat(painel): adiciona login do operador e rotas protegidas` · `feat(painel): adiciona lista, filtros e mapa de denúncias`.
 
-### PR-10 · `feature/painel-tempo-real-status` (B-021, B-022)
+### Passo 10 · `painel-tempo-real-status` (B-021, B-022)
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -284,9 +302,9 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-027, 030, 031, 032, 036 (histórico visível); **teste ponta a ponta manual dos três lados** conforme o roteiro da seção 8.
 **Commits:** `feat(painel): adiciona alerta visual e sonoro de novas denúncias em tempo real` · `feat(painel): adiciona detalhe da denúncia e atualização de status`.
 
-> **Marco 1 (fim da fatia A):** com o PR-10 concluído, a demonstração ponta a ponta já funciona.
+> **Marco M3:** com o Passo 10 concluído, a demonstração ponta a ponta já funciona.
 
-### PR-11 · `feature/api-ocorrencias` (B-017)
+### Passo 11 · `api-ocorrencias` (B-017)
 
 | Rota | Comportamento |
 |---|---|
@@ -294,10 +312,10 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 | `GET /ocorrencias?status&bairroId&q&page` | Lista **pública anonimizada** + `totais` dos chips; "Restabelecidos" = resolvidas nas últimas 24 h (S-21); coordenadas arredondadas (RN-014) |
 
 **Testes de integração:** a resposta **nunca** contém `autor`, `telefone`, `protocolo`, fotos, pessoas ou necessidade especial; soma dos chips = "Todos"; status do bairro nas combinações de RN-007; previsão só futura; `proximo` fora do raio.
-**Aceite:** lado da API de RF-016, 019, 020, 023. (Indicadores, RF-018, ficam na Fase 2; `GET /bairros` e `/proximo` já vieram no PR-3.)
+**Aceite:** lado da API de RF-016, 019, 020, 023. (Indicadores, RF-018, ficam na Fase 2; `GET /bairros` e `/proximo` já vieram no Passo 3.)
 **Commit:** `feat(api): adiciona bairros, status por bairro e ocorrências públicas anonimizadas`.
 
-### PR-12 · `feature/mobile-home-ocorrencias` (B-018)
+### Passo 12 · `mobile-home-ocorrencias` (B-018)
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -310,7 +328,7 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 **Aceite:** RF-016, 019, 020, 023; alterar o status no painel muda o selo e a cor do círculo em ≤ 2 s; nenhum dado pessoal na lista.
 **Commits:** `feat(mobile): adiciona tela inicial com status do bairro` · `feat(mobile): adiciona ocorrências com mapa, chips e lista pública`.
 
-### PR-13 · `feature/estados-offline-testes` (B-023, B-024, B-025)
+### Passo 13 · `estados-offline-testes` (B-023, B-024, B-025)
 
 | Item | Conteúdo |
 |---|---|
@@ -324,29 +342,31 @@ Convenções: arquivos em `apps/api/src/...` salvo indicação; testes em `apps/
 
 ---
 
-## 6. Cronograma da Fase 1
+## 6. Marcos e ordem de execução (sem datas)
 
-Segue o cronograma de [14](14-roadmap-e-backlog.md#cronograma-de-uma-semana). Por ser apertado, a fatia A é prioridade absoluta.
+Não há prazo fixo: avança-se **passo a passo**, e o plano só define a **ordem** e os **marcos** (pontos em que o sistema já mostra algo funcionando).
 
-| Dia | Data | PRs | Marco |
-|---|---|---|---|
-| 2 | 19/11 (qui) | PR-1, PR-2, PR-3 | API com domínio testado, autenticação e denúncias |
-| 3 | 20/11 (sex) | PR-4, PR-5, PR-6, PR-7 | API em tempo real; app já cadastra, entra e envia denúncia |
-| 4 | 21/11 (sáb) | PR-8, PR-9, PR-10 | **Marco 1:** ciclo ponta a ponta funcionando |
-| 5 | 22/11 (dom) | PR-11, PR-12, PR-13 | **Marco 2:** Fase 1 completa; entram os *Should* que sobrarem |
+| Marco | Ao concluir | O que já funciona |
+|---|---|---|
+| **M0 · Base testada** | Passos 1 a 3 | API com domínio testado, autenticação e denúncias (verificável por testes e por requisições) |
+| **M1 · Tempo real na API** | Passos 4 e 5 | Eventos em tempo real e API do painel, testados com `socket.io-client` |
+| **M2 · App do cidadão** | Passos 6 a 8 | Cadastro, login, envio de denúncia, protocolo e acompanhamento no celular |
+| **M3 · Ciclo completo** | Passos 9 e 10 | **Demonstração ponta a ponta:** denúncia no app → alerta no painel → status → app atualiza |
+| **M4 · Visão pública** | Passos 11 e 12 | Home e Ocorrências com status do bairro, mapa e lista |
+| **M5 · Fase 1 completa** | Passo 13 | Estados de tela, offline, testes de integração completos e roteiro de demonstração |
 
-> **Realidade do prazo:** são 13 PRs em 4 dias. Com os três integrantes em paralelo (API, app e painel) é viável. Com uma pessoa só, a **regra de corte** é: primeiro entregar o **Marco 1** (fatia A); depois a fatia B (PR-11 e PR-12); o PR-13 pode ser reduzido a estados de tela + roteiro de demonstração. Os itens *Should* da Fase 2 seguem a ordem de corte já definida em [14](14-roadmap-e-backlog.md#cronograma-de-uma-semana).
+Se for preciso priorizar, o **M3** é o mais importante (é o coração da demonstração); o M4 e o M5 vêm depois. Os itens *Should* da Fase 2 só começam com a Fase 1 concluída.
 
 ## 7. Estratégia de testes da Fase 1
 
 | Camada | O que | Ferramenta | Quando |
 |---|---|---|---|
-| Domínio | Regras puras, matriz completa de transições | Vitest | PR-1 (antes de qualquer rota) |
-| API (integração) | Fluxos com banco `taligado_test`: auth, denúncias, painel, ocorrências, atomicidade, concorrência | Vitest + Supertest | PR-2 em diante |
-| Tempo real | Handshake, salas, privacidade dos eventos, emissão pós-commit | Vitest + `socket.io-client` | PR-4 |
-| App | Schemas, cliente HTTP, sessão, rascunho, aplicação de eventos ao cache | Jest + `jest-expo` | PR-6 a 8, 12 |
-| Painel | Login, filtros, ações por status, alerta | Vitest + Testing Library | PR-9, 10 |
-| Manual | Roteiro ponta a ponta com app, painel e API | Expo Go + navegador | PR-10 e ao final |
+| Domínio | Regras puras, matriz completa de transições | Vitest | Passo 1 (antes de qualquer rota) |
+| API (integração) | Fluxos com banco `taligado_test`: auth, denúncias, painel, ocorrências, atomicidade, concorrência | Vitest + Supertest | Passo 2 em diante |
+| Tempo real | Handshake, salas, privacidade dos eventos, emissão pós-commit | Vitest + `socket.io-client` | Passo 4 |
+| App | Schemas, cliente HTTP, sessão, rascunho, aplicação de eventos ao cache | Jest + `jest-expo` | Passo 6 a 8, 12 |
+| Painel | Login, filtros, ações por status, alerta | Vitest + Testing Library | Passo 9, 10 |
+| Manual | Roteiro ponta a ponta com app, painel e API | Expo Go + navegador | Passo 10 e ao final |
 
 **Banco de teste (S-36):** criar uma vez com `docker exec taligado-db createdb -U taligado taligado_test`. O `globalSetup` aplica as migrations (`prisma migrate deploy`) e cada teste limpa as tabelas. A CI já cria `taligado_test` (serviço PostgreSQL) e roda os testes nele.
 **Cobertura (RNF-020):** `domain/` ≥ 90% (com limiar que falha a CI), API ≥ 70%, app e painel ≥ 60% na lógica.
@@ -367,21 +387,22 @@ Segue o cronograma de [14](14-roadmap-e-backlog.md#cronograma-de-uma-semana). Po
 
 ## 9. Definição de pronto
 
-**Por PR:**
-- [ ] Branch a partir da `develop`, com nome do plano; PR para a `develop`.
-- [ ] Testes novos para as regras e os fluxos do PR; `lint`, `typecheck`, `test` e `format:check` passam; CI verde.
-- [ ] Contratos de [10](10-api.md) respeitados; se mudarem, o documento é atualizado **no mesmo PR**.
+**Por passo:**
+- [ ] Commits na `feature/fase-1`, no padrão Conventional Commits.
+- [ ] Testes novos para as regras e os fluxos do passo; `lint`, `typecheck`, `test` e `format:check` passam; CI verde.
+- [ ] Contratos de [10](10-api.md) respeitados; se mudarem, o documento é atualizado **no mesmo passo**.
 - [ ] Sem segredo, `.env` ou dado pessoal em código e logs; visibilidade por papel conforme RN-014.
 - [ ] Tokens do design system, alvos ≥ 48 dp e contraste AA nas telas novas.
 - [ ] `CHANGELOG.md` atualizado quando visível ao usuário.
 
-**Da fase:** todos os itens da seção 1 e o roteiro da seção 8 executado sem erro.
+**Da fase:** todos os itens da seção 1 e o roteiro da seção 8 executado sem erro, com o PR único aberto para a `develop`.
 
 ## 10. Riscos e mitigações
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
-| Prazo de 4 dias para 13 PRs | Alto | Fatia vertical primeiro (Marco 1); trabalho em paralelo; regra de corte da seção 6 |
+| PR único e grande (difícil de revisar e de reverter) | Médio | Passos pequenos com commits claros; `push` frequente da branch; **PR em rascunho (*draft*) aberto cedo**, para a CI rodar a cada push; checklist de marcos na descrição |
+| Perda de trabalho por ficar só no computador | Médio | `git push` da `feature/fase-1` ao fim de cada passo |
 | SDK 58 do Expo é novo (rotas protegidas, mapas, localização) | Médio | Conferir a documentação do SDK 58 antes de cada módulo; validar cada tela no Expo Go ao fim do PR |
 | Wi-Fi da universidade isola aparelhos | Médio | `--tunnel` ou *hotspot* (README); a API precisa ser alcançável pelo celular (`EXPO_PUBLIC_API_URL`) |
 | Mapas e geocodificação no Expo Go | Médio | Plano B: preencher o endereço manualmente e usar `UrlTile` (OSM) se o mapa do Google falhar |
@@ -390,9 +411,10 @@ Segue o cronograma de [14](14-roadmap-e-backlog.md#cronograma-de-uma-semana). Po
 | Alerta sonoro bloqueado pelo navegador | Baixo | Botão "Ativar som" (S-19) e alerta visual sempre presente |
 | Testes de integração lentos ou frágeis | Baixo | Banco separado, limpeza por `TRUNCATE`, poucos testes pesados |
 
-## 11. O que preciso que você confirme
+## 11. Pendências de confirmação
 
-1. **O plano e a ordem de PRs** (fatia A primeiro, depois a B) estão bons?
-2. As decisões **S-33 a S-41** (seção 3).
-3. As decisões **S-22 a S-32**, que seguem pendentes desde a Fase 0. Nenhuma bloqueia o PR-1, mas **S-22** (e-mail somente leitura) e **S-29** (sem controle de versão no `PATCH` de status) afetam a API logo adiante. Sem resposta, sigo com o que está documentado.
-4. **Quem trabalha em quê**, se os três forem desenvolver em paralelo (por exemplo: API, app e painel), para eu organizar as branches sem conflito.
+Já definido por Bruno em 2026-11-19: **branch e PR únicos**, **sem prazos**, **banco local (Docker) com opção de hospedado gratuito depois**, **fotos só na Fase 2**.
+
+Ainda aguardam confirmação (sem resposta, o plano segue o que está documentado):
+1. As decisões **S-34 a S-41** (seção 3) e **S-22 a S-32** (desde a Fase 0). A **S-22** (e-mail somente leitura) e a **S-29** (sem controle de versão no `PATCH` de status) afetam a API logo adiante.
+2. Se querem um **PostgreSQL hospedado** e qual provedor (seção 3.1), ou se ficam só com o Docker por enquanto.
