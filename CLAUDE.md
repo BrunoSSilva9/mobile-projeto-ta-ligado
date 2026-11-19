@@ -49,12 +49,14 @@ Status atual: documentação pronta; **Fase 0 concluída e validada na branch `f
 | Testes e cobertura | `docs/13-estrategia-de-testes.md` |
 | Roadmap e backlog (B-xxx) | `docs/14-roadmap-e-backlog.md` |
 | Glossário | `docs/15-glossario.md` |
+| Plano de implementação da Fase 1 (PRs, tarefas, testes) | `docs/16-plano-fase-1.md` |
+| Textos legais (rascunho acadêmico) | `docs/legal/` |
 | Decisões (ADR) | `docs/adr/` |
 
 ## Convenções
 
 - **Rastreabilidade:** IDs `RF-xxx`, `RNF-xxx`, `RN-xxx`, `US-xxx`, `UC-xx`, `T-xx`/`P-xx` (telas), `B-xxx` (backlog), `S-xx`, `PEN-xx`. Ao mudar uma regra, atualize RF/RN/US/UC/backlog **e mantenha os IDs consistentes entre os documentos**.
-- **Decisões:** registre como `S-xx` em `docs/01-visao-e-escopo.md` (seção 8). Decisões aprovadas S-01 a S-21; S-22 a S-32 aguardam confirmação. Não invente funcionalidades que não estejam no Figma ou nas decisões documentadas.
+- **Decisões:** registre como `S-xx` em `docs/01-visao-e-escopo.md` (seção 8). Decisões aprovadas S-01 a S-21; S-22 a S-41 aguardam confirmação. Não invente funcionalidades que não estejam no Figma ou nas decisões documentadas.
 - **Regras de negócio** vivem em `apps/api/src/domain` (funções puras, com testes unitários). Meta: ≥ 90% de cobertura nesse módulo.
 - **Design:** use os tokens de `docs/06-design-system.md`; nenhuma cor ou fonte solta. Respeite acessibilidade (contraste, alvos ≥ 44/48, fontes dinâmicas).
 - **Privacidade:** **não coletar CPF nem data de nascimento.** Visibilidade de dados por papel conforme RN-014. Nada de dados pessoais em logs.

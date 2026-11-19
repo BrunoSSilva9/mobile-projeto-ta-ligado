@@ -6,6 +6,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## [Não lançado]
 
+### Adicionado (planejamento da Fase 1)
+- `docs/16-plano-fase-1.md`: plano detalhado em 13 PRs (fatia vertical primeiro), com tarefas, arquivos, testes, critérios de aceite, cronograma, roteiro de demonstração e riscos. Decisões propostas S-33 a S-41 (a confirmar).
+- `.vite/` no `.gitignore`.
+
 ### Adicionado (Fase 0: setup inicial, branch `feature/setup-inicial`)
 - Monorepo com npm workspaces (`apps/api`, `apps/painel`, `apps/mobile`), `docker-compose.yml` (PostgreSQL 17), Prettier e `.env.example` por aplicação (inclui `GOOGLE_MAPS_API_KEY` e as variáveis de FCM/APNs, **sem valor**).
 - **API:** Express 5, `GET /health`, tratamento de erros no formato do `docs/10-api.md`, validação de ambiente com Zod, servidor Socket.IO (infraestrutura), testes com Vitest e Supertest.
