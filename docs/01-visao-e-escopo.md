@@ -88,7 +88,7 @@ Avaliadores da disciplina também são usuários diretos da demonstração.
 
 ### 8.1 Decisões (lista de rastreabilidade)
 
-Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 foram aprovadas** pela equipe em 2026-11-18 e são tratadas como decisões firmes. **S-22 a S-41 são decisões adicionais** tomadas durante a documentação para manter o escopo simples e **aguardam confirmação**.
+Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 foram aprovadas** pela equipe em 2026-11-18 e são tratadas como decisões firmes. **S-22 a S-43 são decisões adicionais** tomadas durante a documentação para manter o escopo simples e **aguardam confirmação**.
 
 | ID | Decisão |
 |---|---|
@@ -124,15 +124,17 @@ Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 fora
 | S-30 | O e-mail do autor é visível ao operador apenas quando necessário ([11](11-seguranca-e-lgpd.md)). *(a confirmar)* |
 | S-31 | Portabilidade de dados atendida sob solicitação, por exportação em JSON feita pela equipe. *(a confirmar)* |
 | S-32 | Tipos compartilhados ficam duplicados de forma controlada; um pacote `packages/shared` só se necessário ([ADR-0003](adr/0003-monorepo-com-tres-aplicacoes.md)). *(a confirmar)* |
-| S-33 | `POST /denuncias` aceita JSON na Fase 1; o `multipart` (fotos) entra com B-031 ([16](16-plano-fase-1.md)). *(a confirmar)* |
+| S-33 | `POST /denuncias` aceita JSON na Fase 1; o `multipart` (fotos) entra com B-031 ([16](16-plano-fase-1.md)). *(confirmada em 2026-11-19: fotos só na Fase 2)* |
 | S-34 | O protocolo vem de uma tabela `ProtocoloSequencia(ano, ultimo)` com incremento atômico. *(a confirmar)* |
 | S-35 | JWT com `jsonwebtoken`; validade por papel: cidadão 7 dias, operador 8 horas. *(a confirmar)* |
 | S-36 | Testes de integração usam o banco separado `taligado_test`. *(a confirmar)* |
 | S-37 | T-08 mínimo (dados, Minhas denúncias, Sair) entra na Fase 1; RF-004 passa a B-016. *(a confirmar)* |
-| S-38 | O formulário T-05 da Fase 1 não tem fotos, pessoas afetadas nem necessidade especial. *(a confirmar)* |
+| S-38 | O formulário T-05 da Fase 1 não tem fotos, pessoas afetadas nem necessidade especial. *(confirmada em 2026-11-19: fotos só na Fase 2)* |
 | S-39 | O `PATCH` de status do painel já aceita `previsaoReparo`. *(a confirmar)* |
 | S-40 | As regras de `domain/` recebem dados simples (sem Prisma); o *service* faz a consulta. *(a confirmar)* |
 | S-41 | Rotas do app reorganizadas em `(auth)` e `(app)/(tabs)` com `Stack.Protected` (API a conferir no SDK 58). *(a confirmar)* |
+| S-42 | A Fase 1 inteira é feita em **uma branch (`feature/fase-1`) e um PR**, por Bruno, sem prazos fixos ([16](16-plano-fase-1.md)). *(definida em 2026-11-19)* |
+| S-43 | Banco de desenvolvimento e de testes em PostgreSQL local (Docker); um PostgreSQL hospedado gratuito é opcional e só para demonstração. *(definida em 2026-11-19)* |
 
 ### 8.1.1 Decisões de contraste, toque e prioridade de tokens (2026-11-18)
 

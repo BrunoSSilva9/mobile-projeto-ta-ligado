@@ -7,7 +7,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 ## [Não lançado]
 
 ### Adicionado (planejamento da Fase 1)
-- `docs/16-plano-fase-1.md`: plano detalhado em 13 PRs (fatia vertical primeiro), com tarefas, arquivos, testes, critérios de aceite, cronograma, roteiro de demonstração e riscos. Decisões propostas S-33 a S-41 (a confirmar).
+- `docs/16-plano-fase-1.md`: plano detalhado em 13 passos (fatia vertical primeiro) numa única branch e num único PR, sem prazos fixos, com tarefas, arquivos, testes, critérios de aceite, marcos, roteiro de demonstração, riscos e opções de banco hospedado gratuito. Decisões S-33 a S-43.
 - `.vite/` no `.gitignore`.
 
 ### Adicionado (Fase 0: setup inicial, branch `feature/setup-inicial`)
