@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ReportFab } from '@/components/ReportFab';
@@ -9,8 +10,8 @@ type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 function tabIcon(active: IconName, inactive: IconName) {
   // eslint-disable-next-line react/display-name
-  return ({ color, focused }: { color: string; focused: boolean }) => (
-    <Ionicons name={focused ? active : inactive} size={22} color={color} />
+  return ({ color, focused }: { color: ColorValue; focused: boolean }) => (
+    <Ionicons name={focused ? active : inactive} size={22} color={color as string} />
   );
 }
 

@@ -37,7 +37,9 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bgPage } }}>
+      <Stack
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bgPage } }}
+      >
         <Stack.Screen name="(tabs)" />
         {/* T-05 Registrar Denúncia, aberta pelo botão central da barra inferior */}
         <Stack.Screen name="denunciar" options={{ presentation: 'modal' }} />
