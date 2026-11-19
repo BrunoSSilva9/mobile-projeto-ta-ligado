@@ -1,20 +1,15 @@
-import { createServer } from 'node:http';
-
-import { createApp } from './app';
 import { loadEnvFromFile } from './config/env';
 import { checkDatabase, disconnectPrisma, getPrisma } from './db/prisma';
-import { createSocketServer } from './realtime/socket';
+import { criarServidor } from './servidor';
 
 const env = loadEnvFromFile();
 
-const app = createApp({
-  corsOrigins: env.CORS_ORIGINS,
-  checkDb: checkDatabase,
+const { httpServer, io } = criarServidor({
   prisma: getPrisma(),
   segredoJwt: env.JWT_SECRET,
+  corsOrigins: env.CORS_ORIGINS,
+  checkDb: checkDatabase,
 });
-const httpServer = createServer(app);
-const io = createSocketServer(httpServer, env.CORS_ORIGINS);
 
 httpServer.listen(env.PORT, () => {
   console.log(`API do Tá Ligado? em http://localhost:${env.PORT} (health: /health)`);

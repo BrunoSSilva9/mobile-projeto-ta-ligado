@@ -362,7 +362,10 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
       const denunciaCriada = vi.fn(async (_evento: DenunciaCriadaEvento) => {
         if (falhar) throw new Error('socket indisponível');
       });
-      return { denunciaCriada, app: criarAppDeTeste({}, { publicador: { denunciaCriada } }) };
+      return {
+        denunciaCriada,
+        app: criarAppDeTeste({}, { publicador: { denunciaCriada, statusAtualizado: vi.fn() } }),
+      };
     }
 
     it('publica `denuncia:criada` com os dados do painel, só depois de gravar', async () => {
