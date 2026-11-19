@@ -46,6 +46,8 @@ npm run dev:painel   # http://localhost:5173
 npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 ```
 
+**Conta Expo (obrigatória):** o Expo Go exige que o Expo CLI do computador e o app Expo Go do celular estejam **logados na mesma conta Expo** (gratuita, em <https://expo.dev/signup>). No computador rode `npx expo login` (confira com `npx expo whoami`) e entre com a mesma conta no Expo Go. Sem isso, o celular mostra "You need to be signed in to Expo Go and Expo CLI". O celular e o computador também precisam estar na mesma rede; em redes que isolam aparelhos (como o Wi-Fi da universidade), use `npx expo start --tunnel` em `apps/mobile`.
+
 **Operador de teste (somente desenvolvimento):** `operador@taligado.local` / `operador-dev-123` (definido em `apps/api/.env`).
 
 **Verificações:** `npm run lint`, `npm run typecheck` e `npm test` na raiz rodam todos os apps. Para a cobertura da API: `npm run test:coverage -w apps/api`.
