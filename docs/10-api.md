@@ -2,7 +2,7 @@
 
 Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastro/login, registrar denúncia, listar ocorrências e mapa, detalhe, minhas denúncias, cancelar, listar denúncias no painel e atualizar status, além dos **eventos WebSocket**.
 
-- **Base:** `/api/v1` · **Formato:** JSON (`multipart/form-data` no envio de fotos) · **Datas:** ISO 8601 em UTC.
+- **Base:** `/api/v1` · **Formato:** JSON (`multipart/form-data` só quando as fotos entrarem, na Fase 2) · **Datas:** ISO 8601 em UTC.
 - **Autenticação:** `Authorization: Bearer <JWT>` em todas as rotas, exceto `register` e `login` ([ADR-0004](adr/0004-autenticacao-jwt-com-rbac.md)).
 - **Papéis:** `CIDADAO` (app) e `OPERADOR` (painel). Rotas `/painel/*` exigem `OPERADOR`.
 - **Regras:** referências `RN-xxx` em [regras-de-negocio.md](02-requisitos/regras-de-negocio.md).
@@ -14,7 +14,8 @@ Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastr
   "erro": {
     "codigo": "DENUNCIA_EM_ABERTO",
     "mensagem": "Você já tem uma denúncia em aberto.",
-    "detalhes": [{ "campo": "tipo", "mensagem": "Obrigatório" }]
+    "detalhes": [{ "campo": "tipo", "mensagem": "Obrigatório" }],
+    "dados": { "denunciaEmAbertoId": "uuid" }
   }
 }
 ```
@@ -26,7 +27,7 @@ Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastr
 | 403 | `SEM_PERMISSAO` | Papel insuficiente ou recurso de outro usuário (RN-014) |
 | 404 | `NAO_ENCONTRADO` | Recurso inexistente |
 | 409 | `EMAIL_JA_CADASTRADO` | E-mail repetido (RN-022) |
-| 409 | `DENUNCIA_EM_ABERTO` | Já existe denúncia em aberto do autor (RN-006) |
+| 409 | `DENUNCIA_EM_ABERTO` | Já existe denúncia em aberto do autor (RN-006). O corpo traz `erro.dados.denunciaEmAbertoId` para o app abrir essa denúncia |
 | 413 / 415 | `ARQUIVO_INVALIDO` | Foto > 5 MB ou tipo diferente de JPEG/PNG (RN-013) |
 | 422 | `TRANSICAO_INVALIDA` | Mudança de status não permitida (RN-004, RN-005) |
 | 422 | `JUSTIFICATIVA_OBRIGATORIA` | Improcedente sem justificativa (RN-010) |
@@ -81,7 +82,7 @@ Erros: 401 `CREDENCIAIS_INVALIDAS`, 429. O cliente recusa o papel que não for o
 | Método | Rota | Auth | Descrição | Requisito |
 |---|---|---|---|---|
 | GET | `/bairros` | Qualquer | Lista fixa de bairros e folhas | RN-021 |
-| GET | `/bairros/proximo?lat=&lng=` | Cidadão | Bairro de centro mais próximo (até 15 km) | RF-016, RN-025 |
+| GET | `/bairros/proximo?lat=&lng=` | Cidadão | Bairro de centro mais próximo (até 15 km); devolve também `distanciaKm`; 404 fora do raio | RF-016, RN-025 |
 | GET | `/bairros/status` | Cidadão | Status de cada bairro, contagem e previsão | RF-019, RF-023 |
 | GET | `/indicadores` | Cidadão | Indicadores dos últimos 30 dias | RF-018 |
 
@@ -112,7 +113,7 @@ Erros: 401 `CREDENCIAIS_INVALIDAS`, 429. O cliente recusa o papel que não for o
 | POST | `/denuncias/{id}/cancelar` | Cidadão (autor) | Cancela se `RECEBIDA` | RF-015 |
 | GET | `/denuncias/{id}/fotos/{fotoId}` | Autor ou Operador | Baixa a foto (rota autenticada) | RN-014, RNF-015 |
 
-**`POST /denuncias`** (`multipart/form-data`: campos de texto + até 3 arquivos `fotos`)
+**`POST /denuncias`** (JSON na Fase 1, decisão S-33; o `multipart/form-data` com até 3 arquivos `fotos` entra com B-031)
 ```
 tipo=SEM_ENERGIA               (obrigatório: SEM_ENERGIA | OSCILACAO)
 bairroId=3                     (obrigatório)

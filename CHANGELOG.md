@@ -12,6 +12,12 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - **Passo 2 – autenticação da API:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` e `GET /api/v1/me`; JWT (HS256) com validade de 7 dias para o cidadão e 8 horas para o operador; senhas com bcrypt; middlewares `autenticar` (confirma o usuário no banco) e `exigirPapel` (RBAC); validação com Zod em português; limite de 100 requisições/min por IP e de 5 logins com falha/min por IP e e-mail. O cadastro público só cria cidadão, grava o consentimento e não coleta CPF nem data de nascimento.
 - **Testes de integração com banco separado (`taligado_test`):** criado e migrado automaticamente pelo `globalSetup`, com trava que recusa qualquer banco cujo nome não termine em `_test`. 68 testes novos (cadastro, login, `/me`, limites de tentativas, RBAC e token).
 
+- **Passo 3 – denúncias e bairros na API:** `POST /api/v1/denuncias`, `GET /api/v1/denuncias/minhas`, `GET /api/v1/denuncias/:id`, `GET /api/v1/bairros` e `GET /api/v1/bairros/proximo`.
+  - O registro roda numa transação: confere o bairro e o limite de **uma denúncia em aberto** (RN-006), gera o protocolo `TL-AAAA-NNNNNN` com sequência atômica por ano (nova tabela `ProtocoloSequencia`, migration `protocolo_sequencia`), cria a denúncia `RECEBIDA` e o primeiro registro do histórico. A corrida entre duas requisições do mesmo autor é barrada pelo índice único parcial do banco (409 `DENUNCIA_EM_ABERTO`, com o id da denúncia em aberto em `erro.dados`), e a tentativa que falha não consome número de protocolo.
+  - O detalhe só é do autor (outro usuário e id inexistente respondem igual, 404). O histórico mostra "Você" e "Equatorial Pará", sem o nome do operador.
+  - Esqueleto do `Publicador` de eventos em tempo real, chamado depois do commit (o Passo 4 liga o Socket.IO); uma falha ao publicar não desfaz a denúncia.
+  - 75 testes de integração novos. Um teste de mutação (remover o índice do banco) confirmou que o teste de corrida realmente falha sem a proteção.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 
