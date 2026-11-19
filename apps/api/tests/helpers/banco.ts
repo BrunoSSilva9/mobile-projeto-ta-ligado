@@ -4,6 +4,7 @@ import type { Express } from 'express';
 import request from 'supertest';
 
 import { createApp } from '../../src/app';
+import type { StatusDenuncia } from '../../src/domain';
 import type { Publicador } from '../../src/realtime/publicador';
 import type { LimitesDeTaxa } from '../../src/shared/rate-limit';
 
@@ -100,4 +101,42 @@ export async function criarOperador(dados: { email?: string; senha?: string; nom
     },
   });
   return { usuario, email, senha };
+}
+
+let sequenciaDeDenuncias = 0;
+
+/**
+ * Cria uma denúncia direto no banco, sem passar pela API (nem pelo limite de uma em aberto):
+ * útil para montar listas com status, datas e prioridades específicos. Sem autor por padrão.
+ */
+export async function criarDenunciaNoBanco(dados: {
+  bairroId: number;
+  autorId?: string | null;
+  tipo?: 'SEM_ENERGIA' | 'OSCILACAO';
+  status?: StatusDenuncia;
+  necessidadeEspecial?: boolean;
+  criadoEm?: Date;
+  logradouro?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}) {
+  sequenciaDeDenuncias += 1;
+  const status = dados.status ?? 'RECEBIDA';
+  const prioritaria = dados.necessidadeEspecial ?? false;
+  return prisma.denuncia.create({
+    data: {
+      protocolo: `TL-2020-${String(sequenciaDeDenuncias).padStart(6, '0')}`,
+      autorId: dados.autorId ?? null,
+      bairroId: dados.bairroId,
+      tipo: dados.tipo ?? 'SEM_ENERGIA',
+      status,
+      logradouro: dados.logradouro ?? `Rua ${sequenciaDeDenuncias}`,
+      latitude: dados.latitude ?? undefined,
+      longitude: dados.longitude ?? undefined,
+      necessidadeEspecial: prioritaria,
+      detalheNecessidade: prioritaria ? 'Detalhe da situação prioritária' : undefined,
+      justificativa: status === 'IMPROCEDENTE' ? 'Sem interrupção confirmada.' : undefined,
+      criadoEm: dados.criadoEm,
+    },
+  });
 }

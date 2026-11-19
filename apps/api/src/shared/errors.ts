@@ -39,6 +39,13 @@ export const erros = {
       undefined,
       denunciaId ? { denunciaEmAbertoId: denunciaId } : undefined,
     ),
+  /** RN-004: mudança de status não permitida (inclui conflito: o status mudou enquanto o operador decidia). */
+  transicaoInvalida: (mensagem: string) => new AppError(422, 'TRANSICAO_INVALIDA', mensagem),
+  /** RN-010: improcedência sem justificativa válida. */
+  justificativaObrigatoria: (mensagem: string) =>
+    new AppError(422, 'JUSTIFICATIVA_OBRIGATORIA', mensagem),
+  /** RN-009: a previsão de reparo precisa ser futura. */
+  previsaoNoPassado: (mensagem: string) => new AppError(422, 'PREVISAO_NO_PASSADO', mensagem),
   muitasRequisicoes: () =>
     new AppError(
       429,

@@ -6,6 +6,8 @@ import { criarServicoAuth } from './modules/auth/service';
 import { criarRotasBairros } from './modules/bairros/routes';
 import { criarRotasDenuncias } from './modules/denuncias/routes';
 import { criarServicoDenuncias } from './modules/denuncias/service';
+import { criarRotasPainel } from './modules/painel/routes';
+import { criarServicoPainel } from './modules/painel/service';
 import { publicadorNulo, type Publicador } from './realtime/publicador';
 import { criarAutenticacao } from './shared/auth';
 import { limitadorGeral, LIMITES_PADRAO, type LimitesDeTaxa } from './shared/rate-limit';
@@ -48,6 +50,13 @@ export function criarRotas({
   router.use(
     criarRotasDenuncias({
       servico: criarServicoDenuncias({ prisma, publicador, relogio }),
+      autenticacao,
+    }),
+  );
+
+  router.use(
+    criarRotasPainel({
+      servico: criarServicoPainel({ prisma, publicador, relogio }),
       autenticacao,
     }),
   );
