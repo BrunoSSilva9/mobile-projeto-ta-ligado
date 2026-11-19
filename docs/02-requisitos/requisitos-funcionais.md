@@ -78,7 +78,7 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 - **Critérios de aceitação:** após sair, o app volta ao login e as telas protegidas não ficam acessíveis.
 
 ### RF-005 – Visualizar e editar perfil
-- **Descrição:** o Perfil mostra nome, e-mail e telefone, com opção de editar nome e telefone (e-mail somente leitura no MVP, **[SUPOSIÇÃO]**).
+- **Descrição:** o Perfil mostra nome, e-mail e telefone, com opção de editar nome e telefone (e-mail somente leitura no MVP, decisão S-22).
 - **Prioridade:** Should · **Tela:** T-08.
 - **Critérios de aceitação:** alterações válidas são salvas e refletidas na tela; telefone inválido exibe erro.
 
@@ -105,7 +105,7 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 - **Critérios de aceitação:**
   - Com permissão concedida, o mini-mapa mostra o pino e o selo "GPS Ativo", e os campos são preenchidos.
   - Com permissão negada, o selo indica "GPS desativado", as coordenadas ficam vazias e o bairro é escolhido em uma lista.
-  - Editar o endereço mantém as coordenadas originais do GPS, salvo se o usuário mover o pino **[SUPOSIÇÃO]**.
+  - Editar o endereço mantém as coordenadas originais do GPS, salvo se o usuário mover o pino (decisão S-23).
 
 ### RF-009 – Anexar fotos
 - **Descrição:** anexo **opcional** de até 3 fotos (JPEG/PNG) de até 5 MB cada, com opção de remover e substituir. Vídeo não é aceito. Texto de apoio: "Se puder, anexe fotos". Regra: RN-013.

@@ -1,6 +1,6 @@
 # 14 – Roadmap e backlog
 
-Priorização por **MoSCoW** e por dependência técnica. O prazo da disciplina não foi informado, por isso o roadmap é organizado por **fases**, não por datas (PEN). Esforço: **P** (≤ 1 dia), **M** (2 a 3 dias), **G** (≥ 4 dias), estimativa inicial.
+Priorização por **MoSCoW** e por dependência técnica. O prazo informado é de **uma semana**, contada a partir de **2026-11-18** (entrega por volta de 2026-11-25). As fases foram distribuídas em **dias** na seção [Cronograma](#cronograma-de-uma-semana); as datas são **referência**, e a equipe avança por prioridade, sem se prender a elas. Esforço: **P** (≤ 1 dia), **M** (2 a 3 dias), **G** (≥ 4 dias), estimativa inicial.
 
 ## Roadmap
 
@@ -13,9 +13,26 @@ flowchart LR
 |---|---|---|
 | **0 – Fundação** | Monorepo, ambiente, CI, banco, tema | `docker compose up` + apps abrindo, CI verde |
 | **1 – MVP (Must)** | Ciclo completo cidadão → operadora → cidadão | Demonstração: cadastra, denuncia, painel recebe em tempo real, operador atualiza, app reflete |
-| **2 – MVP+ (Should)** | Completar experiência e conformidade | Push, fotos, perfil/exclusão de conta, painel comunitário, previsão, lote, prioridade |
+| **2 – MVP+ (Should)** | Completar experiência e conformidade | Fotos, perfil/exclusão de conta, painel comunitário, previsão, lote, prioridade e, **por último, o push** |
 | **3 – Polimento (Could)** | Refinos | Busca, mapa em tela cheia, alterar endereço, E2E |
 | **Futuro** | Evolução | Itens da seção "Fora do MVP" |
+
+## Cronograma de uma semana
+
+Os últimos dias ficam reservados a **testes, ajustes e preparação da apresentação**. A ordem de desenvolvimento segue a decisão D-03: tudo o que é **Must** roda no **Expo Go** (tempo real por WebSocket); o **push** (Should) e o *development build* ficam **por último**.
+
+| Dia | Data (ref.) | Foco | Itens do backlog |
+|---|---|---|---|
+| 1 | 18/11 (qua) | **Fase 0:** monorepo, banco, esqueletos, tema, lint e CI | B-001 a B-006 |
+| 2 | 19/11 (qui) | **Fase 1, backend:** domínio com testes, auth, denúncias, Socket.IO | B-010, B-011, B-013, B-014, B-017, B-019 |
+| 3 | 20/11 (sex) | **Fase 1, app e painel (base):** cadastro/login, Registrar Denúncia, sucesso; login do painel e lista | B-012, B-015, B-016, B-020 |
+| 4 | 21/11 (sáb) | **Fase 1, fechamento do Must:** Home, Ocorrências, detalhe, alerta em tempo real e atualização de status no painel | B-018, B-021, B-022, B-023 |
+| 5 | 22/11 (dom) | **Fase 2 (Should, sem push):** fotos, pessoas/necessidade especial, prioridade, previsão, lote, cancelar, perfil e exclusão de conta, indicadores, acessibilidade | B-031 a B-039 |
+| 6 | 23/11 (seg) | **Testes e ajustes:** integração da API, correções; *Could* (B-040 a B-042) só se sobrar tempo; **push por último** (B-030, com *development build*) se houver tempo | B-024, B-030, B-040 a B-044 |
+| 7 | 24/11 (ter) | **Congelar o escopo:** testes finais, correções, README com roteiro de demonstração, ensaio e preparação da apresentação | B-025 |
+| — | 25/11 (qua) | Entrega / apresentação | — |
+
+> **Risco declarado:** a soma das estimativas das Fases 1 e 2 é maior que sete dias de uma única pessoa. Com **três integrantes** em paralelo (API, app, painel) é viável, mas, se o prazo apertar, corta-se nesta ordem: B-044, B-043, B-040 a B-042, B-030 (push), B-035 (lote), B-038 (indicadores). O **Must** não é cortado.
 
 ## Backlog priorizado
 
@@ -55,7 +72,7 @@ flowchart LR
 
 | ID | Item | Esforço | Requisitos |
 |---|---|---|---|
-| B-030 | Push: registro de token, envio com `expo-server-sdk`, abrir detalhe pelo toque; *development build* | G | RF-025, RN-019 |
+| B-030 | **Push (último item a ser feito):** registro de token, envio com `expo-server-sdk`, abrir detalhe pelo toque; exige *development build* (D-03) | G | RF-025, RN-019 |
 | B-031 | Anexar até 3 fotos (upload, rota autenticada, miniaturas) | M | RF-009, RN-013, RNF-015 |
 | B-032 | Pessoas afetadas e necessidade especial (consentimento específico) | P | RF-010, RN-015 |
 | B-033 | Prioridade no painel (destaque e ordenação) | P | RF-035 |
@@ -115,7 +132,7 @@ flowchart LR
 
 | Risco | Mitigação |
 |---|---|
-| Push exige *development build* e credenciais (PEN-04) | Push é Should; o Must funciona só com WebSocket |
-| Mapas no Android exigem chave do Google (PEN-04) | Usar Expo Go na demonstração; plano B com tiles OSM (`UrlTile`) |
+| Push exige *development build* e credenciais (PEN-04) | Decisão D-03: dev no Expo Go; push é o **último** item e só entra se sobrar tempo; o Must funciona só com WebSocket |
+| Mapas no Android exigem chave do Google em *builds* próprios (PEN-04) | Expo Go não precisa de chave; plano B com tiles OSM (`UrlTile`). Painel usa Leaflet + OSM (sem chave) |
 | Três aplicações em um prazo curto | Fase 1 mínima; telas do painel simples; reuso dos tokens |
 | Telas ausentes no Figma (PEN-06) | Descrições em [05](05-telas-e-fluxos.md#telas-a-criar-no-protótipo) como guia |

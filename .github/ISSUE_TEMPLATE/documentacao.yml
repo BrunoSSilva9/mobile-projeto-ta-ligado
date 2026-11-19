@@ -22,4 +22,4 @@ body:
       label: Consistência
       options:
         - label: Verifiquei se os IDs (RF, RNF, RN, US, UC, B) continuam consistentes entre os documentos
-        - label: Marquei suposições como **[SUPOSIÇÃO]** e atualizei a lista em `docs/01-visao-e-escopo.md`
+        - label: Registrei novas decisões como `S-xx` em `docs/01-visao-e-escopo.md`

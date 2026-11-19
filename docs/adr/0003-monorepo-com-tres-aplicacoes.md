@@ -23,7 +23,7 @@ docs/
 
 - Cada app tem seu `package.json`, scripts (`dev`, `lint`, `test`, `build`) e `tsconfig`.
 - O CI roda lint e testes por *workspace*.
-- Tipos e constantes compartilhados (enums de status e tipo, nomes de eventos) ficam inicialmente **duplicados de forma controlada** e podem ser extraídos para um pacote `packages/shared` depois **[SUPOSIÇÃO]**; isso evita configurar o Metro para pacotes locais no MVP.
+- Tipos e constantes compartilhados (enums de status e tipo, nomes de eventos) ficam inicialmente **duplicados de forma controlada** e podem ser extraídos para um pacote `packages/shared` depois (decisão S-32); isso evita configurar o Metro para pacotes locais no MVP.
 
 ## Consequências
 

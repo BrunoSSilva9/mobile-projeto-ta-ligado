@@ -65,7 +65,7 @@ flowchart TD
   PUSH((Push)) -->|tocar| T07
 ```
 
-> O botão de detalhe da lista pública de T-04 abre apenas um **resumo anonimizado** (modal), e não T-07, que é exclusivo do autor **[SUPOSIÇÃO]**.
+> O botão de detalhe da lista pública de T-04 abre apenas um **resumo anonimizado** (modal), e não T-07, que é exclusivo do autor (decisão S-24).
 
 ### Painel da operadora
 
@@ -98,7 +98,7 @@ flowchart LR
 | Botões | "CADASTRAR →" (primário) |
 | Rodapé do cartão | "Já tem uma conta? Faça login aqui" (alterna para T-02) e aviso de privacidade |
 | Cards informativos | "Marabá Integrada" e "Status Imediato" |
-| Rodapé | "© 2025 ACGM" e iniciativa (PEN-01) |
+| Rodapé | "© 2026 Equipe Tá Ligado?" e a iniciativa (a sigla "ACGM" do Figma foi substituída, PEN-01) |
 
 - **Dados coletados:** nome, e-mail, senha, telefone (opcional), consentimento. **Vêm do usuário.**
 - **Ações:** Cadastrar → T-03. Alternar → T-02. Termos/Política → texto.
@@ -159,7 +159,7 @@ flowchart LR
 | Aviso de responsabilidade | Cartão recolhível com 3 orientações |
 | Formulário (cartão verde) | "Descrição da Denúncia" (**remover "Passo 1 de 1"**) |
 | **Tipo** (novo) | Seletor obrigatório: "Sem energia" / "Oscilação" |
-| Endereço | Logradouro, Bairro, CEP (opcional **[SUPOSIÇÃO]**), Ponto de referência |
+| Endereço | Logradouro, Bairro, CEP (opcional, decisão S-25), Ponto de referência |
 | Descrição | "Descreva o que aconteceu" (opcional, até 500 caracteres) |
 | Registro visual | Cartão do anexo com miniatura, nome, tamanho, botões excluir e substituir; "Adicionar mais fotos" (até 3; vídeo removido) |
 | Pessoas afetadas | Chips: 1 a 3, 4 a 8, 9 a 20, Rua Toda |

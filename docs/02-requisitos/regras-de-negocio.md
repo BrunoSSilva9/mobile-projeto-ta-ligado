@@ -1,6 +1,6 @@
 # Regras de negócio
 
-Tudo o que for **[SUPOSIÇÃO]** está listado em [01 – seção 8](../01-visao-e-escopo.md#8-suposições-e-pendências).
+As decisões numeradas (`S-xx`) estão listadas em [01 – seção 8](../01-visao-e-escopo.md#8-decisões-e-pendências).
 
 ## Resumo
 
@@ -43,7 +43,7 @@ Toda denúncia tem um tipo obrigatório: `SEM_ENERGIA` ("Sem energia") ou `OSCIL
 ### RN-003 – Status da denúncia e "em aberto"
 Status possíveis: `RECEBIDA`, `EM_ATENDIMENTO`, `RESOLVIDA`, `IMPROCEDENTE` (definidos pela operadora) e `CANCELADA` (definido pelo cidadão). Uma denúncia está **em aberto** quando o status é `RECEBIDA` ou `EM_ATENDIMENTO`. Os demais são **finais**.
 
-### RN-004 – Transições de status permitidas **[SUPOSIÇÃO: S-01]**
+### RN-004 – Transições de status permitidas (decisão S-01)
 
 | De | Para | Quem |
 |---|---|---|
@@ -83,12 +83,12 @@ O status do bairro considera apenas denúncias **em aberto** (`RECEBIDA` ou `EM_
 
 O status é **calculado**, não armazenado.
 
-**Chip "Restabelecidos" da lista pública (T-04) [SUPOSIÇÃO: S-21]:** ocorrências que passaram a `RESOLVIDA` nas **últimas 24 horas**. "Sem luz" e "Oscilação" listam as ocorrências em aberto do respectivo tipo; "Todos" é a soma dos três chips.
+**Chip "Restabelecidos" da lista pública (T-04) (decisão S-21):** ocorrências que passaram a `RESOLVIDA` nas **últimas 24 horas**. "Sem luz" e "Oscilação" listam as ocorrências em aberto do respectivo tipo; "Todos" é a soma dos três chips.
 
-### RN-008 – Estabilidade da rede na Home **[SUPOSIÇÃO: S-02]**
+### RN-008 – Estabilidade da rede na Home (decisão S-02)
 "Rede Estável" quando o status do bairro do usuário é Normal; "Instável" quando é Sem luz ou Oscilação.
 
-### RN-009 – Previsão de reparo **[SUPOSIÇÃO: S-03]**
+### RN-009 – Previsão de reparo (decisão S-03)
 É um campo **opcional**, informado pelo operador na denúncia, e deve ser uma data/hora futura no momento do cadastro. Na tela de ocorrências, a previsão do bairro é a **menor previsão futura** entre suas denúncias em aberto; se não houver, o campo não aparece.
 
 ### RN-010 – Justificativa de improcedência
@@ -97,7 +97,7 @@ Marcar como `IMPROCEDENTE` exige justificativa (texto de 10 a 500 caracteres), e
 ### RN-011 – Histórico de status (auditoria)
 Toda mudança de status (inclusive a criação, com `statusAnterior` nulo) gera um registro com: denúncia, status anterior, status novo, quem alterou (usuário e papel), justificativa (se houver) e data/hora. O registro é imutável e gravado na mesma transação da mudança (RNF-010).
 
-### RN-012 – Localização e bairro **[SUPOSIÇÃO: S-04]**
+### RN-012 – Localização e bairro (decisão S-04)
 - O GPS preenche logradouro e coordenadas; o usuário pode editar.
 - O **bairro é obrigatório**, vindo da lista fixa (RN-021).
 - Com o GPS negado, o envio continua com logradouro e bairro digitados/escolhidos; coordenadas ficam vazias.
@@ -105,7 +105,7 @@ Toda mudança de status (inclusive a criação, com `statusAnterior` nulo) gera 
 - Denúncia sem coordenadas aparece na lista, mas não no mapa por pino (o círculo do bairro continua refletindo-a).
 
 ### RN-013 – Anexos
-Opcional; até **3 fotos** por denúncia, **5 MB** cada, tipos JPEG e PNG **[SUPOSIÇÃO: S-09]**. Vídeo não é aceito no MVP.
+Opcional; até **3 fotos** por denúncia, **5 MB** cada, tipos JPEG e PNG (decisão S-09). Vídeo não é aceito no MVP.
 
 ### RN-014 – Visibilidade dos dados
 
@@ -115,7 +115,7 @@ Opcional; até **3 fotos** por denúncia, **5 MB** cada, tipos JPEG e PNG **[SUP
 | Protocolo, histórico, previsão, justificativa | ✔ | ✘ (só previsão do bairro, RN-009) | ✔ |
 | Fotos | ✔ | ✘ | ✔ |
 | Nome e telefone do autor | ✔ | ✘ | ✔ |
-| Coordenadas exatas | ✔ | ✘ (só pinos aproximados **[SUPOSIÇÃO]**) | ✔ |
+| Coordenadas exatas | ✔ | ✘ (só pinos aproximados, S-28) | ✔ |
 | Pessoas no local, necessidade especial e detalhe | ✔ | ✘ | ✔ |
 
 A lista pública usa uma projeção **anonimizada** (sem identificadores do autor). Os pinos públicos usam coordenadas arredondadas (3 casas decimais, ~110 m).
@@ -123,7 +123,7 @@ A lista pública usa uma projeção **anonimizada** (sem identificadores do auto
 ### RN-015 – Prioridade por necessidade especial
 Denúncias com `necessidadeEspecial = true` são **prioritárias**: destaque visual no painel e ordenação no topo (antes das demais, e dentro do grupo da mais antiga para a mais recente). Quando marcado "Sim", o detalhe da situação é obrigatório.
 
-### RN-016 – Agrupamento e resolução em lote **[SUPOSIÇÃO: S-01]**
+### RN-016 – Agrupamento e resolução em lote (decisão S-01)
 O painel agrupa denúncias por bairro. O operador pode "Resolver todas do bairro": todas as denúncias **em aberto** daquele bairro passam a `RESOLVIDA`. É a única regra que permite `RECEBIDA → RESOLVIDA` direto. Cada denúncia gera seu próprio histórico (RN-011) e evento em tempo real. A ação exige confirmação.
 
 ### RN-017 – Indicadores dos últimos 30 dias
@@ -135,7 +135,7 @@ O painel agrupa denúncias por bairro. O operador pode "Resolver todas do bairro
 ### RN-018 – Duplicidade de denúncias
 Não há deduplicação automática. A mitigação é o limite de RN-006 e o **agrupamento por bairro** no painel (RN-016), onde o operador identifica vários relatos do mesmo problema. Confirmação de denúncias por vizinhos está **fora do MVP**.
 
-### RN-019 – Notificações **[SUPOSIÇÃO: S-13]**
+### RN-019 – Notificações (decisão S-13)
 Toda mudança de status feita pelo **operador** gera evento em tempo real e, quando há token válido, push ao autor. O cancelamento feito pelo próprio autor não gera push. Push é prioridade Should; o WebSocket é Must. WhatsApp está fora do escopo.
 
 ### RN-020 – Consentimento
@@ -144,14 +144,14 @@ O cadastro exige aceite dos Termos de Uso e da Política de Privacidade, que inf
 ### RN-021 – Abrangência e bairros fixos
 O app atende **somente Marabá-PA**. Bairros e folhas vêm de uma lista fixa (*seed*) com coordenadas do centro, e não são criados por usuários.
 
-### RN-022 – Validação do cadastro **[SUPOSIÇÃO: S-12]**
+### RN-022 – Validação do cadastro (decisão S-12)
 Nome (2 a 100 caracteres), e-mail válido e único (sem diferenciar maiúsculas), senha com no mínimo 8 caracteres e igual à confirmação, telefone opcional no padrão brasileiro com DDD (ex.: `(94) 90000-0000`). **CPF e data de nascimento não são coletados.**
 
-### RN-023 – Protocolo **[SUPOSIÇÃO: S-06]**
+### RN-023 – Protocolo (decisão S-06)
 Cada denúncia recebe um protocolo único legível no formato `TL-AAAA-NNNNNN` (ano e sequência de 6 dígitos), gerado no servidor.
 
-### RN-024 – Exclusão de conta **[SUPOSIÇÃO: S-11]**
+### RN-024 – Exclusão de conta (decisão S-11)
 Ao excluir a conta, nome, e-mail, telefone, senha e tokens de push são removidos; as denúncias são mantidas **anonimizadas** (sem vínculo com o autor) e as fotos são apagadas. Denúncias em aberto são canceladas automaticamente antes da exclusão.
 
-### RN-025 – Bairro do usuário **[SUPOSIÇÃO: S-05]**
+### RN-025 – Bairro do usuário (decisão S-05)
 O bairro do usuário na Home é o de **centro mais próximo** das coordenadas do GPS (distância de Haversine), limitado a um raio máximo de 15 km; fora dele, o usuário escolhe o bairro manualmente. Sem GPS, usa-se o último bairro escolhido (guardado só no dispositivo).

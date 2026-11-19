@@ -153,6 +153,8 @@ apps/mobile/
 └── __tests__/
 ```
 
+> **Ajuste da Fase 0:** no Expo SDK 58 as rotas ficam em **`src/app/`** (e não em `app/` na raiz do app), junto de `src/components`, `src/theme` e `src/config`. A aba central é um marcador `src/app/(tabs)/fab.tsx` (o botão `ReportFab` abre o modal `src/app/denunciar.tsx`), porque uma rota `denunciar` dentro e fora do grupo `(tabs)` teria a mesma URL.
+
 ### Gerenciamento de estado
 
 | Tipo de estado | Ferramenta | Exemplos |

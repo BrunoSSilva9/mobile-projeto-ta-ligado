@@ -1,0 +1,52 @@
+/* Tokens do design system (docs/06-design-system.md).
+   Os tokens do código têm prioridade sobre o Figma (decisão D-01):
+   botão com texto branco usa --color-action (#006E2C); texto âmbar usa --color-flicker-text (#855300). */
+:root {
+  --color-brand-900: #16382b;
+  --color-brand-700: #466556;
+  --color-primary: #34a853; /* somente elementos sem texto */
+  --color-action: #006e2c; /* fundo de botões com texto branco, links */
+  --color-lime: #a3e635;
+  --color-mint: #89fa9b;
+
+  --color-bg-page: #f1fcf3;
+  --color-bg-card: #ebf7ed;
+  --color-bg-soft: #e5f1e7;
+  --color-bg-muted: #dae5dc;
+  --color-surface-tint: #c3e5d2;
+  --color-white: #ffffff;
+
+  --color-text-primary: #141e18;
+  --color-text-secondary: #3e4a3e;
+  --color-text-muted: #6e7a6d;
+  --color-text-on-dark: #e0ebe2;
+  --color-tagline: #64748b;
+
+  --color-no-power: #ba1a1a;
+  --color-no-power-bg: #ffdad6;
+  --color-no-power-text: #93000a;
+  --color-flicker: #ce8300; /* só pontos, ícones e bordas */
+  --color-flicker-bg: #ffddb8;
+  --color-flicker-text: #855300;
+  --color-restored: #34a853;
+
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-item: 8px;
+  --radius-card: 12px;
+  --radius-card-lg: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+  /* Alvo mínimo de interação (decisão D-02) */
+  --touch-min: 48px;
+}

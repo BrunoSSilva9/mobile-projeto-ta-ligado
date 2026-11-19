@@ -19,7 +19,7 @@ Organizados pelas características da **ISO/IEC 25010**. As métricas valem para
 | RNF-013 | Segurança | Transporte e armazenamento do token | HTTPS/TLS e WSS em produção; no app o token fica em `expo-secure-store`. |
 | RNF-014 | Segurança | Validação e abuso | Entradas validadas no servidor (schemas); rate limit conforme S-18; uploads limitados a tipo e tamanho (RN-013). |
 | RNF-015 | Segurança | Acesso às fotos | Fotos servidas apenas por rota autenticada ao autor e ao operador; nomes de arquivo aleatórios (não previsíveis). |
-| RNF-016 | Compatibilidade | Versões mínimas do app | Android 8.0 (API 26) e iOS 15.1 **[SUPOSIÇÃO: S-10]**; confirmar contra o Expo SDK adotado. |
+| RNF-016 | Compatibilidade | Versões mínimas do app | Android 8.0 (API 26) e iOS 15.1 (decisão S-10); confirmar contra o Expo SDK adotado. |
 | RNF-017 | Compatibilidade | Navegadores do painel | Últimas 2 versões estáveis de Chrome, Edge e Firefox, a partir de 1024 px de largura. |
 | RNF-018 | Compatibilidade | Telas do app | Layout correto de 360 a 430 dp de largura (base do protótipo: 390), em retrato; fontes dinâmicas até 200%. |
 | RNF-019 | Manutenibilidade | Qualidade de código | TypeScript em modo `strict`, ESLint e Prettier sem erros; CI executa lint e testes a cada PR. |

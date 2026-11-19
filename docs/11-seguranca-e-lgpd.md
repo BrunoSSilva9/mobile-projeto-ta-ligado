@@ -18,7 +18,7 @@ Princípio da **minimização**: **CPF e data de nascimento não são coletados.
 | Dado | Origem | Finalidade | Base legal | Quem acessa |
 |---|---|---|---|---|
 | Nome | Cadastro | Identificar o autor para a operadora e personalizar o app | Consentimento (art. 7º, I) | Autor; Operador |
-| E-mail | Cadastro | Login e contato | Consentimento; execução do serviço solicitado | Autor; Operador (apenas necessário) **[SUPOSIÇÃO]** |
+| E-mail | Cadastro | Login e contato | Consentimento; execução do serviço solicitado | Autor; Operador (S-30) |
 | Senha | Cadastro | Autenticação | Consentimento; segurança | Ninguém (guardada só como hash) |
 | Telefone (opcional) | Cadastro | Permitir que a operadora entre em contato | Consentimento | Autor; Operador |
 | **Geolocalização** (GPS) | Registro da denúncia | Localizar a ocorrência e sugerir endereço | Consentimento (permissão do sistema + aceite) | Autor; Operador (exata). Outros cidadãos veem só posição aproximada (3 casas decimais) |
@@ -41,7 +41,7 @@ Princípio da **minimização**: **CPF e data de nascimento não são coletados.
 - O consentimento pode ser **revogado**: excluir a conta (RF-006) e desativar permissões no sistema.
 - Alteração relevante dos termos ⇒ nova versão e novo aceite.
 
-## 4. Retenção e anonimização **[SUPOSIÇÃO: S-14]**
+## 4. Retenção e anonimização (decisão S-14)
 
 | Dado | Retenção | Ao fim |
 |---|---|---|
@@ -61,7 +61,7 @@ Para ambiente de demonstração, os dados são fictícios e podem ser apagados a
 | Confirmação e acesso | Tela Perfil mostra os dados; "Minhas denúncias" lista o que foi enviado |
 | Correção | Edição de nome e telefone no Perfil (RF-005) |
 | Eliminação | "Excluir conta" (RF-006, RN-024) |
-| Portabilidade | Fora do MVP; sob solicitação, exportação em JSON feita pela equipe **[SUPOSIÇÃO]** |
+| Portabilidade | Fora do MVP; sob solicitação, exportação em JSON feita pela equipe (S-31) |
 | Informação sobre compartilhamento | Termos e Política descrevem o compartilhamento com a Equatorial Pará |
 | Revogação do consentimento | Exclusão da conta e permissões do sistema |
 | Contato com o controlador | Canal de contato na Política (PEN-03) |
