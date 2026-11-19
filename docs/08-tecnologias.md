@@ -90,7 +90,7 @@ A stack preferida (React Native + Expo + TypeScript no app; Node.js + PostgreSQL
 
 ## Versões fixadas na Fase 0
 
-Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. **Observação:** a instalação completa não pôde ser validada na máquina de desenvolvimento por falta de espaço em disco (ver `CHANGELOG.md`); estas versões ainda precisam ser confirmadas com `npm install` e os scripts de verificação.
+Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas versões foram **instaladas e validadas** em 2026-11-18 (`npm install`, lint, tipos, testes e build; ver `CHANGELOG.md`). Para o app, o `npx expo install` acrescentou `jest-expo ~58.0.15`, `jest ~30.5.2`, `@expo-google-fonts/plus-jakarta-sans ^0.4.2` e `@expo/vector-icons ^15.0.2`.
 
 | Área | Pacote | Versão fixada | Observação |
 |---|---|---|---|

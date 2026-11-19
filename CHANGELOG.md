@@ -19,8 +19,16 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Documentação: decisões S-01 a S-21 aprovadas (marcação "SUPOSIÇÃO" removida; S-22 a S-32 aguardam confirmação), cronograma de uma semana, contraste (`#006E2C` e `#855300`), alvos de toque de 48 dp, versões reais em `docs/08-tecnologias.md`.
 - `LICENSE` com os integrantes como titulares do copyright.
 
-### Pendente de validação
-- **A Fase 0 foi escrita, mas não validada nesta máquina:** o disco C: ficou sem espaço (`ENOSPC`) durante o `npm install` e o `docker pull`. Ainda não foram executados `npm install`, `docker compose up`, a migration inicial, o seed, `npm run lint`, `npm run typecheck` e `npm test`. A migration `init` (com o índice único parcial e os `CHECK`) também ainda não foi gerada.
+### Validado (2026-11-18)
+- `docker compose up -d` sobe o PostgreSQL 17 (healthy); `npm install` (923 pacotes) e `package-lock.json` gerados.
+- **Migration `init`** aplicada, com o índice único parcial (RN-006) e dois `CHECK` (RN-010 e RN-015) em SQL; as três violações foram recusadas pelo banco em teste manual. **Seed:** 17 bairros aproximados e o operador de teste.
+- `GET /health` responde `{"status":"ok","db":"up"}`; o painel acessa a API pelo proxy do Vite.
+- `npm run lint`, `typecheck`, `test` (API 9, painel 2, app 13 testes) e `format:check` passam na raiz; o painel compila (`vite build`).
+- O app gera o bundle Android (`expo export`) e o Metro serve o manifesto do SDK 58; `npm run dev` sobe API, painel e Expo juntos. `expo-doctor`: 19 de 20 verificações (a restante depende da rede do Expo).
+- **Não verificado:** abrir o app no Expo Go em um celular (a equipe deve testar) e a execução do workflow no GitHub Actions.
+
+### Corrigido durante a validação
+- Tipo da cor do ícone das abas (`ColorValue` no SDK 58) e formatação do Prettier em 3 arquivos.
 
 ### Adicionado (documentação)
 - Documentação inicial do projeto em `docs/`: visão e escopo, requisitos (RF, RNF, RN), histórias de usuário, casos de uso, telas e fluxos, design system, arquitetura, tecnologias, modelo de dados, API, segurança e LGPD, acessibilidade, estratégia de testes, roadmap e glossário.

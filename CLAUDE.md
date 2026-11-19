@@ -26,7 +26,7 @@ docs/         # toda a documentação
 .github/      # templates de issue/PR e CI
 ```
 
-Status atual: documentação pronta; **Fase 0 escrita na branch `feature/setup-inicial`, ainda não validada** (disco cheio durante `npm install`/`docker pull`; ver `CHANGELOG.md`). Rotas do app em `apps/mobile/src/app/`. Próximo passo: validar a Fase 0 e seguir para a Fase 1 (`docs/14-roadmap-e-backlog.md`). Não faça merge na `develop` sem aprovação do usuário.
+Status atual: documentação pronta; **Fase 0 concluída e validada na branch `feature/setup-inicial`** (ver `CHANGELOG.md`; falta só testar no Expo Go em um celular). Rotas do app em `apps/mobile/src/app/`. Próximo passo: validar a Fase 0 e seguir para a Fase 1 (`docs/14-roadmap-e-backlog.md`). Não faça merge na `develop` sem aprovação do usuário.
 
 ## Onde fica cada documento
 

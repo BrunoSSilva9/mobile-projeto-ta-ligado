@@ -3,7 +3,7 @@
 Aplicativo mobile para **registrar denúncias de queda de energia elétrica** em Marabá-PA e acompanhar a situação em tempo real. O cidadão informa que está sem luz, a ocorrência é registrada (localização, horário e detalhes) e chega **em tempo real à operadora (Equatorial Pará)**, que atualiza o status e a previsão de reparo. A integração com a operadora é **simulada** por um Painel Web (ver [ADR-0001](docs/adr/0001-integracao-simulada-com-operadora.md)).
 
 > Projeto final da disciplina de **Desenvolvimento Mobile (UNIFESSPA)**.
-> **Status:** documentação concluída; **Fase 0 (setup inicial) escrita, mas ainda não validada** (ver o `CHANGELOG.md`).
+> **Status:** documentação concluída; **Fase 0 (setup inicial) concluída** (ver o `CHANGELOG.md`).
 
 - **Protótipo (Figma):** <https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=0-1>
 
