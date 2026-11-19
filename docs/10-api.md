@@ -182,19 +182,20 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 
 | Método | Rota | Descrição | Requisito |
 |---|---|---|---|
-| GET | `/painel/denuncias?status=&tipo=&bairroId=&prioritarias=&page=&limite=` | Lista com filtros; prioritárias primeiro (RN-015) | RF-028, RF-029, RF-035 |
+| GET | `/painel/denuncias?status=&tipo=&bairroId=&prioritarias=&page=&limite=` | Lista com filtros; prioritárias primeiro e, em cada grupo, a mais antiga primeiro (RN-015) | RF-028, RF-029, RF-035 |
 | GET | `/painel/denuncias/{id}` | Detalhe completo (autor, telefone, fotos, histórico) | RF-030 |
 | PATCH | `/painel/denuncias/{id}/status` | Atualiza status (e previsão opcional) | RF-031 a RF-033, RF-036 |
 | PATCH | `/painel/denuncias/{id}/previsao` | Define/altera só a previsão de reparo | RF-033 |
 | GET | `/painel/bairros` | Agrupado por bairro (contagem por tipo e status) | RF-034 |
 | POST | `/painel/bairros/{bairroId}/resolver` | Resolve em lote todas as em aberto do bairro (RN-016) | RF-034 |
 
-**`GET /painel/denuncias`** → `200`
+**`GET /painel/denuncias`**: filtros opcionais e combináveis. `status` aceita um ou vários valores (`status=RECEBIDA,EM_ATENDIMENTO` ou o parâmetro repetido); `tipo` (`SEM_ENERGIA` | `OSCILACAO`); `bairroId`; `prioritarias` (`true` | `false`). Paginação: `page` (padrão 1) e `limite` (padrão 20, máximo 100). Parâmetro inválido: `400 VALIDACAO_ERRO`. O `total` respeita os filtros. → `200`
 ```json
 { "itens": [ { "id": "uuid", "protocolo": "TL-2026-000123", "prioritaria": true,
     "tipo": "SEM_ENERGIA", "status": "RECEBIDA",
-    "bairro": { "id": 3, "nome": "Cidade Nova" }, "logradouro": "Av. VP-3",
-    "latitude": -5.3712, "longitude": -49.1231, "criadoEm": "2026-11-18T14:02:10Z" } ],
+    "bairro": { "id": 3, "nome": "Cidade Nova", "folha": null }, "logradouro": "Av. VP-3",
+    "latitude": -5.3712, "longitude": -49.1231, "previsaoReparo": null,
+    "criadoEm": "2026-11-18T14:02:10Z" } ],
   "pagina": 1, "total": 12 }
 ```
 
@@ -208,14 +209,19 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 { "status": "IMPROCEDENTE", "justificativa": "Local sem interrupção confirmada pela equipe." }
 // 200: denúncia atualizada (mesma forma do detalhe)
 ```
-Erros: 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
+Regras: `justificativa` (10 a 500 caracteres) só vale para `IMPROCEDENTE` e é descartada nos outros status; `previsaoReparo` (ISO 8601) só vale enquanto a denúncia **continua em aberto** (com status final, `400`). A mudança é gravada só se o status ainda for o que o operador viu: se outra pessoa mudou antes (ex.: dois operadores ao mesmo tempo, ou o cidadão cancelou), a resposta é `422 TRANSICAO_INVALIDA` e só uma das requisições vence. O operador não pode cancelar pelo autor (`403`).
+Erros: 400, 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
 Efeitos: status + histórico na mesma transação (RNF-010); emite `denuncia:status-atualizado` (autor e operadores), `ocorrencia:atualizada` e `bairro:status-atualizado`; envia push (RN-019).
 
 **`POST /painel/bairros/{bairroId}/resolver`** → `200 { "resolvidas": 4 }`. Aplica `RESOLVIDA` a cada denúncia em aberto (exceção de RN-004, RN-016); cada uma gera histórico e eventos.
 
 ## Eventos WebSocket
 
-Conexão: `io(API_URL, { auth: { token } })` (Socket.IO 4). O servidor valida o JWT e inscreve o cliente em salas ([ADR-0002](adr/0002-socketio-para-tempo-real.md)):
+Conexão: `io(API_URL, { auth: { token }, transports: ['websocket'] })` (Socket.IO 4). O servidor valida o JWT **e confirma o usuário no banco** no *handshake* e inscreve o cliente em salas ([ADR-0002](adr/0002-socketio-para-tempo-real.md)).
+
+**Conexão recusada:** sem token, token inválido, expirado, de outro segredo ou de uma conta que não existe mais. O cliente recebe `connect_error` com `err.message = "NAO_AUTENTICADO"` e `err.data = { codigo: "NAO_AUTENTICADO", mensagem }`. A validade do token é conferida só ao conectar: uma conexão já aberta não é derrubada quando o token expira (ao reconectar é preciso um token válido).
+
+Salas:
 
 | Sala | Quem entra | Conteúdo |
 |---|---|---|
@@ -230,13 +236,14 @@ Todos os eventos são do servidor para o cliente. Os clientes **não** enviam ev
 | `denuncia:criada` | `papel:OPERADOR` | Após criar denúncia |
 | `denuncia:status-atualizado` | `usuario:{autorId}` e `papel:OPERADOR` | Mudança de status ou previsão |
 | `ocorrencia:atualizada` | `cidadaos` | Criação ou mudança de status (versão pública) |
-| `bairro:status-atualizado` | `cidadaos` | O status calculado de um bairro mudou |
+| `bairro:status-atualizado` | `cidadaos` | Sempre que o conjunto de denúncias em aberto do bairro muda (criação ou mudança de status/previsão): o servidor **recalcula** o status e envia o valor atual, que o cliente simplesmente substitui |
 
 **`denuncia:criada`** (operadores)
 ```json
 { "id": "uuid", "protocolo": "TL-2026-000123", "prioritaria": true,
   "tipo": "SEM_ENERGIA", "status": "RECEBIDA",
-  "bairro": { "id": 3, "nome": "Cidade Nova" }, "logradouro": "Av. VP-3",
+  "bairro": { "id": 3, "nome": "Cidade Nova", "folha": null }, "logradouro": "Av. VP-3",
+  "descricao": "Estalo forte no poste",
   "latitude": -5.3712, "longitude": -49.1231,
   "autor": { "id": "uuid", "nome": "Maria Silva", "telefone": "(94) 90000-0000" },
   "criadoEm": "2026-11-18T14:02:10Z" }
@@ -254,7 +261,7 @@ Todos os eventos são do servidor para o cliente. Os clientes **não** enviam ev
 
 **`bairro:status-atualizado`** (cidadãos)
 ```json
-{ "bairroId": 3, "nome": "Cidade Nova", "status": "SEM_LUZ", "emAberto": 4,
+{ "bairroId": 3, "nome": "Cidade Nova", "folha": null, "status": "SEM_LUZ", "emAberto": 4,
   "previsaoReparo": "2026-11-18T16:20:00Z" }
 ```
 

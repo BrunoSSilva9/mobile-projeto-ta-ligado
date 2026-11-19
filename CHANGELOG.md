@@ -18,6 +18,15 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - Esqueleto do `Publicador` de eventos em tempo real, chamado depois do commit (o Passo 4 liga o Socket.IO); uma falha ao publicar não desfaz a denúncia.
   - 75 testes de integração novos. Um teste de mutação (remover o índice do banco) confirmou que o teste de corrida realmente falha sem a proteção.
 
+- **Passo 4 – tempo real (Socket.IO):** autenticação por JWT no *handshake* (o usuário é confirmado no banco; sem token válido a conexão é recusada com `NAO_AUTENTICADO`), salas decididas pelo servidor (`papel:OPERADOR`; `cidadaos` e `usuario:{id}`) e os quatro eventos do `docs/10-api.md`: `denuncia:criada` (operadores, dados completos), `denuncia:status-atualizado` (autor e operadores), `ocorrencia:atualizada` (cidadãos, **anonimizada**) e `bairro:status-atualizado` (cidadãos, recalculado no banco). Os eventos saem depois do commit; o servidor não escuta nenhum evento do cliente.
+  - `criarServidor` monta Express + Socket.IO + publicador num só lugar, usado pelo `server.ts` e pelos testes.
+  - `obterStatusDoBairro` (status, contagem em aberto e menor previsão futura) já fica pronto para o `GET /bairros/status` do Passo 11.
+  - 23 testes de tempo real com clientes `socket.io-client`, incluindo latência abaixo de 2 s (RNF-002). Dois testes de mutação (emitir a denúncia completa para todos; vazar o protocolo na versão pública) foram pegos pelos testes certos. Em teste manual contra o servidor real, o painel recebeu a denúncia 134 ms após o envio.
+
+- **Passo 5 – API do painel da operadora** (só `OPERADOR`; cidadão recebe 403): `GET /api/v1/painel/denuncias` (filtros por status, tipo, bairro e prioritárias; ordem de prioridade da RN-015; paginação), `GET /api/v1/painel/denuncias/:id` (detalhe completo, com autor, telefone e histórico com quem alterou) e `PATCH /api/v1/painel/denuncias/:id/status`.
+  - O `PATCH` usa `validarTransicao`, exige justificativa para improcedência, aceita a previsão de reparo (só enquanto a denúncia está em aberto) e grava status e histórico **na mesma transação**. A gravação é condicional ao status que o operador viu, então mudanças simultâneas resultam em um único vencedor e `422 TRANSICAO_INVALIDA` para os demais (S-29). O evento `denuncia:status-atualizado` sai depois do commit.
+  - 68 testes de integração novos, incluindo atomicidade (um gatilho no banco simula falha ao gravar o histórico e o status não muda), concorrência (seis requisições simultâneas, só uma vence) e o ciclo completo cidadão ↔ operador. Testes de mutação confirmaram que a proteção de concorrência e a exigência do papel `OPERADOR` são realmente exercitadas.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 
