@@ -254,6 +254,8 @@ RF-027 a RF-029, RF-034, RF-035
 
 - **Implementação (Passo 9):** barra superior com o nome do operador e "Sair" (som e indicador de conexão entram no Passo 10); filtros por status (padrão "Em aberto"), tipo, bairro e "Só prioritárias"; abas **Lista** e **Mapa** (a aba "Por bairro" e os indicadores ficam para a Fase 2). Pinos do mapa: vermelho = sem energia em aberto, âmbar = oscilação em aberto, cinza = encerrada; denúncias sem coordenadas aparecem só na lista.
 
+- **Implementação (Passo 10):** a barra superior ganhou o indicador de conexão (Conectando… / Conectado / Reconectando…) e o botão "Ativar som" (o áudio só é criado depois do clique). Denúncia nova: faixa de alerta com "Abrir" e "Dispensar" (região `aria-live`), linha destacada por 10 s e, se o som estiver ativo, dois toques; ela entra na lista na ordem da RN-015 (no fim do seu grupo), não no topo.
+
 ### P-03 – Painel: Detalhe e atualização de status
 RF-030 a RF-033, RF-036
 - Cabeçalho com protocolo, status atual, selo "Prioritária" quando for o caso.
@@ -262,3 +264,5 @@ RF-030 a RF-033, RF-036
 - **Previsão de reparo:** seletor de data/hora (opcional).
 - **Histórico:** linha do tempo de mudanças com usuário, data/hora e justificativa.
 - Estados: salvando, erro de transição inválida, conflito (recarregar).
+
+- **Implementação (Passo 10):** blocos Autor, Local, Ocorrência, Atualizar status e Histórico. O mini-mapa, a galeria de fotos e o seletor de previsão fora do "Iniciar atendimento" ficam para a Fase 2. As ações vêm do status (cópia de `acoesDisponiveis` no painel; a API é quem decide); conflito (422) avisa e mostra a situação atual.

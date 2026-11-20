@@ -12,10 +12,13 @@ import {
 export function TabelaDenuncias({
   denuncias,
   agoraMs,
+  destacadas,
 }: {
   denuncias: readonly DenunciaDoPainel[];
   /** "Agora" em ms; vem de fora para a tabela ser previsível (e testável). */
   agoraMs: number;
+  /** Ids de denúncias recém-chegadas, destacadas por alguns segundos. */
+  destacadas?: ReadonlySet<string>;
 }) {
   if (denuncias.length === 0) {
     return (
@@ -44,8 +47,16 @@ export function TabelaDenuncias({
         </thead>
         <tbody>
           {denuncias.map((d) => (
-            <tr key={d.id} className={d.prioritaria ? 'tabela__prioritaria' : undefined}>
+            <tr
+              key={d.id}
+              className={
+                [d.prioritaria && 'tabela__prioritaria', destacadas?.has(d.id) && 'tabela__nova']
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
+            >
               <td>
+                {destacadas?.has(d.id) ? <span className="selo selo--nova">Nova</span> : null}
                 {d.prioritaria ? (
                   <span className="selo selo--prioridade">Prioritária</span>
                 ) : (

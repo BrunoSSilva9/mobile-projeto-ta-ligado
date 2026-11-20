@@ -121,4 +121,5 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 - **Instalados no Passo 7 (app):** `expo-location ~58.0.22`, `react-native-maps 1.29.11`, `@react-native-async-storage/async-storage 2.2.0` e `expo-clipboard ~58.0.4`.
 - **Instalado no Passo 8 (app):** `socket.io-client 4.8.4`.
 - **Instalados no Passo 9 (painel):** `leaflet 1.9.4`, `react-leaflet 5.0.0`, `@types/leaflet 1.9.22`, `@tanstack/react-query 5.108.1` e `zustand 5.1.0`.
-- **Ainda não instalados** (entram quando a funcionalidade for implementada): `socket.io-client` (painel, Passo 10), `expo-image-picker` e `expo-notifications`.
+- **Instalado no Passo 10 (painel):** `socket.io-client 4.8.4`.
+- **Ainda não instalados** (entram quando a funcionalidade for implementada): `expo-image-picker` e `expo-notifications`.

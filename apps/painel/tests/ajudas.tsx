@@ -87,7 +87,44 @@ export const DENUNCIA_B = {
   criadoEm: new Date(Date.now() - 3 * 3_600_000).toISOString(),
 };
 
+export const DETALHE = {
+  id: 'd1',
+  protocolo: 'TL-2026-000002',
+  prioritaria: true,
+  tipo: 'SEM_ENERGIA',
+  status: 'RECEBIDA',
+  autor: { id: 'u1', nome: 'Maria Silva', telefone: '(94) 90000-0000' },
+  logradouro: 'Rua das Flores, 10',
+  cep: '68500-000',
+  pontoReferencia: 'perto da padaria',
+  bairro: { id: 2, nome: 'Nova Marabá', folha: 'Folha 28' },
+  descricao: 'sem luz desde as 14h',
+  latitude: -5.37,
+  longitude: -49.12,
+  faixaPessoas: 'DE_4_A_8',
+  necessidadeEspecial: true,
+  detalheNecessidade: 'Idosa com inalador',
+  previsaoReparo: null,
+  justificativa: null,
+  fotos: [],
+  historico: [
+    {
+      statusAnterior: null,
+      statusNovo: 'RECEBIDA',
+      papel: 'CIDADAO',
+      por: 'Maria Silva',
+      justificativa: null,
+      criadoEm: '2026-11-19T17:00:00.000Z',
+    },
+  ],
+  criadoEm: '2026-11-19T17:00:00.000Z',
+  atualizadoEm: '2026-11-19T17:00:00.000Z',
+  finalizadaEm: null,
+};
+
 type Rotas = {
+  detalhe?: () => Response;
+  atualizar?: (corpo: Record<string, unknown>) => Response;
   denuncias?: (url: string) => Response;
   bairros?: () => Response;
   login?: (corpo: unknown) => Response;
@@ -100,6 +137,14 @@ export function simularApi(rotas: Rotas = {}) {
       return (rotas.login ?? (() => resposta(200, SESSAO_DE_OPERADOR)))(
         init?.body ? JSON.parse(init.body) : null,
       );
+    }
+    if (url.includes('/painel/denuncias/') && url.endsWith('/status')) {
+      return (rotas.atualizar ?? (() => resposta(200, DETALHE)))(
+        init?.body ? JSON.parse(init.body) : {},
+      );
+    }
+    if (/\/painel\/denuncias\/[^/?]+$/.test(url)) {
+      return (rotas.detalhe ?? (() => resposta(200, DETALHE)))();
     }
     if (url.includes('/painel/denuncias')) {
       return (
@@ -117,4 +162,4 @@ export function simularApi(rotas: Rotas = {}) {
 }
 
 export const urlsDeDenuncias = (f: ReturnType<typeof vi.fn>) =>
-  f.mock.calls.map(([u]) => String(u)).filter((u) => u.includes('/painel/denuncias'));
+  f.mock.calls.map(([u]) => String(u)).filter((u) => /\/painel\/denuncias\?/.test(u));

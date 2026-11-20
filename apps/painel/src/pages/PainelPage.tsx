@@ -6,6 +6,7 @@ import { MapaDenuncias } from '../components/MapaDenuncias';
 import { TabelaDenuncias } from '../components/TabelaDenuncias';
 import { listarBairros, listarDenuncias } from '../features/denuncias/api';
 import { useAgora } from '../features/denuncias/useAgora';
+import { useTempoReal } from '../providers/tempo-real-contexto';
 import {
   FILTROS_INICIAIS,
   LIMITE_POR_PAGINA,
@@ -20,6 +21,7 @@ export function PainelPage() {
   const [pagina, setPagina] = useState(1);
   const [aba, setAba] = useState<Aba>('lista');
   const agora = useAgora();
+  const { destaques } = useTempoReal();
 
   const bairros = useQuery({ queryKey: ['bairros'], queryFn: listarBairros, staleTime: 3_600_000 });
   const denuncias = useQuery({
@@ -81,7 +83,11 @@ export function PainelPage() {
               {total === 1 ? '1 denúncia' : `${total} denúncias`}
             </p>
             {aba === 'lista' ? (
-              <TabelaDenuncias denuncias={denuncias.data.itens} agoraMs={agora} />
+              <TabelaDenuncias
+                denuncias={denuncias.data.itens}
+                agoraMs={agora}
+                destacadas={destaques}
+              />
             ) : (
               <MapaDenuncias denuncias={denuncias.data.itens} />
             )}

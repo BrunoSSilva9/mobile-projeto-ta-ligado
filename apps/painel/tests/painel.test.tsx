@@ -89,7 +89,7 @@ describe('P-02 Painel: lista (RF-028)', () => {
 
     expect(abrir).toHaveAttribute('href', '/denuncias/d1');
     fireEvent.click(abrir);
-    expect(await screen.findByRole('heading', { name: 'Detalhe da denúncia' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'TL-2026-000002' })).toBeInTheDocument();
   });
 
   it('a tabela tem legenda e cabeçalhos de coluna (acessibilidade)', async () => {
