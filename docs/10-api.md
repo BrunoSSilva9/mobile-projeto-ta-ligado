@@ -166,7 +166,7 @@ Erros: 404/403 se a denúncia não for do autor.
 |---|---|---|---|---|
 | GET | `/ocorrencias?status=&bairroId=&q=&page=&limite=` | Cidadão | Lista pública anonimizada e pinos do mapa | RF-019 a RF-021 |
 
-`status` aceita `SEM_LUZ`, `OSCILACAO`, `RESTABELECIDO` (ocorrências resolvidas recentemente) ou ausente (todos). `q` busca por bairro ou folha, sem acentos.
+`status` aceita `SEM_LUZ` (sem energia em aberto), `OSCILACAO` (oscilação em aberto), `RESTABELECIDO` (resolvidas nas **últimas 24 h**, decisão S-21) ou ausente (a união dos três). Improcedentes e canceladas nunca aparecem. `q` busca por bairro ou folha, sem acentos nem diferença de caixa, e combina com `bairroId` (interseção). Ordem: da mais recente para a mais antiga. Paginação: `page` (padrão 1) e `limite` (padrão 20, máximo 50). Acesso só de **cidadão** (operador recebe 403).
 
 ```json
 { "totais": { "todos": 18, "semLuz": 9, "oscilacao": 6, "restabelecidos": 3 },
@@ -176,7 +176,7 @@ Erros: 404/403 se a denúncia não for do autor.
       "criadoEm": "2026-11-18T13:37:00Z" } ],
   "pagina": 1, "total": 18 }
 ```
-Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arredondadas a 3 casas (RN-014).
+Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arredondadas a 3 casas (RN-014). `totais` respeita `bairroId` e `q`, mas **não** o chip escolhido (`status`), e `todos` é a soma dos três; `total` é o número de itens do chip escolhido. A resposta também traz `atualizadoEm` (ISO 8601).
 
 ### Painel da operadora (somente `OPERADOR`)
 

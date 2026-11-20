@@ -6,6 +6,8 @@ import { criarServicoAuth } from './modules/auth/service';
 import { criarRotasBairros } from './modules/bairros/routes';
 import { criarRotasDenuncias } from './modules/denuncias/routes';
 import { criarServicoDenuncias } from './modules/denuncias/service';
+import { criarRotasOcorrencias } from './modules/ocorrencias/routes';
+import { criarServicoOcorrencias } from './modules/ocorrencias/service';
 import { criarRotasPainel } from './modules/painel/routes';
 import { criarServicoPainel } from './modules/painel/service';
 import { publicadorNulo, type Publicador } from './realtime/publicador';
@@ -46,7 +48,13 @@ export function criarRotas({
       limites: limitesFinais,
     }),
   );
-  router.use(criarRotasBairros({ prisma, autenticacao }));
+  router.use(criarRotasBairros({ prisma, autenticacao, relogio }));
+  router.use(
+    criarRotasOcorrencias({
+      servico: criarServicoOcorrencias({ prisma, relogio }),
+      autenticacao,
+    }),
+  );
   router.use(
     criarRotasDenuncias({
       servico: criarServicoDenuncias({ prisma, publicador, relogio }),

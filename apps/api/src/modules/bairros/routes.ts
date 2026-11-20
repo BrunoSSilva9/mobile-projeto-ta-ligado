@@ -6,10 +6,13 @@ import { bairroMaisProximo, distanciaKm } from '../../domain';
 import type { Autenticacao } from '../../shared/auth';
 import { erros } from '../../shared/errors';
 import { analisar } from '../../shared/validacao';
+import { obterStatusDeTodosOsBairros } from './status';
 
 type Deps = {
   prisma: PrismaClient;
   autenticacao: Autenticacao;
+  /** Relógio injetável (testes), para a previsão futura (RN-009). */
+  relogio?: () => Date;
 };
 
 const proximoSchema = z.object({
@@ -36,13 +39,31 @@ async function listarBairros(prisma: PrismaClient) {
 }
 
 /** Rotas de bairros: lista fixa e bairro mais próximo (RN-021, RN-025). */
-export function criarRotasBairros({ prisma, autenticacao }: Deps): Router {
+export function criarRotasBairros({
+  prisma,
+  autenticacao,
+  relogio = () => new Date(),
+}: Deps): Router {
   const router = Router();
 
   // Lista fixa de bairros e folhas (qualquer usuário logado)
   router.get('/bairros', autenticacao.autenticar, async (_req, res) => {
     res.json({ bairros: await listarBairros(prisma) });
   });
+
+  // RF-019, RF-023: status calculado de cada bairro (RN-007), contagem em aberto e previsão (RN-009)
+  router.get(
+    '/bairros/status',
+    autenticacao.autenticar,
+    autenticacao.exigirPapel('CIDADAO'),
+    async (_req, res) => {
+      const agora = relogio();
+      res.json({
+        atualizadoEm: agora.toISOString(),
+        bairros: await obterStatusDeTodosOsBairros(prisma, agora),
+      });
+    },
+  );
 
   // RF-016: bairro de centro mais próximo do GPS, até 15 km (RN-025)
   router.get(

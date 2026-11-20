@@ -68,6 +68,12 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - **Dependência fixada:** `socket.io-client 4.8.4`.
   - **78 testes novos** (138 no painel): regras de ações, filtros e inserção na ordem da RN-015, validação dos eventos, som, conexão (conectar, reconectar, recusar, sair), alerta e destaque (incluindo os temporizadores), som antes e depois do clique, mudança de status em tempo real, e o detalhe com todas as ações, justificativa, previsão, conflito e erro de rede. O WebSocket é simulado; o **teste manual com os três lados** (app, painel e API) continua sendo a validação final.
 
+- **Passo 11 – API: status por bairro e ocorrências públicas** (lado da API de RF-016, 019, 020 e 023):
+  - **`GET /api/v1/bairros/status`:** todos os bairros com status calculado (RN-007: Sem luz > Oscilação > Normal), quantas denúncias em aberto, menor previsão de reparo **futura** (RN-009) e as coordenadas do centro. Em duas consultas ao banco, sem consultar bairro por bairro. Só cidadão.
+  - **`GET /api/v1/ocorrencias`:** lista pública **anonimizada** (RN-014), da mais recente para a mais antiga, com os chips `totais` (Todos = Sem luz + Oscilação + Restabelecidos), filtro por bairro, busca por bairro ou folha sem acentos e paginação (20, máx. 50). "Restabelecidos" são as resolvidas nas últimas 24 h (S-21); improcedentes e canceladas nunca aparecem. Só cidadão.
+  - A resposta usa só a projeção pública (lista explícita de campos): autor, telefone, protocolo, fotos, pessoas afetadas, necessidade especial, ponto de referência e CEP não saem, e as coordenadas saem arredondadas (~110 m). É o mesmo formato do evento `ocorrencia:atualizada`.
+  - **47 testes de integração e unitários novos** (471 na API, cobertura de 98,5%, 100% no domínio): combinações de status do bairro, previsão futura e vencida, chips somando, janela exata de 24 h, busca, paginação, validação, 401/403 e a lista de campos proibidos. Dois testes de mutação (vazar o protocolo na resposta; remover a janela de 24 h) foram pegos pelos testes certos.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 

@@ -119,6 +119,9 @@ export async function criarDenunciaNoBanco(dados: {
   logradouro?: string;
   latitude?: number | null;
   longitude?: number | null;
+  previsaoReparo?: Date | null;
+  finalizadaEm?: Date | null;
+  descricao?: string;
 }) {
   sequenciaDeDenuncias += 1;
   const status = dados.status ?? 'RECEBIDA';
@@ -137,6 +140,10 @@ export async function criarDenunciaNoBanco(dados: {
       detalheNecessidade: prioritaria ? 'Detalhe da situação prioritária' : undefined,
       justificativa: status === 'IMPROCEDENTE' ? 'Sem interrupção confirmada.' : undefined,
       criadoEm: dados.criadoEm,
+      previsaoReparo: dados.previsaoReparo ?? undefined,
+      descricao: dados.descricao,
+      // Resolvida sem data de fim seria inconsistente: o padrão é "agora".
+      finalizadaEm: dados.finalizadaEm ?? (status === 'RESOLVIDA' ? new Date() : undefined),
     },
   });
 }
