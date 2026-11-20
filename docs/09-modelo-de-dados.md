@@ -72,6 +72,10 @@ erDiagram
     string justificativa "opcional"
     datetime criadoEm
   }
+  PROTOCOLO_SEQUENCIA {
+    int ano PK
+    int ultimo "ultimo numero usado no ano"
+  }
   PUSH_TOKEN {
     uuid id PK
     uuid usuarioId FK
@@ -164,6 +168,14 @@ Máximo de 3 por denúncia (validado no serviço).
 | `plataforma` | texto | `ios` ou `android` |
 
 Removido no logout (RF-004) e na exclusão de conta.
+
+### `ProtocoloSequencia`
+| Campo | Tipo | Regras |
+|---|---|---|
+| `ano` | inteiro | PK |
+| `ultimo` | inteiro | Último número de protocolo usado no ano |
+
+Incrementada de forma **atômica** (`INSERT … ON CONFLICT (ano) DO UPDATE SET ultimo = ultimo + 1 RETURNING ultimo`) dentro da transação que cria a denúncia (RN-023, S-34). Se a criação falhar, a transação desfaz o incremento e a sequência não fica com buracos. Não tem relacionamento com as outras tabelas.
 
 ## Visões derivadas (não armazenadas)
 

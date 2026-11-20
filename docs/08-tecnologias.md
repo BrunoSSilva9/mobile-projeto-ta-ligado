@@ -117,4 +117,10 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 
 **Diferenças em relação às tabelas acima**
 - **Pino** (logs) e **Husky + lint-staged + commitlint** foram **adiados**: na Fase 0 a API usa `console` e o padrão de commits é conferido na revisão do PR. Entram quando houver necessidade (Fase 2 ou depois).
-- **Leaflet**, **TanStack Query**, **Zustand**, **React Hook Form**, **React Native Maps**, `expo-location`, `expo-image-picker`, `expo-notifications` e `socket.io-client` (app e painel) ainda **não foram instalados**: entram quando a funcionalidade for implementada (Fase 1 e 2).
+- **Instalados no Passo 6 (app):** `@tanstack/react-query ^5.108.1`, `zustand ^5.1.0`, `react-hook-form ^7.92.0`, `zod ^4.6.7`, `@hookform/resolvers ^7.0.7`, `expo-secure-store ~58.0.3` e, para testes, `@testing-library/react-native ^14.1.0` (o `render` e o `fireEvent` dessa versão são **assíncronos**).
+- **Instalados no Passo 7 (app):** `expo-location ~58.0.22`, `react-native-maps 1.29.11`, `@react-native-async-storage/async-storage 2.2.0` e `expo-clipboard ~58.0.4`.
+- **Instalado no Passo 8 (app):** `socket.io-client 4.8.4`.
+- **Instalados no Passo 9 (painel):** `leaflet 1.9.4`, `react-leaflet 5.0.0`, `@types/leaflet 1.9.22`, `@tanstack/react-query 5.108.1` e `zustand 5.1.0`.
+- **Instalado no Passo 10 (painel):** `socket.io-client 4.8.4`.
+- **Instalados no Passo 13 (app):** `@react-native-community/netinfo 12.0.1`, `@tanstack/react-query-persist-client 5.108.1` e `@tanstack/query-async-storage-persister 5.108.1`.
+- **Ainda não instalados** (entram quando a funcionalidade for implementada): `expo-image-picker` e `expo-notifications`.

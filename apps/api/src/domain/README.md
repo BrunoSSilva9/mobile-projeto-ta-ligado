@@ -1,16 +1,18 @@
 # domain/
 
-Regras de negócio **puras** (sem banco, HTTP ou Socket.IO), com testes unitários. Meta de cobertura: ≥ 90% (RNF-020).
+Regras de negócio **puras**: sem banco, HTTP ou Socket.IO, só funções que recebem dados simples e devolvem resultados (decisão S-40). Têm testes unitários em `apps/api/tests/domain/` e **cobertura mínima de 90%**, exigida pelo `vitest.config.ts` (RNF-020).
 
-Entram na Fase 1 (backlog B-010):
+| Arquivo | O que faz | Regras |
+|---|---|---|
+| `tipos.ts` | Tipos `Papel`, `TipoDenuncia`, `StatusDenuncia`, `StatusBairro`; status em aberto e finais | RN-002, RN-003 |
+| `status-bairro.ts` | `calcularStatusBairro`, `redeEstavel` | RN-007, RN-008 |
+| `transicoes.ts` | `validarTransicao`, `acoesDisponiveis` (inclui cancelamento, justificativa e resolução em lote) | RN-004, RN-005, RN-010, RN-016 |
+| `limite-denuncia.ts` | `podeCriarDenuncia` | RN-006 |
+| `permissoes.ts` | `temPapel`, `podeVerDenuncia`, `projetarOcorrenciaPublica` (visão anonimizada) | RN-001, RN-014 |
+| `previsao.ts` | `validarPrevisao`, `menorPrevisaoFutura` | RN-009 |
+| `protocolo.ts` | `formatarProtocolo`, `protocoloValido`, `lerProtocolo` (`TL-AAAA-NNNNNN`) | RN-023 |
+| `prioridade.ts` | `compararPrioridade`, `ordenarPorPrioridade` | RN-015 |
+| `bairro-proximo.ts` | `distanciaKm` (Haversine), `bairroMaisProximo` (até 15 km) | RN-025 |
+| `indicadores.ts` | `taxaResolucao` | RN-017 |
 
-| Arquivo | Regras |
-|---|---|
-| `status-bairro.ts` | RN-007 |
-| `transicoes.ts` | RN-004, RN-005, RN-010, RN-016 |
-| `limite-denuncia.ts` | RN-006 |
-| `permissoes.ts` | RN-001, RN-014 |
-| `protocolo.ts` | RN-023 |
-| `previsao.ts` | RN-009 |
-| `prioridade.ts` | RN-015 |
-| `bairro-proximo.ts` | RN-025 |
+**Regra de ouro:** nada em `domain/` importa Prisma, Express, Socket.IO ou `process.env`. Quem consulta o banco é o *service*, que passa os dados já lidos para estas funções.

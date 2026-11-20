@@ -103,6 +103,7 @@ flowchart LR
 - **Dados coletados:** nome, e-mail, senha, telefone (opcional), consentimento. **Vêm do usuário.**
 - **Ações:** Cadastrar → T-03. Alternar → T-02. Termos/Política → texto.
 - **Estados:** não desenhados. Previstos: validação por campo, carregando no botão, erro de e-mail duplicado, erro de rede.
+- **Implementação (Passo 6):** o botão "CADASTRAR" é **branco com texto verde `#006E2C`** sobre o cartão verde-escuro (o verde do Figma sobre o verde do cartão não tem contraste); o botão fica desabilitado até aceitar os Termos; os links "Termos de Uso" e "Política de Privacidade" abrem telas próprias (`/termos`, `/privacidade`) com o texto de `docs/legal/`. Os cartões "Marabá Integrada" e "Status Imediato" e a ilustração do Figma ainda não foram implementados (decorativos). T-02 usa a mesma estrutura, com os textos "Entre na sua conta" e "ENTRAR".
 - **Ajustes ao protótipo** (decisões do escopo): remover **CPF** e **Nascimento**; trocar "WhatsApp de contato" por "Telefone (opcional)"; remover "Cadastre com Google"; trocar "Seus dados de denúncia são criptografados e anônimos" por "Suas denúncias aparecem para outros cidadãos sem identificação"; ajustar o card "Status Imediato" (sem WhatsApp: "Receba avisos no celular quando o status da sua denúncia mudar"); checkbox na cor da marca (no Figma está azul `#0075FF`, padrão do navegador).
 
 ### T-03 – Início
@@ -146,6 +147,8 @@ flowchart LR
 - **Estados:** não desenhados. Previstos: vazio ("Nenhuma ocorrência no momento"), carregando, erro, offline.
 - **Ajustes ao protótipo:** "3 denúncias no raio de 500 m hoje" → "N denúncias em aberto no seu bairro" (S-04); rótulo "Atualizado agora" vira o horário real do último evento; rótulo de aba "Ocorrências".
 
+- **Implementação (Passo 12):** T-03 mostra "Olá, {nome}!", o selo Rede Estável/Instável (RN-008), o mini-mapa e o atendimento; **não** tem painel comunitário, "alterar endereço" nem indicadores (Fase 2). T-04: busca por bairro/folha, chips com contagem, mapa com círculo por bairro e pinos, lista pública anonimizada (50 mais recentes) e banner. O botão de detalhe de cada item (resumo anonimizado, S-24) não foi feito; a lista é só de leitura. O botão de perfil do cabeçalho da Home se chama "Meu perfil" para não repetir o nome da aba "Perfil".
+
 ### T-05 – Registrar Denúncia
 [Figma `2033:655`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-655) · RF-007 a RF-011 · RN-002, RN-006, RN-012, RN-013, RN-015
 
@@ -170,6 +173,10 @@ flowchart LR
 - **Ações:** Voltar → T-03. Enviar → T-06. Já há denúncia em aberto → mensagem e T-07.
 - **Estados:** não desenhados. Previstos: enviando, erro por campo, erro de rede (rascunho preservado), GPS negado (escolha de bairro), limite de fotos.
 - **Ajustes ao protótipo:** campo **Tipo**; texto "Registre apenas interrupções verídicas…" mantido; "Anexe imagens que comprovem…" → "Se puder, anexe fotos"; "Cadastros fiéis aceleram…" mantido; limite de 3 fotos; a mesma tela mostra "GPS desativado" quando sem permissão.
+
+- **Implementação (Passo 7):** o formulário da Fase 1 tem **Tipo, Logradouro, Bairro (seletor com busca), CEP, Ponto de referência e Descrição**; fotos, pessoas afetadas e necessidade especial entram na Fase 2 (S-38). O mini-mapa tem pino arrastável e o selo "GPS ATIVO"; sem permissão aparece "GPS desativado" com o motivo e o envio continua sem coordenadas. O texto digitado fica salvo como rascunho (por usuário) até o servidor confirmar. Se já houver denúncia em aberto (409), a tela avisa e leva ao detalhe dela. **T-06** mostra o protocolo, permite copiá-lo e leva a T-07 ("Acompanhar denúncia") ou ao início.
+
+- **Implementação (Passos 7 e 8) – T-07/T-09:** T-09 lista as denúncias do usuário (até 50) e atualiza em tempo real; T-07 mostra status, local, descrição, previsão (só em aberto), justificativa (improcedente) e o histórico em linha do tempo. **Ainda não há** mini-mapa no detalhe, fotos, pessoas afetadas/necessidade especial nem o botão "Cancelar denúncia" (Fase 2). O Perfil tem o item "Minhas denúncias" com o contador de abertas; editar dados e excluir conta ficam na Fase 2.
 
 ### C-01 – Barra inferior (componente)
 [Figma `2033:1080`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-1080)
@@ -247,6 +254,10 @@ RF-027 a RF-029, RF-034, RF-035
 - **Alerta de nova denúncia:** toast/banner "Nova denúncia: {tipo} em {bairro}", destaque temporário na linha e som.
 - Estados: carregando, vazio, erro, desconectado.
 
+- **Implementação (Passo 9):** barra superior com o nome do operador e "Sair" (som e indicador de conexão entram no Passo 10); filtros por status (padrão "Em aberto"), tipo, bairro e "Só prioritárias"; abas **Lista** e **Mapa** (a aba "Por bairro" e os indicadores ficam para a Fase 2). Pinos do mapa: vermelho = sem energia em aberto, âmbar = oscilação em aberto, cinza = encerrada; denúncias sem coordenadas aparecem só na lista.
+
+- **Implementação (Passo 10):** a barra superior ganhou o indicador de conexão (Conectando… / Conectado / Reconectando…) e o botão "Ativar som" (o áudio só é criado depois do clique). Denúncia nova: faixa de alerta com "Abrir" e "Dispensar" (região `aria-live`), linha destacada por 10 s e, se o som estiver ativo, dois toques; ela entra na lista na ordem da RN-015 (no fim do seu grupo), não no topo.
+
 ### P-03 – Painel: Detalhe e atualização de status
 RF-030 a RF-033, RF-036
 - Cabeçalho com protocolo, status atual, selo "Prioritária" quando for o caso.
@@ -255,3 +266,5 @@ RF-030 a RF-033, RF-036
 - **Previsão de reparo:** seletor de data/hora (opcional).
 - **Histórico:** linha do tempo de mudanças com usuário, data/hora e justificativa.
 - Estados: salvando, erro de transição inválida, conflito (recarregar).
+
+- **Implementação (Passo 10):** blocos Autor, Local, Ocorrência, Atualizar status e Histórico. O mini-mapa, a galeria de fotos e o seletor de previsão fora do "Iniciar atendimento" ficam para a Fase 2. As ações vêm do status (cópia de `acoesDisponiveis` no painel; a API é quem decide); conflito (422) avisa e mostra a situação atual.

@@ -1,18 +1,40 @@
+import type { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import helmet from 'helmet';
 
+import type { Publicador } from './realtime/publicador';
+import { criarRotas } from './routes';
 import { AppError, corpoDeErro, erros } from './shared/errors';
+import type { LimitesDeTaxa } from './shared/rate-limit';
 
 export type AppDeps = {
   /** Origens permitidas no CORS (painel web). */
   corsOrigins?: string[];
   /** Verifica a conexão com o banco. Injetado para facilitar testes. */
   checkDb?: () => Promise<boolean>;
+  /** Banco e segredo do JWT. Sem eles, só o `/health` fica disponível. */
+  prisma?: PrismaClient;
+  segredoJwt?: string;
+  limites?: Partial<LimitesDeTaxa>;
+  bcryptCost?: number;
+  /** Emissor de eventos em tempo real (Passo 4). */
+  publicador?: Publicador;
+  /** Relógio injetável (testes). */
+  relogio?: () => Date;
 };
 
-/** Cria o app Express (sem abrir porta). Rotas de negócio entram na Fase 1. */
-export function createApp({ corsOrigins = [], checkDb }: AppDeps = {}): Express {
+/** Cria o app Express (sem abrir porta). */
+export function createApp({
+  corsOrigins = [],
+  checkDb,
+  prisma,
+  segredoJwt,
+  limites,
+  bcryptCost,
+  publicador,
+  relogio,
+}: AppDeps = {}): Express {
   const app = express();
 
   app.disable('x-powered-by');
@@ -38,6 +60,13 @@ export function createApp({ corsOrigins = [], checkDb }: AppDeps = {}): Express 
       timestamp: new Date().toISOString(),
     });
   });
+
+  if (prisma && segredoJwt) {
+    app.use(
+      '/api/v1',
+      criarRotas({ prisma, segredoJwt, limites, bcryptCost, publicador, relogio }),
+    );
+  }
 
   app.use((_req, _res, next) => next(erros.naoEncontrado('Rota não encontrada.')));
 

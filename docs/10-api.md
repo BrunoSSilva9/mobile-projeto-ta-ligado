@@ -2,7 +2,7 @@
 
 Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastro/login, registrar denúncia, listar ocorrências e mapa, detalhe, minhas denúncias, cancelar, listar denúncias no painel e atualizar status, além dos **eventos WebSocket**.
 
-- **Base:** `/api/v1` · **Formato:** JSON (`multipart/form-data` no envio de fotos) · **Datas:** ISO 8601 em UTC.
+- **Base:** `/api/v1` · **Formato:** JSON (`multipart/form-data` só quando as fotos entrarem, na Fase 2) · **Datas:** ISO 8601 em UTC.
 - **Autenticação:** `Authorization: Bearer <JWT>` em todas as rotas, exceto `register` e `login` ([ADR-0004](adr/0004-autenticacao-jwt-com-rbac.md)).
 - **Papéis:** `CIDADAO` (app) e `OPERADOR` (painel). Rotas `/painel/*` exigem `OPERADOR`.
 - **Regras:** referências `RN-xxx` em [regras-de-negocio.md](02-requisitos/regras-de-negocio.md).
@@ -14,7 +14,8 @@ Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastr
   "erro": {
     "codigo": "DENUNCIA_EM_ABERTO",
     "mensagem": "Você já tem uma denúncia em aberto.",
-    "detalhes": [{ "campo": "tipo", "mensagem": "Obrigatório" }]
+    "detalhes": [{ "campo": "tipo", "mensagem": "Obrigatório" }],
+    "dados": { "denunciaEmAbertoId": "uuid" }
   }
 }
 ```
@@ -26,7 +27,7 @@ Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastr
 | 403 | `SEM_PERMISSAO` | Papel insuficiente ou recurso de outro usuário (RN-014) |
 | 404 | `NAO_ENCONTRADO` | Recurso inexistente |
 | 409 | `EMAIL_JA_CADASTRADO` | E-mail repetido (RN-022) |
-| 409 | `DENUNCIA_EM_ABERTO` | Já existe denúncia em aberto do autor (RN-006) |
+| 409 | `DENUNCIA_EM_ABERTO` | Já existe denúncia em aberto do autor (RN-006). O corpo traz `erro.dados.denunciaEmAbertoId` para o app abrir essa denúncia |
 | 413 / 415 | `ARQUIVO_INVALIDO` | Foto > 5 MB ou tipo diferente de JPEG/PNG (RN-013) |
 | 422 | `TRANSICAO_INVALIDA` | Mudança de status não permitida (RN-004, RN-005) |
 | 422 | `JUSTIFICATIVA_OBRIGATORIA` | Improcedente sem justificativa (RN-010) |
@@ -81,7 +82,7 @@ Erros: 401 `CREDENCIAIS_INVALIDAS`, 429. O cliente recusa o papel que não for o
 | Método | Rota | Auth | Descrição | Requisito |
 |---|---|---|---|---|
 | GET | `/bairros` | Qualquer | Lista fixa de bairros e folhas | RN-021 |
-| GET | `/bairros/proximo?lat=&lng=` | Cidadão | Bairro de centro mais próximo (até 15 km) | RF-016, RN-025 |
+| GET | `/bairros/proximo?lat=&lng=` | Cidadão | Bairro de centro mais próximo (até 15 km); devolve também `distanciaKm`; 404 fora do raio | RF-016, RN-025 |
 | GET | `/bairros/status` | Cidadão | Status de cada bairro, contagem e previsão | RF-019, RF-023 |
 | GET | `/indicadores` | Cidadão | Indicadores dos últimos 30 dias | RF-018 |
 
@@ -112,7 +113,7 @@ Erros: 401 `CREDENCIAIS_INVALIDAS`, 429. O cliente recusa o papel que não for o
 | POST | `/denuncias/{id}/cancelar` | Cidadão (autor) | Cancela se `RECEBIDA` | RF-015 |
 | GET | `/denuncias/{id}/fotos/{fotoId}` | Autor ou Operador | Baixa a foto (rota autenticada) | RN-014, RNF-015 |
 
-**`POST /denuncias`** (`multipart/form-data`: campos de texto + até 3 arquivos `fotos`)
+**`POST /denuncias`** (JSON na Fase 1, decisão S-33; o `multipart/form-data` com até 3 arquivos `fotos` entra com B-031)
 ```
 tipo=SEM_ENERGIA               (obrigatório: SEM_ENERGIA | OSCILACAO)
 bairroId=3                     (obrigatório)
@@ -165,7 +166,7 @@ Erros: 404/403 se a denúncia não for do autor.
 |---|---|---|---|---|
 | GET | `/ocorrencias?status=&bairroId=&q=&page=&limite=` | Cidadão | Lista pública anonimizada e pinos do mapa | RF-019 a RF-021 |
 
-`status` aceita `SEM_LUZ`, `OSCILACAO`, `RESTABELECIDO` (ocorrências resolvidas recentemente) ou ausente (todos). `q` busca por bairro ou folha, sem acentos.
+`status` aceita `SEM_LUZ` (sem energia em aberto), `OSCILACAO` (oscilação em aberto), `RESTABELECIDO` (resolvidas nas **últimas 24 h**, decisão S-21) ou ausente (a união dos três). Improcedentes e canceladas nunca aparecem. `q` busca por bairro ou folha, sem acentos nem diferença de caixa, e combina com `bairroId` (interseção). Ordem: da mais recente para a mais antiga. Paginação: `page` (padrão 1) e `limite` (padrão 20, máximo 50). Acesso só de **cidadão** (operador recebe 403).
 
 ```json
 { "totais": { "todos": 18, "semLuz": 9, "oscilacao": 6, "restabelecidos": 3 },
@@ -175,25 +176,26 @@ Erros: 404/403 se a denúncia não for do autor.
       "criadoEm": "2026-11-18T13:37:00Z" } ],
   "pagina": 1, "total": 18 }
 ```
-Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arredondadas a 3 casas (RN-014).
+Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arredondadas a 3 casas (RN-014). `totais` respeita `bairroId` e `q`, mas **não** o chip escolhido (`status`), e `todos` é a soma dos três; `total` é o número de itens do chip escolhido. A resposta também traz `atualizadoEm` (ISO 8601).
 
 ### Painel da operadora (somente `OPERADOR`)
 
 | Método | Rota | Descrição | Requisito |
 |---|---|---|---|
-| GET | `/painel/denuncias?status=&tipo=&bairroId=&prioritarias=&page=&limite=` | Lista com filtros; prioritárias primeiro (RN-015) | RF-028, RF-029, RF-035 |
+| GET | `/painel/denuncias?status=&tipo=&bairroId=&prioritarias=&page=&limite=` | Lista com filtros; prioritárias primeiro e, em cada grupo, a mais antiga primeiro (RN-015) | RF-028, RF-029, RF-035 |
 | GET | `/painel/denuncias/{id}` | Detalhe completo (autor, telefone, fotos, histórico) | RF-030 |
 | PATCH | `/painel/denuncias/{id}/status` | Atualiza status (e previsão opcional) | RF-031 a RF-033, RF-036 |
 | PATCH | `/painel/denuncias/{id}/previsao` | Define/altera só a previsão de reparo | RF-033 |
 | GET | `/painel/bairros` | Agrupado por bairro (contagem por tipo e status) | RF-034 |
 | POST | `/painel/bairros/{bairroId}/resolver` | Resolve em lote todas as em aberto do bairro (RN-016) | RF-034 |
 
-**`GET /painel/denuncias`** → `200`
+**`GET /painel/denuncias`**: filtros opcionais e combináveis. `status` aceita um ou vários valores (`status=RECEBIDA,EM_ATENDIMENTO` ou o parâmetro repetido); `tipo` (`SEM_ENERGIA` | `OSCILACAO`); `bairroId`; `prioritarias` (`true` | `false`). Paginação: `page` (padrão 1) e `limite` (padrão 20, máximo 100). Parâmetro inválido: `400 VALIDACAO_ERRO`. O `total` respeita os filtros. → `200`
 ```json
 { "itens": [ { "id": "uuid", "protocolo": "TL-2026-000123", "prioritaria": true,
     "tipo": "SEM_ENERGIA", "status": "RECEBIDA",
-    "bairro": { "id": 3, "nome": "Cidade Nova" }, "logradouro": "Av. VP-3",
-    "latitude": -5.3712, "longitude": -49.1231, "criadoEm": "2026-11-18T14:02:10Z" } ],
+    "bairro": { "id": 3, "nome": "Cidade Nova", "folha": null }, "logradouro": "Av. VP-3",
+    "latitude": -5.3712, "longitude": -49.1231, "previsaoReparo": null,
+    "criadoEm": "2026-11-18T14:02:10Z" } ],
   "pagina": 1, "total": 12 }
 ```
 
@@ -207,14 +209,19 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 { "status": "IMPROCEDENTE", "justificativa": "Local sem interrupção confirmada pela equipe." }
 // 200: denúncia atualizada (mesma forma do detalhe)
 ```
-Erros: 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
+Regras: `justificativa` (10 a 500 caracteres) só vale para `IMPROCEDENTE` e é descartada nos outros status; `previsaoReparo` (ISO 8601) só vale enquanto a denúncia **continua em aberto** (com status final, `400`). A mudança é gravada só se o status ainda for o que o operador viu: se outra pessoa mudou antes (ex.: dois operadores ao mesmo tempo, ou o cidadão cancelou), a resposta é `422 TRANSICAO_INVALIDA` e só uma das requisições vence. O operador não pode cancelar pelo autor (`403`).
+Erros: 400, 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
 Efeitos: status + histórico na mesma transação (RNF-010); emite `denuncia:status-atualizado` (autor e operadores), `ocorrencia:atualizada` e `bairro:status-atualizado`; envia push (RN-019).
 
 **`POST /painel/bairros/{bairroId}/resolver`** → `200 { "resolvidas": 4 }`. Aplica `RESOLVIDA` a cada denúncia em aberto (exceção de RN-004, RN-016); cada uma gera histórico e eventos.
 
 ## Eventos WebSocket
 
-Conexão: `io(API_URL, { auth: { token } })` (Socket.IO 4). O servidor valida o JWT e inscreve o cliente em salas ([ADR-0002](adr/0002-socketio-para-tempo-real.md)):
+Conexão: `io(API_URL, { auth: { token }, transports: ['websocket'] })` (Socket.IO 4). O servidor valida o JWT **e confirma o usuário no banco** no *handshake* e inscreve o cliente em salas ([ADR-0002](adr/0002-socketio-para-tempo-real.md)).
+
+**Conexão recusada:** sem token, token inválido, expirado, de outro segredo ou de uma conta que não existe mais. O cliente recebe `connect_error` com `err.message = "NAO_AUTENTICADO"` e `err.data = { codigo: "NAO_AUTENTICADO", mensagem }`. A validade do token é conferida só ao conectar: uma conexão já aberta não é derrubada quando o token expira (ao reconectar é preciso um token válido).
+
+Salas:
 
 | Sala | Quem entra | Conteúdo |
 |---|---|---|
@@ -229,13 +236,14 @@ Todos os eventos são do servidor para o cliente. Os clientes **não** enviam ev
 | `denuncia:criada` | `papel:OPERADOR` | Após criar denúncia |
 | `denuncia:status-atualizado` | `usuario:{autorId}` e `papel:OPERADOR` | Mudança de status ou previsão |
 | `ocorrencia:atualizada` | `cidadaos` | Criação ou mudança de status (versão pública) |
-| `bairro:status-atualizado` | `cidadaos` | O status calculado de um bairro mudou |
+| `bairro:status-atualizado` | `cidadaos` | Sempre que o conjunto de denúncias em aberto do bairro muda (criação ou mudança de status/previsão): o servidor **recalcula** o status e envia o valor atual, que o cliente simplesmente substitui |
 
 **`denuncia:criada`** (operadores)
 ```json
 { "id": "uuid", "protocolo": "TL-2026-000123", "prioritaria": true,
   "tipo": "SEM_ENERGIA", "status": "RECEBIDA",
-  "bairro": { "id": 3, "nome": "Cidade Nova" }, "logradouro": "Av. VP-3",
+  "bairro": { "id": 3, "nome": "Cidade Nova", "folha": null }, "logradouro": "Av. VP-3",
+  "descricao": "Estalo forte no poste",
   "latitude": -5.3712, "longitude": -49.1231,
   "autor": { "id": "uuid", "nome": "Maria Silva", "telefone": "(94) 90000-0000" },
   "criadoEm": "2026-11-18T14:02:10Z" }
@@ -253,7 +261,7 @@ Todos os eventos são do servidor para o cliente. Os clientes **não** enviam ev
 
 **`bairro:status-atualizado`** (cidadãos)
 ```json
-{ "bairroId": 3, "nome": "Cidade Nova", "status": "SEM_LUZ", "emAberto": 4,
+{ "bairroId": 3, "nome": "Cidade Nova", "folha": null, "status": "SEM_LUZ", "emAberto": 4,
   "previsaoReparo": "2026-11-18T16:20:00Z" }
 ```
 

@@ -153,7 +153,23 @@ apps/mobile/
 └── __tests__/
 ```
 
-> **Ajuste da Fase 0:** no Expo SDK 58 as rotas ficam em **`src/app/`** (e não em `app/` na raiz do app), junto de `src/components`, `src/theme` e `src/config`. A aba central é um marcador `src/app/(tabs)/fab.tsx` (o botão `ReportFab` abre o modal `src/app/denunciar.tsx`), porque uma rota `denunciar` dentro e fora do grupo `(tabs)` teria a mesma URL.
+> **Ajuste da Fase 0:** no Expo SDK 58 as rotas ficam em **`src/app/`** (e não em `app/` na raiz do app), junto de `src/components`, `src/theme` e `src/config`. A aba central é um marcador `src/app/(app)/(tabs)/fab.tsx` (o botão `ReportFab` abre o modal `src/app/(app)/denunciar.tsx`), porque uma rota `denunciar` dentro e fora do grupo `(tabs)` teria a mesma URL.
+>
+> **Estrutura real após o Passo 6 (S-41):**
+> ```
+> src/app/
+> ├── _layout.tsx            # providers + Stack.Protected (sessão)
+> ├── (auth)/ { login, cadastro }          # só existe SEM sessão
+> ├── (app)/                               # só existe COM sessão
+> │   ├── (tabs)/ { index, ocorrencias, perfil, fab }
+> │   └── denunciar.tsx                    # modal (T-05)
+> └── termos.tsx · privacidade.tsx         # abertos com ou sem sessão
+> src/ { components, config, features/auth, legal, services, store, testing, theme, __tests__ }
+> ```
+> - **Sem sessão**, o app abre o login; **com sessão**, as abas. A regra está no layout raiz: `Stack.Protected guard={!logado} redirectTo="/"` para `(auth)` e `guard={logado} redirectTo="/login"` para `(app)`. **O `redirectTo="/login"` é obrigatório:** sem ele, um app aberto sem sessão mostra "Unmatched Route", porque a rota `/` só existe dentro de `(app)`.
+> - A sessão (token e usuário) fica no `expo-secure-store`; o layout raiz mantém a tela de abertura até a sessão ser lida (evita o login "piscar" para quem já entrou).
+> - Um 401 `NAO_AUTENTICADO` com token derruba a sessão e limpa o cache (`encerrarSessao`); a guarda leva ao login sozinha.
+> - Arquivos de teste ficam **fora** de `src/app/` (o Expo Router os trataria como rotas): em `src/__tests__/` (telas e navegação) e ao lado do código (lógica); auxiliares em `src/testing/`.
 
 ### Gerenciamento de estado
 
@@ -171,7 +187,7 @@ Eventos WebSocket **não** criam um segundo "banco" no cliente: apenas atualizam
 
 O app é *offline-tolerante*, não *offline-first*:
 
-1. **Leitura:** o cache do TanStack Query é persistido em `AsyncStorage` (`persistQueryClient`). Sem rede, abre Home, Ocorrências e Minhas denúncias com o último estado e um `OfflineBanner` com a data da última atualização (RNF-007). A rede é monitorada com `@react-native-community/netinfo`.
+1. **Leitura:** o cache do TanStack Query é persistido em `AsyncStorage` (`persistQueryClient`). Sem rede, abre Home, Ocorrências e Minhas denúncias com o último estado e uma faixa de aviso (`AvisoDeConexao`) com a data da última atualização (RNF-007). O cache vale 24 h, só guarda leituras de uma lista permitida e é apagado ao sair da conta. A rede é monitorada com `@react-native-community/netinfo`.
 2. **Escrita:** o envio de denúncia exige conexão. O formulário é salvo como **rascunho** local a cada alteração e limpo apenas após `201` (RNF-008). Sem rede, o botão mostra o erro e preserva os dados.
 3. **Sem fila automática:** evita duplicidade e conflito com a regra de uma denúncia em aberto (RN-006). Fila de envio offline fica no backlog.
 4. **Tempo real:** ao reconectar o WebSocket (ou voltar ao primeiro plano), o app **refaz as consultas ativas** para recuperar o que perdeu (RNF-009).

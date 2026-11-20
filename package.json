@@ -11,7 +11,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "concurrently -k -n api,painel,mobile -c blue,green,magenta \"npm:dev:api\" \"npm:dev:painel\" \"npm:dev:mobile\"",
+    "dev": "concurrently -k -n api,painel -c blue,green \"npm:dev:api\" \"npm:dev:painel\"",
     "dev:api": "npm run dev -w apps/api",
     "dev:painel": "npm run dev -w apps/painel",
     "dev:mobile": "npm run start -w apps/mobile",

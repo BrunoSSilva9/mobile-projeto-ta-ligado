@@ -26,7 +26,7 @@ docs/         # toda a documentação
 .github/      # templates de issue/PR e CI
 ```
 
-Status atual: documentação pronta; **Fase 0 concluída e validada na branch `feature/setup-inicial`** (ver `CHANGELOG.md`; falta só testar no Expo Go em um celular). Rotas do app em `apps/mobile/src/app/`. Próximo passo: validar a Fase 0 e seguir para a Fase 1 (`docs/14-roadmap-e-backlog.md`). Não faça merge na `develop` sem aprovação do usuário. **A Fase 1 inteira é feita na branch `feature/fase-1`, com um único PR** (S-42).
+Status atual: documentação pronta; Fase 0 concluída e mergeada na `develop`; **Fase 1 implementada (Passos 1 a 13) na branch `feature/fase-1`** (ver `CHANGELOG.md`). Falta o **ensaio manual do roteiro de demonstração** (README) no Expo Go + painel + API, e então o merge do PR único (S-42) na `develop`, que depende de aprovação do usuário. Rotas do app em `apps/mobile/src/app/`. Próximo: Fase 2 (`docs/14-roadmap-e-backlog.md`): fotos, pessoas afetadas e necessidade especial, cancelar denúncia, perfil completo, indicadores e, por último, push (precisa de development build). Não faça merge na `develop` sem aprovação do usuário.
 
 ## Onde fica cada documento
 
@@ -74,6 +74,21 @@ Status atual: documentação pronta; **Fase 0 concluída e validada na branch `f
 ## Pendências conhecidas (resumo; lista completa em `docs/01-visao-e-escopo.md`)
 
 ACGM (rodapé), telefones e horário reais da Ouvidoria/Central, textos finais de Termos e Política, chave do Google Maps e credenciais de push, lista real de bairros com coordenadas, telas que faltam no Figma (login, perfil, minhas denúncias, detalhe, sucesso, painel).
+
+## Armadilhas já encontradas (leia antes de mexer)
+
+- **Expo Router + sessão:** o `Stack.Protected` do grupo `(app)` precisa de `redirectTo="/login"`; sem isso o app sem sessão mostra "Unmatched Route". Há testes da navegação real em `apps/mobile/src/__tests__/guarda-de-rotas.test.tsx`.
+- **Arquivos de teste fora de `src/app/`** (o Expo Router os tomaria por rotas). Auxiliares de teste ficam em `src/testing/`, nunca em `__tests__/` (o Jest os trataria como testes).
+- **RNTL v14:** `render`, `rerender` e `fireEvent` são assíncronos (use `await`).
+- **TanStack Query nos testes:** use `configurarCacheParaTestes()` (`gcTime: 0`); sem isso o Jest não encerra, por causa do temporizador de coleta de lixo.
+- **Papel de alerta em leitores de tela:** coloque `accessibilityRole="alert"` no `Text`, não num `View` com botões dentro (um `View` acessível agrupa os filhos).
+- **Prettier:** rode sempre pela raiz (`npm run format`); dentro de `apps/*` ele ignora o `.prettierignore` e reformata os `.md`.
+- **Testes do mapa e do GPS:** `react-native-maps` e `@react-native-async-storage/async-storage` são simulados em `apps/mobile/jest.setup.js`; `expo-location` e `expo-clipboard` são simulados em cada teste. O mapa usa `importantForAccessibility="no-hide-descendants"`, então o pino só é achado com `getByTestId('pino', { includeHiddenElements: true })`. Um `setTimeout` pendente (ex.: GPS que nunca responde) impede o Jest de encerrar: nos testes faça o GPS responder.
+- **Rotas novas e `typedRoutes`:** depois de criar uma rota em `src/app/`, rode `npx expo customize tsconfig.json` (em `apps/mobile`) para regenerar `.expo/types/router.d.ts`; sem isso o `tsc` recusa o `router.push` para a rota nova.
+- **Socket.IO nos testes:** `socket.io-client` é simulado em `jest.setup.js`; use `src/testing/socket.ts` (`ultimoSocket().__emitir('evento', dados)`). Ao preencher o cache à mão com `setQueryData` não use `gcTime: 0` (os dados somem na hora): use `gcTime: Infinity`, que também não cria temporizador.
+- **Testes do painel com TanStack Query:** o React Query avisa os componentes em lote (`setTimeout`), então depois de `setQueryData`/evento do socket use `findBy*`/`waitFor`, nunca `getBy*` direto. O `fetch` falso responde por endereço (`tests/ajudas.tsx`) e devolve a mesma lista para qualquer filtro: se o teste depende do filtro, faça a resposta olhar a URL. O Socket.IO é simulado em `tests/setup.ts` (`tests/socket.ts` → `emitir`).
+- **`fireEvent` sem `await` derruba os testes seguintes** (RNTL v14): a promessa solta deixa o `render` seguinte em estado inválido e vários testes falham em cascata, até os triviais. Se um teste simples falha só quando roda junto com os outros, procure um `fireEvent` sem `await` antes dele. Nos mocks de mapa (`jest.setup.js`) as props importantes vão em `accessibilityLabel` como JSON, porque o nó que o RNTL devolve não traz `coordinate` nem `strokeColor`.
+- **API:** `PATCH` de status usa gravação condicional ao status lido (conflito vira 422). Testes de integração só rodam em banco `*_test`.
 
 ## Ao implementar
 
