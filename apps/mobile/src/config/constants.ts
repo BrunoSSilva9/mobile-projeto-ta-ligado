@@ -22,3 +22,6 @@ export const APP = {
 
 /** URL da API. No celular use o IP da máquina na rede local (ex.: http://192.168.0.10:3000). */
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+
+/** Versão dos Termos de Uso e da Política de Privacidade aceitos no cadastro (RN-020, docs/legal). */
+export const VERSAO_TERMOS = '2026-11';
