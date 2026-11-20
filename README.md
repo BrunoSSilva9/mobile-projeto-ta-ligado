@@ -38,13 +38,16 @@ npm run db:up
 npm run db:migrate
 npm run db:seed
 
-# 5. Subir tudo (API, painel e Expo) com um comando...
-npm run dev
+# 5. Subir a API e o painel com um comando...
+npm run dev          # API em http://localhost:3000 e painel em http://localhost:5173
+#    ...e o app em OUTRO terminal (precisa de terminal interativo para mostrar o QR code):
+npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 #    ...ou cada app separado:
 npm run dev:api      # http://localhost:3000  (GET /health)
 npm run dev:painel   # http://localhost:5173
-npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 ```
+
+**Por que o app fica em outro terminal:** o Expo só desenha o QR code e aceita atalhos (`r`, `a`, `s`) em terminal interativo. Quando ele roda junto com os outros apps pelo `npm run dev` (a saída passa por um filtro), ele sobe o Metro mas mostra só "Waiting on http://localhost:8081", sem QR code. Por isso `npm run dev` sobe só a API e o painel, e o app sobe com `npm run dev:mobile` num segundo terminal. Sem QR code, também dá para abrir `exp://<IP da máquina>:8081` no Expo Go.
 
 **Conta Expo (obrigatória):** o Expo Go exige que o Expo CLI do computador e o app Expo Go do celular estejam **logados na mesma conta Expo** (gratuita, em <https://expo.dev/signup>). No computador rode `npx expo login` (confira com `npx expo whoami`) e entre com a mesma conta no Expo Go. Sem isso, o celular mostra "You need to be signed in to Expo Go and Expo CLI". O celular e o computador também precisam estar na mesma rede; em redes que isolam aparelhos (como o Wi-Fi da universidade), use `npx expo start --tunnel` em `apps/mobile`.
 
@@ -60,7 +63,7 @@ npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 
 Teste ponta a ponta, com os três lados ao mesmo tempo (API, painel no navegador e app no celular):
 
-1. `npm run db:up`, `npm run db:seed` e `npm run dev` (API em `:3000`, painel em `:5173` e Expo).
+1. `npm run db:up`, `npm run db:seed` e `npm run dev` (API em `:3000` e painel em `:5173`). Em **outro terminal**, `npm run dev:mobile` (Expo e QR code).
 2. **Painel:** entre como `operador@taligado.local` (senha em `apps/api/.env`). Abra a aba **Lista** e clique em **Ativar som**.
 3. **Celular (Expo Go):** **cadastre** uma conta de cidadão e entre. Na Início, confira "Olá, {nome}!", o selo **Rede Estável** e o mini-mapa.
 4. **Denunciar:** toque em "Registre sua denúncia", escolha **Sem energia**, confira o bairro sugerido pelo GPS e **envie**. Anote o protocolo (`TL-AAAA-NNNNNN`).

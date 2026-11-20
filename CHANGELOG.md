@@ -91,6 +91,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - **Testes novos:** 33 no app (424 no total, 25 suítes) e 3 na API. Cobertura da API acima de 98%, 100% no domínio.
 
 ### Alterado
+- `npm run dev` agora sobe só a API e o painel; o app sobe com `npm run dev:mobile` em outro terminal. Rodando junto pelo `concurrently` (saída sem terminal interativo), o Expo não desenha o QR code. README ajustado.
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 
 ### Adicionado (planejamento da Fase 1)
