@@ -8,6 +8,7 @@ import {
   armazenamentoEmMemoria,
   configurarCacheParaTestes,
   renderizarTela,
+  resposta,
   SESSAO_DE_CIDADAO,
   tocar,
 } from '@/testing/ajudas';
@@ -25,6 +26,10 @@ jest.mock('@/services/armazenamento', () => {
 
 beforeAll(configurarCacheParaTestes);
 beforeEach(async () => {
+  // O Perfil consulta as denúncias do usuário (contador de "em aberto").
+  global.fetch = jest.fn(async () =>
+    resposta(200, { itens: [], pagina: 1, total: 0 }),
+  ) as unknown as typeof fetch;
   armazenamentoEmMemoria.clear();
   queryClient.clear();
   await useSessao.getState().entrar({
@@ -68,7 +73,11 @@ describe('T-08 Perfil mínimo (RF-004, decisão S-37)', () => {
     });
 
     it('apaga os dados em cache do usuário que saiu', async () => {
-      queryClient.setQueryData(['minhas-denuncias'], [{ id: 'd1' }]);
+      queryClient.setQueryData(['minhas-denuncias'], {
+        itens: [{ id: 'd1', status: 'RECEBIDA' }],
+        pagina: 1,
+        total: 1,
+      });
       await renderizarTela(<PerfilScreen />);
 
       await tocar('Sair');

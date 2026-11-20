@@ -43,6 +43,15 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - **Dependências fixadas:** `expo-location ~58.0.22`, `react-native-maps 1.29.11`, `@react-native-async-storage/async-storage 2.2.0`, `expo-clipboard ~58.0.4`. O plugin do `expo-location` no `app.config.ts` traz o texto da permissão.
   - **84 testes novos** (273 no total, 18 suítes): schemas, API, rascunho, localização e as telas T-05 e T-06; o teste de navegação real agora abre a T-05 de verdade. Os módulos nativos (mapa, GPS, área de transferência) são simulados nos testes (`jest.setup.js`); o comportamento real no Expo Go precisa ser conferido em um celular.
 
+- **Passo 8 – app: acompanhamento em tempo real** (T-07 Detalhe, T-09 Minhas denúncias, T-08 com "Minhas denúncias"):
+  - **Tempo real:** `SocketProvider` abre o Socket.IO com o token da sessão (só WebSocket) enquanto há login e o fecha ao sair ou trocar de conta. O evento `denuncia:status-atualizado` é validado e aplicado ao cache do TanStack Query: o detalhe e a lista mudam sozinhos, sem recarregar (RF-024). Eventos fora de ordem e repetidos são ignorados, e uma mudança só de previsão não cria linha no histórico. Ao **reconectar**, as consultas de denúncias são refeitas (RNF-009); se o servidor recusar o token, a sessão é encerrada. Uma faixa "Reconectando…" avisa quando o tempo real caiu.
+  - **T-09:** lista com protocolo, tipo, bairro, data e selo de status; estado vazio com botão "Fazer denúncia", carregando e erro com "Tentar novamente"; puxar para atualizar.
+  - **T-07:** selo de status, local, descrição, previsão de reparo (só enquanto está em aberto), justificativa quando improcedente e **histórico em linha do tempo** ("Você" / "Equatorial Pará"). Denúncia de outro usuário aparece como "não encontrada". Sem botão de cancelar (Fase 2, B-036).
+  - **Perfil:** item "Minhas denúncias" com o número de denúncias em aberto.
+  - **Componentes:** `StatusBadge` (ponto colorido + nome, a cor nunca é a única pista), `StatusTimeline`, `ComplaintListItem`, `CabecalhoDeTela`, `AvisoDeConexao`. Datas sempre no horário de Marabá (UTC−3), formatadas à mão.
+  - **Dependência fixada:** `socket.io-client 4.8.4` (mesma versão do servidor).
+  - **57 testes novos** (330 no total, 21 suítes): reducers do cache, validação de eventos, status e datas, `SocketProvider` (conexão, evento, reconexão, token recusado, troca de conta) e as telas T-07, T-09 e Perfil, incluindo "mudança do painel aparece na tela aberta sem recarregar". O WebSocket real e o teste com os dois lados continuam sendo manuais.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 

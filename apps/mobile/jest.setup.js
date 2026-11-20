@@ -18,3 +18,34 @@ jest.mock('react-native-maps', () => {
     });
   return { __esModule: true, default: MapView, Marker };
 });
+
+// Socket.IO: cliente falso e controlável. Os testes pegam os sockets criados com
+// `jest.requireMock('socket.io-client').__sockets` e disparam eventos com `__emitir`.
+jest.mock('socket.io-client', () => {
+  const sockets = [];
+  const io = (url, opcoes) => {
+    const ouvintes = {};
+    const socket = {
+      url,
+      opcoes,
+      connected: false,
+      on(evento, fn) {
+        (ouvintes[evento] ??= []).push(fn);
+        return socket;
+      },
+      removeAllListeners() {
+        for (const k of Object.keys(ouvintes)) delete ouvintes[k];
+        return socket;
+      },
+      disconnect: jest.fn(() => {
+        socket.connected = false;
+      }),
+      __emitir(evento, ...args) {
+        (ouvintes[evento] ?? []).forEach((fn) => fn(...args));
+      },
+    };
+    sockets.push(socket);
+    return socket;
+  };
+  return { __esModule: true, io, __sockets: sockets };
+});

@@ -84,6 +84,8 @@ ACGM (rodapé), telefones e horário reais da Ouvidoria/Central, textos finais d
 - **Papel de alerta em leitores de tela:** coloque `accessibilityRole="alert"` no `Text`, não num `View` com botões dentro (um `View` acessível agrupa os filhos).
 - **Prettier:** rode sempre pela raiz (`npm run format`); dentro de `apps/*` ele ignora o `.prettierignore` e reformata os `.md`.
 - **Testes do mapa e do GPS:** `react-native-maps` e `@react-native-async-storage/async-storage` são simulados em `apps/mobile/jest.setup.js`; `expo-location` e `expo-clipboard` são simulados em cada teste. O mapa usa `importantForAccessibility="no-hide-descendants"`, então o pino só é achado com `getByTestId('pino', { includeHiddenElements: true })`. Um `setTimeout` pendente (ex.: GPS que nunca responde) impede o Jest de encerrar: nos testes faça o GPS responder.
+- **Rotas novas e `typedRoutes`:** depois de criar uma rota em `src/app/`, rode `npx expo customize tsconfig.json` (em `apps/mobile`) para regenerar `.expo/types/router.d.ts`; sem isso o `tsc` recusa o `router.push` para a rota nova.
+- **Socket.IO nos testes:** `socket.io-client` é simulado em `jest.setup.js`; use `src/testing/socket.ts` (`ultimoSocket().__emitir('evento', dados)`). Ao preencher o cache à mão com `setQueryData` não use `gcTime: 0` (os dados somem na hora): use `gcTime: Infinity`, que também não cria temporizador.
 - **API:** `PATCH` de status usa gravação condicional ao status lido (conflito vira 422). Testes de integração só rodam em banco `*_test`.
 
 ## Ao implementar

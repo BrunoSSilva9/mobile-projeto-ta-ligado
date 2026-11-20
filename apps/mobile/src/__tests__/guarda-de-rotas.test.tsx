@@ -64,6 +64,8 @@ function salvarSessaoNoAparelho() {
 beforeAll(configurarCacheParaTestes);
 beforeEach(async () => {
   mockFetch.mockReset();
+  // Padrão: a lista de denúncias do Perfil vem vazia; os testes de 401 trocam a resposta.
+  mockFetch.mockImplementation(async () => resposta(200, { itens: [], pagina: 1, total: 0 }));
   global.fetch = mockFetch as unknown as typeof fetch;
   armazenamentoEmMemoria.clear();
   queryClient.clear();

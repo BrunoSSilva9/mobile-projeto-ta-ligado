@@ -1,18 +1,23 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { Logo } from '@/components/Logo';
+import { contarEmAberto, useMinhasDenuncias } from '@/features/acompanhamento/hooks';
 import { encerrarSessao } from '@/services/api';
 import { useSessao } from '@/store/session';
-import { colors, radius, space, type } from '@/theme';
+import { colors, radius, size, space, type } from '@/theme';
 
 /**
- * T-08 (mínimo na Fase 1, decisão S-37): dados da conta e "Sair" (RF-004).
- * "Minhas denúncias" entra no Passo 8; editar dados e excluir conta, na Fase 2.
+ * T-08 (mínimo na Fase 1, decisão S-37): dados da conta, "Minhas denúncias" e "Sair" (RF-004).
+ * Editar dados e excluir conta ficam para a Fase 2.
  */
 export default function PerfilScreen() {
   const usuario = useSessao((s) => s.usuario);
+  const minhas = useMinhasDenuncias();
+  const abertas = minhas.data ? contarEmAberto(minhas.data.itens) : null;
 
   return (
     <SafeAreaView style={styles.tela} edges={['top']}>
@@ -29,6 +34,20 @@ export default function PerfilScreen() {
           <Linha rotulo="E-mail" valor={usuario?.email} />
           <Linha rotulo="Telefone" valor={usuario?.telefone ?? 'Não informado'} />
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            abertas ? `Minhas denúncias, ${abertas} em aberto` : 'Minhas denúncias'
+          }
+          onPress={() => router.push('/minhas-denuncias')}
+          style={styles.item}
+        >
+          <Ionicons name="document-text-outline" size={22} color={colors.action} />
+          <Text style={[type.subtitle, styles.itemTexto]}>Minhas denúncias</Text>
+          {abertas ? <Text style={[type.label, styles.contador]}>{abertas} EM ABERTO</Text> : null}
+          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+        </Pressable>
 
         <Button
           testID="botao-sair"
@@ -64,4 +83,15 @@ const styles = StyleSheet.create({
   linha: { gap: space.half },
   rotulo: { color: colors.textSecondary },
   valor: { color: colors.textPrimary },
+  item: {
+    minHeight: size.touchMin,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.m,
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.card,
+    paddingHorizontal: space.l,
+  },
+  itemTexto: { flex: 1, color: colors.textPrimary },
+  contador: { color: colors.action },
 });
