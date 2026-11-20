@@ -65,7 +65,20 @@ beforeAll(configurarCacheParaTestes);
 beforeEach(async () => {
   mockFetch.mockReset();
   // Padrão: a lista de denúncias do Perfil vem vazia; os testes de 401 trocam a resposta.
-  mockFetch.mockImplementation(async () => resposta(200, { itens: [], pagina: 1, total: 0 }));
+  mockFetch.mockImplementation(async (url: string) => {
+    if (url.endsWith('/bairros')) return resposta(200, { bairros: [] });
+    if (url.includes('/bairros/status')) return resposta(200, { atualizadoEm: '', bairros: [] });
+    if (url.includes('/ocorrencias')) {
+      return resposta(200, {
+        itens: [],
+        pagina: 1,
+        total: 0,
+        totais: { todos: 0, semLuz: 0, oscilacao: 0, restabelecidos: 0 },
+        atualizadoEm: '',
+      });
+    }
+    return resposta(200, { itens: [], pagina: 1, total: 0 });
+  });
   global.fetch = mockFetch as unknown as typeof fetch;
   armazenamentoEmMemoria.clear();
   queryClient.clear();
@@ -89,6 +102,7 @@ describe('sem sessão', () => {
       expect(await screen.findByText('Entre na sua conta')).toBeTruthy();
       expect(screen).toHavePathname('/login');
       expect(screen.queryByText(/EM CONSTRUÇÃO/)).toBeNull();
+      expect(screen.queryByText('Olá, Maria!')).toBeNull();
       expect(screen.queryByText('Onde faltou luz?')).toBeNull();
       expect(screen.queryByRole('button', { name: 'Sair' })).toBeNull();
     },
@@ -133,7 +147,7 @@ describe('com sessão salva no aparelho', () => {
   it('ao abrir o app, vai direto às abas (sem passar pelo login)', async () => {
     await abrirApp();
 
-    expect(await screen.findByText('T-03 · EM CONSTRUÇÃO')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
     expect(screen).toHavePathname('/');
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
   });
@@ -141,20 +155,20 @@ describe('com sessão salva no aparelho', () => {
   it('abrir o login leva às abas', async () => {
     await abrirApp('/login');
 
-    expect(await screen.findByText('T-03 · EM CONSTRUÇÃO')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
     expect(screen).not.toHavePathname('/login');
   });
 
   it('abrir o cadastro leva às abas', async () => {
     await abrirApp('/cadastro');
 
-    expect(await screen.findByText('T-03 · EM CONSTRUÇÃO')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
     expect(screen).not.toHavePathname('/cadastro');
   });
 
   it('tem as abas Início, Ocorrências e Perfil e o botão central Denunciar', async () => {
     await abrirApp();
-    await screen.findByText('T-03 · EM CONSTRUÇÃO');
+    await screen.findByText('Olá, Maria!');
 
     for (const nome of ['Início', 'Ocorrências', 'Perfil', 'Denunciar falta de luz']) {
       expect(screen.getByRole('button', { name: nome })).toBeTruthy();
@@ -163,7 +177,7 @@ describe('com sessão salva no aparelho', () => {
 
   it('o botão central abre o formulário de denúncia (T-05)', async () => {
     await abrirApp();
-    await screen.findByText('T-03 · EM CONSTRUÇÃO');
+    await screen.findByText('Olá, Maria!');
 
     await fireEvent.press(screen.getByRole('button', { name: 'Denunciar falta de luz' }));
 
@@ -196,7 +210,7 @@ describe('mudanças de sessão com o app aberto', () => {
       await useSessao.getState().entrar(SESSAO_DE_CIDADAO);
     });
 
-    expect(await screen.findByText('T-03 · EM CONSTRUÇÃO')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
   });
 
@@ -230,7 +244,7 @@ describe('mudanças de sessão com o app aberto', () => {
   it('sessão expirada: um 401 do servidor derruba a sessão e leva ao login', async () => {
     salvarSessaoNoAparelho();
     await abrirApp();
-    await screen.findByText('T-03 · EM CONSTRUÇÃO');
+    await screen.findByText('Olá, Maria!');
     mockFetch.mockResolvedValue(
       resposta(401, erroDaApi('NAO_AUTENTICADO', 'Sessão inválida ou expirada. Entre novamente.')),
     );
@@ -247,7 +261,7 @@ describe('mudanças de sessão com o app aberto', () => {
   it('o 401 envia o token da sessão no cabeçalho antes de derrubá-la', async () => {
     salvarSessaoNoAparelho();
     await abrirApp();
-    await screen.findByText('T-03 · EM CONSTRUÇÃO');
+    await screen.findByText('Olá, Maria!');
     mockFetch.mockResolvedValue(resposta(401, erroDaApi('NAO_AUTENTICADO', 'Expirada.')));
 
     await act(async () => {
@@ -276,10 +290,10 @@ describe('abertura do app', () => {
 
     // Enquanto lê o aparelho, nem o login "pisca" na tela.
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
-    expect(screen.queryByText('T-03 · EM CONSTRUÇÃO')).toBeNull();
+    expect(screen.queryByText('Olá, Maria!')).toBeNull();
 
     await act(async () => liberar(JSON.stringify(SESSAO_DE_CIDADAO)));
-    expect(await screen.findByText('T-03 · EM CONSTRUÇÃO')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
     jest.restoreAllMocks();
   });

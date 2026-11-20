@@ -6,6 +6,12 @@ import {
   eventoDeStatusValido,
   refazerConsultasDeDenuncias,
 } from '@/features/acompanhamento/cache';
+import {
+  aplicarStatusDoBairro,
+  atualizarListaDeOcorrencias,
+  eventoDoBairroValido,
+  refazerConsultasPublicas,
+} from '@/features/ocorrencias/cache';
 import { encerrarSessao } from '@/services/api';
 import { conectarSocket, type EstadoDaConexao } from '@/services/socket';
 import { useSessao } from '@/store/session';
@@ -32,7 +38,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       token,
       aoConectar: (reconectou) => {
         setEstado('conectado');
-        if (reconectou) void refazerConsultasDeDenuncias(queryClient);
+        if (reconectou) {
+          void refazerConsultasDeDenuncias(queryClient);
+          void refazerConsultasPublicas(queryClient);
+        }
       },
       aoCair: () => setEstado((atual) => (atual === 'conectando' ? atual : 'reconectando')),
       aoSerRecusado: () => void encerrarSessao(),
@@ -41,6 +50,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socket.on('denuncia:status-atualizado', (bruto: unknown) => {
       const evento = eventoDeStatusValido(bruto);
       if (evento) aplicarEventoDeStatus(queryClient, evento);
+    });
+
+    // Visão pública (RF-023): o selo e o círculo do bairro mudam na hora; a lista é buscada de novo.
+    socket.on('bairro:status-atualizado', (bruto: unknown) => {
+      const evento = eventoDoBairroValido(bruto);
+      if (evento) aplicarStatusDoBairro(queryClient, evento);
+    });
+    socket.on('ocorrencia:atualizada', () => {
+      void atualizarListaDeOcorrencias(queryClient);
     });
 
     return () => {

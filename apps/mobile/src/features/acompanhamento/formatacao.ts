@@ -19,3 +19,16 @@ export function formatarDataHora(iso: string | null | undefined): string {
 export function formatarData(iso: string | null | undefined): string {
   return formatarDataHora(iso).split(' às ')[0] ?? '';
 }
+
+/** "Há 5 min", "Há 2 h", "Há 3 dias"; no futuro ou com data inválida, "Agora". */
+export function tempoDesde(iso: string | null | undefined, agoraMs: number = Date.now()): string {
+  const ms = iso ? Date.parse(iso) : NaN;
+  if (Number.isNaN(ms)) return '';
+  const minutos = Math.floor((agoraMs - ms) / 60_000);
+  if (minutos < 1) return 'Agora';
+  if (minutos < 60) return `Há ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `Há ${horas} h`;
+  const dias = Math.floor(horas / 24);
+  return `Há ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
+}

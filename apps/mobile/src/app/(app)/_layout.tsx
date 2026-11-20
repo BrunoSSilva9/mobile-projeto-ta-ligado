@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 
+import { LocalizacaoProvider } from '@/providers/LocalizacaoProvider';
 import { SocketProvider } from '@/providers/SocketProvider';
 
 /**
@@ -9,13 +10,15 @@ import { SocketProvider } from '@/providers/SocketProvider';
 export default function AppLayout() {
   return (
     <SocketProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="denunciar" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="denuncia/sucesso" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="denuncia/[id]" />
-        <Stack.Screen name="minhas-denuncias" />
-      </Stack>
+      <LocalizacaoProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="denunciar" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="denuncia/sucesso" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="denuncia/[id]" />
+          <Stack.Screen name="minhas-denuncias" />
+        </Stack>
+      </LocalizacaoProvider>
     </SocketProvider>
   );
 }

@@ -147,6 +147,8 @@ flowchart LR
 - **Estados:** não desenhados. Previstos: vazio ("Nenhuma ocorrência no momento"), carregando, erro, offline.
 - **Ajustes ao protótipo:** "3 denúncias no raio de 500 m hoje" → "N denúncias em aberto no seu bairro" (S-04); rótulo "Atualizado agora" vira o horário real do último evento; rótulo de aba "Ocorrências".
 
+- **Implementação (Passo 12):** T-03 mostra "Olá, {nome}!", o selo Rede Estável/Instável (RN-008), o mini-mapa e o atendimento; **não** tem painel comunitário, "alterar endereço" nem indicadores (Fase 2). T-04: busca por bairro/folha, chips com contagem, mapa com círculo por bairro e pinos, lista pública anonimizada (50 mais recentes) e banner. O botão de detalhe de cada item (resumo anonimizado, S-24) não foi feito; a lista é só de leitura. O botão de perfil do cabeçalho da Home se chama "Meu perfil" para não repetir o nome da aba "Perfil".
+
 ### T-05 – Registrar Denúncia
 [Figma `2033:655`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-655) · RF-007 a RF-011 · RN-002, RN-006, RN-012, RN-013, RN-015
 

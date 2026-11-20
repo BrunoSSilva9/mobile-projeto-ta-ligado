@@ -16,7 +16,13 @@ jest.mock('react-native-maps', () => {
       accessibilityLabel: JSON.stringify(props.coordinate),
       ...props,
     });
-  return { __esModule: true, default: MapView, Marker };
+  const Circle = (props) =>
+    React.createElement(View, {
+      testID: 'circulo',
+      accessibilityLabel: JSON.stringify({ center: props.center, strokeColor: props.strokeColor }),
+      ...props,
+    });
+  return { __esModule: true, default: MapView, Marker, Circle };
 });
 
 // Socket.IO: cliente falso e controlável. Os testes pegam os sockets criados com
