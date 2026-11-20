@@ -122,4 +122,5 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 - **Instalado no Passo 8 (app):** `socket.io-client 4.8.4`.
 - **Instalados no Passo 9 (painel):** `leaflet 1.9.4`, `react-leaflet 5.0.0`, `@types/leaflet 1.9.22`, `@tanstack/react-query 5.108.1` e `zustand 5.1.0`.
 - **Instalado no Passo 10 (painel):** `socket.io-client 4.8.4`.
+- **Instalados no Passo 13 (app):** `@react-native-community/netinfo 12.0.1`, `@tanstack/react-query-persist-client 5.108.1` e `@tanstack/query-async-storage-persister 5.108.1`.
 - **Ainda não instalados** (entram quando a funcionalidade for implementada): `expo-image-picker` e `expo-notifications`.

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { CabecalhoDeTela } from '@/components/CabecalhoDeTela';
-import { EmptyState, ErrorState, LoadingState } from '@/components/Estados';
+import { CarregandoOuOffline, EmptyState, ErrorState } from '@/components/Estados';
 import { StatusBadge } from '@/components/StatusBadge';
 import { StatusTimeline } from '@/components/StatusTimeline';
 import type { DenunciaDetalhe } from '@/features/acompanhamento/api';
@@ -30,7 +30,11 @@ export default function DetalheDaDenunciaScreen() {
       <CabecalhoDeTela titulo={d?.protocolo ?? 'Denúncia'} />
 
       {!d && consulta.isPending ? (
-        <LoadingState mensagem="Carregando a denúncia…" />
+        <CarregandoOuOffline
+          pausada={consulta.fetchStatus === 'paused'}
+          mensagem="Carregando a denúncia…"
+          onTentarDeNovo={() => void consulta.refetch()}
+        />
       ) : !d && consulta.error instanceof ErroDeApi && consulta.error.status === 404 ? (
         <EmptyState titulo="Denúncia não encontrada" descricao="Ela não existe ou não é sua." />
       ) : !d ? (

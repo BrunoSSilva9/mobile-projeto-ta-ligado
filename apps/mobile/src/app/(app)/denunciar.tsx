@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { AvisoRecolhivel } from '@/components/AvisoRecolhivel';
 import { Button } from '@/components/Button';
 import { MiniMapa } from '@/components/MiniMapa';
@@ -172,6 +173,8 @@ export default function DenunciarScreen() {
               Conte o que está acontecendo. A operadora recebe sua denúncia na hora.
             </Text>
           </View>
+
+          <AvisoDeConexao escrita />
 
           <BlocoDoGps gps={gps} />
 

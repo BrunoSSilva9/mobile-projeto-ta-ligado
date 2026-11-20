@@ -187,7 +187,7 @@ Eventos WebSocket **não** criam um segundo "banco" no cliente: apenas atualizam
 
 O app é *offline-tolerante*, não *offline-first*:
 
-1. **Leitura:** o cache do TanStack Query é persistido em `AsyncStorage` (`persistQueryClient`). Sem rede, abre Home, Ocorrências e Minhas denúncias com o último estado e um `OfflineBanner` com a data da última atualização (RNF-007). A rede é monitorada com `@react-native-community/netinfo`.
+1. **Leitura:** o cache do TanStack Query é persistido em `AsyncStorage` (`persistQueryClient`). Sem rede, abre Home, Ocorrências e Minhas denúncias com o último estado e uma faixa de aviso (`AvisoDeConexao`) com a data da última atualização (RNF-007). O cache vale 24 h, só guarda leituras de uma lista permitida e é apagado ao sair da conta. A rede é monitorada com `@react-native-community/netinfo`.
 2. **Escrita:** o envio de denúncia exige conexão. O formulário é salvo como **rascunho** local a cada alteração e limpo apenas após `201` (RNF-008). Sem rede, o botão mostra o erro e preserva os dados.
 3. **Sem fila automática:** evita duplicidade e conflito com a regra de uma denúncia em aberto (RN-006). Fila de envio offline fica no backlog.
 4. **Tempo real:** ao reconectar o WebSocket (ou voltar ao primeiro plano), o app **refaz as consultas ativas** para recuperar o que perdeu (RNF-009).

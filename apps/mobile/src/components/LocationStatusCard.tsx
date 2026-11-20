@@ -95,7 +95,9 @@ export function LocationStatusCard({ titulo, selo }: Props) {
   } else if (!atual) {
     corpo = (
       <Text accessibilityRole="progressbar" style={[type.body, styles.texto]}>
-        Carregando a situação do bairro…
+        {status.fetchStatus === 'paused'
+          ? 'Sem conexão e nenhum dado salvo da situação do bairro.'
+          : 'Carregando a situação do bairro…'}
       </Text>
     );
   } else {

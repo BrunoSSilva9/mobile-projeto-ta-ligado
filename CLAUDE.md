@@ -26,7 +26,7 @@ docs/         # toda a documentação
 .github/      # templates de issue/PR e CI
 ```
 
-Status atual: documentação pronta; **Fase 0 concluída e validada na branch `feature/setup-inicial`** (ver `CHANGELOG.md`; falta só testar no Expo Go em um celular). Rotas do app em `apps/mobile/src/app/`. Próximo passo: validar a Fase 0 e seguir para a Fase 1 (`docs/14-roadmap-e-backlog.md`). Não faça merge na `develop` sem aprovação do usuário. **A Fase 1 inteira é feita na branch `feature/fase-1`, com um único PR** (S-42).
+Status atual: documentação pronta; Fase 0 concluída e mergeada na `develop`; **Fase 1 implementada (Passos 1 a 13) na branch `feature/fase-1`** (ver `CHANGELOG.md`). Falta o **ensaio manual do roteiro de demonstração** (README) no Expo Go + painel + API, e então o merge do PR único (S-42) na `develop`, que depende de aprovação do usuário. Rotas do app em `apps/mobile/src/app/`. Próximo: Fase 2 (`docs/14-roadmap-e-backlog.md`): fotos, pessoas afetadas e necessidade especial, cancelar denúncia, perfil completo, indicadores e, por último, push (precisa de development build). Não faça merge na `develop` sem aprovação do usuário.
 
 ## Onde fica cada documento
 

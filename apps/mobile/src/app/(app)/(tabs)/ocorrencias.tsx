@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { BannerDenunciar } from '@/components/BannerDenunciar';
 import { ContatosDeAtendimento } from '@/components/ContatosDeAtendimento';
-import { EmptyState, ErrorState } from '@/components/Estados';
+import { EmptyState, ErrorState, MENSAGEM_SEM_DADOS_OFFLINE } from '@/components/Estados';
 import { FilterChip } from '@/components/FilterChip';
 import { LocationStatusCard } from '@/components/LocationStatusCard';
 import { Logo } from '@/components/Logo';
@@ -77,7 +77,9 @@ export default function OcorrenciasScreen() {
         </Text>
         {lista.isPending ? (
           <Text accessibilityRole="progressbar" style={[type.body, styles.texto]}>
-            Carregando ocorrências…
+            {lista.fetchStatus === 'paused'
+              ? MENSAGEM_SEM_DADOS_OFFLINE
+              : 'Carregando ocorrências…'}
           </Text>
         ) : lista.isError ? (
           <ErrorState mensagem={lista.error.message} onTentarDeNovo={() => void lista.refetch()} />

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { BannerDenunciar } from '@/components/BannerDenunciar';
 import { ContatosDeAtendimento } from '@/components/ContatosDeAtendimento';
 import { LocationStatusCard } from '@/components/LocationStatusCard';
@@ -43,6 +44,7 @@ export default function InicioScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.conteudo}>
+        <AvisoDeConexao />
         <LocationStatusCard titulo={`Olá, ${primeiroNome}!`} selo="rede" />
 
         <BannerDenunciar
@@ -62,7 +64,9 @@ export default function InicioScreen() {
             </Text>
           ) : (
             <Text accessibilityRole="progressbar" style={[type.body, styles.texto]}>
-              Carregando o mapa…
+              {status.fetchStatus === 'paused'
+                ? 'Sem conexão e nenhum dado salvo do mapa.'
+                : 'Carregando o mapa…'}
             </Text>
           )}
           <Pressable

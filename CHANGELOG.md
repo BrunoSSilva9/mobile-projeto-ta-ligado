@@ -81,6 +81,15 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - **Componentes:** `LocationStatusCard`, `FilterChip` (48 dp, lido como opção selecionada), `OccurrenceListItem`, `MapaOcorrencias` (com barreira de erro, como o mini-mapa da T-05), `BannerDenunciar` e `ContatosDeAtendimento`.
   - **61 testes novos** (391 no app, 23 suítes): tipos e cores, chamadas à API, reducers do cache em tempo real, "Há X min", e as telas T-03 e T-04 (selo estável/instável, GPS negado, fora de Marabá, erro, chips, filtro e busca na consulta, vazio, círculos e pinos, anonimização e eventos em tempo real). O mapa real e o GPS precisam ser vistos no Expo Go.
 
+- **Passo 13 – estados, leitura offline, testes de integração e roteiro** (fecha a Fase 1):
+  - **Offline (ADR-0005):** o cache de leitura (Início, Ocorrências, Detalhe, Minhas denúncias e bairros) é **salvo no aparelho** por 24 h (`PersistQueryClientProvider` + AsyncStorage; só consultas que deram certo e estão na lista permitida) e apagado ao sair da conta. O TanStack Query passa a seguir o NetInfo: sem rede as leituras ficam em pausa e mostram o que está salvo; ao voltar a rede ou ao voltar ao primeiro plano, tudo é refeito. Uma faixa **"Sem conexão. Você está vendo a última atualização, de {data}"** aparece nas telas de leitura (e, no formulário, avisa que o rascunho fica salvo mas o envio precisa de internet). Sem rede e sem dado salvo, em vez de um carregamento infinito, a tela explica e oferece "Tentar novamente".
+  - **Envio nunca fica em pausa:** as ações de envio usam `networkMode: 'always'`, então sem rede falham na hora e não disparam sozinhas quando a rede volta (evita denúncia tardia ou duplicada).
+  - **Dependências fixadas:** `@react-native-community/netinfo 12.0.1`, `@tanstack/react-query-persist-client 5.108.1` e `@tanstack/query-async-storage-persister 5.108.1`.
+  - **Testes de integração da API (B-024):** `fluxo-completo.test.ts` roda o roteiro de demonstração inteiro com o servidor real e os três lados conectados (cidadã, outro cidadão e painel): envio, alerta ao painel, 409 do limite, atendimento com previsão em até 2 s, histórico, resolução (bairro volta a Normal, "Restabelecidos"), nova denúncia liberada, improcedência com justificativa e anonimização da visão pública; mais o isolamento entre papéis e entre cidadãos.
+  - **Dados de demonstração (opcional):** `npm run db:seed:demo -w apps/api` cria 3 contas de exemplo e 5 denúncias em estados variados; nunca roda em produção e só recria as denúncias dessas contas.
+  - **README:** roteiro de demonstração em 11 passos e instruções dos dados de exemplo.
+  - **Testes novos:** 33 no app (424 no total, 25 suítes) e 3 na API. Cobertura da API acima de 98%, 100% no domínio.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 

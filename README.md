@@ -3,7 +3,7 @@
 Aplicativo mobile para **registrar denúncias de queda de energia elétrica** em Marabá-PA e acompanhar a situação em tempo real. O cidadão informa que está sem luz, a ocorrência é registrada (localização, horário e detalhes) e chega **em tempo real à operadora (Equatorial Pará)**, que atualiza o status e a previsão de reparo. A integração com a operadora é **simulada** por um Painel Web (ver [ADR-0001](docs/adr/0001-integracao-simulada-com-operadora.md)).
 
 > Projeto final da disciplina de **Desenvolvimento Mobile (UNIFESSPA)**.
-> **Status:** documentação concluída; **Fase 0 (setup inicial) concluída** (ver o `CHANGELOG.md`).
+> **Status:** documentação concluída; **Fase 0 (setup inicial) e Fase 1 (MVP: denunciar, acompanhar em tempo real e visão pública) implementadas**; falta o ensaio manual no Expo Go (ver o `CHANGELOG.md` e o roteiro abaixo).
 
 - **Protótipo (Figma):** <https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=0-1>
 
@@ -53,6 +53,24 @@ npm run dev:mobile   # abre o Expo; escaneie o QR code com o Expo Go
 **Verificações:** `npm run lint`, `npm run typecheck` e `npm test` na raiz rodam todos os apps. Para a cobertura da API: `npm run test:coverage -w apps/api`.
 
 **Banco de teste:** os testes de integração da API usam o banco `taligado_test` (o mesmo servidor do Docker), **criado e migrado automaticamente** na primeira execução. Eles apagam as tabelas desse banco a cada teste, então **nunca** apontam para o banco de desenvolvimento: o `vitest.config.ts` troca o nome do banco para `*_test` e o `globalSetup` recusa qualquer banco cujo nome não termine em `_test`. Rode `npm run db:up` antes de `npm test`.
+
+**Dados de demonstração (opcional):** `npm run db:seed:demo -w apps/api` cria 3 contas de cidadão de exemplo (`demo1@taligado.local`, `demo2@taligado.local` e `demo3@taligado.local`, senha `demo-12345`) e 5 denúncias em estados variados (recebida, em atendimento, oscilação, resolvida e improcedente), para a Home, as Ocorrências e o painel não ficarem vazios. Pode rodar várias vezes (só recria as denúncias dessas contas) e **nunca roda em produção**.
+
+## Roteiro de demonstração
+
+Teste ponta a ponta, com os três lados ao mesmo tempo (API, painel no navegador e app no celular):
+
+1. `npm run db:up`, `npm run db:seed` e `npm run dev` (API em `:3000`, painel em `:5173` e Expo).
+2. **Painel:** entre como `operador@taligado.local` (senha em `apps/api/.env`). Abra a aba **Lista** e clique em **Ativar som**.
+3. **Celular (Expo Go):** **cadastre** uma conta de cidadão e entre. Na Início, confira "Olá, {nome}!", o selo **Rede Estável** e o mini-mapa.
+4. **Denunciar:** toque em "Registre sua denúncia", escolha **Sem energia**, confira o bairro sugerido pelo GPS e **envie**. Anote o protocolo (`TL-AAAA-NNNNNN`).
+5. **Painel, sem recarregar:** em até 2 s a denúncia aparece na lista com o alerta "Nova denúncia" e o som.
+6. **Painel:** filtre por status, veja a denúncia no **Mapa**, abra o detalhe e clique em **Iniciar atendimento** (com previsão de reparo).
+7. **App:** o detalhe e "Minhas denúncias" mostram **Em atendimento** em até 2 s, com o histórico e a previsão. Em Início e Ocorrências o selo muda para **Rede Instável**, e o círculo do bairro fica vermelho.
+8. **Painel:** marque como **Resolvida**. O app atualiza, o bairro volta a **Normal** (círculo verde) e a ocorrência aparece em "Restabelecidos".
+9. **Limite:** com a denúncia em aberto, tente enviar uma segunda: o app avisa e leva à que está aberta (409). Depois de resolvida, é possível enviar outra.
+10. **Improcedente:** no painel, o botão exige a justificativa (10 a 500 caracteres); ela aparece para o cidadão no detalhe.
+11. **Offline:** desligue a internet do celular. As telas continuam com os dados salvos e o aviso "Sem conexão" com a data da última atualização; o formulário guarda o rascunho. Religue: tudo atualiza sozinho.
 
 **Observações**
 - No Expo Go o mapa funciona **sem chave** do Google Maps; no painel o mapa usa Leaflet com OpenStreetMap (também sem chave). `GOOGLE_MAPS_API_KEY` e as credenciais de push (FCM/APNs) ficam nos `.env.example` **sem valor** e só serão necessárias no *development build* (pendência PEN-04).

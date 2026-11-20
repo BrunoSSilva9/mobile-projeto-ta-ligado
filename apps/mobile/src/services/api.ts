@@ -1,4 +1,5 @@
 import { criarHttp } from './http';
+import { limparCachePersistido } from './persistencia';
 import { queryClient } from './query-client';
 import { API_URL } from '@/config/constants';
 import { useSessao } from '@/store/session';
@@ -7,6 +8,7 @@ import { useSessao } from '@/store/session';
 export async function encerrarSessao(): Promise<void> {
   await useSessao.getState().sair();
   queryClient.clear();
+  await limparCachePersistido();
 }
 
 /**

@@ -1,7 +1,9 @@
 import { screen, waitFor } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet } from 'react-native';
 
 import PerfilScreen from '@/app/(app)/(tabs)/perfil';
+import { CHAVE_DO_CACHE } from '@/services/persistencia';
 import { queryClient } from '@/services/query-client';
 import { CHAVE_DA_SESSAO, useSessao } from '@/store/session';
 import {
@@ -70,6 +72,15 @@ describe('T-08 Perfil mínimo (RF-004, decisão S-37)', () => {
       await waitFor(() => expect(useSessao.getState().token).toBeNull());
       expect(useSessao.getState().usuario).toBeNull();
       expect(armazenamentoEmMemoria.has(CHAVE_DA_SESSAO)).toBe(false);
+    });
+
+    it('apaga também o cache salvo no aparelho (os dados são de quem saiu)', async () => {
+      await AsyncStorage.setItem(CHAVE_DO_CACHE, '{"dados":"da Maria"}');
+      await renderizarTela(<PerfilScreen />);
+
+      await tocar('Sair');
+
+      await waitFor(async () => expect(await AsyncStorage.getItem(CHAVE_DO_CACHE)).toBeNull());
     });
 
     it('apaga os dados em cache do usuário que saiu', async () => {

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { CabecalhoDeTela } from '@/components/CabecalhoDeTela';
 import { ComplaintListItem } from '@/components/ComplaintListItem';
-import { EmptyState, ErrorState, LoadingState } from '@/components/Estados';
+import { CarregandoOuOffline, EmptyState, ErrorState } from '@/components/Estados';
 import { useMinhasDenuncias } from '@/features/acompanhamento/hooks';
 import { colors, space } from '@/theme';
 
@@ -21,7 +21,11 @@ export default function MinhasDenunciasScreen() {
       </View>
 
       {consulta.isPending ? (
-        <LoadingState mensagem="Carregando suas denúncias…" />
+        <CarregandoOuOffline
+          pausada={consulta.fetchStatus === 'paused'}
+          mensagem="Carregando suas denúncias…"
+          onTentarDeNovo={() => void consulta.refetch()}
+        />
       ) : consulta.isError ? (
         <ErrorState
           mensagem={consulta.error.message}

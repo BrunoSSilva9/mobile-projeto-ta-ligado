@@ -20,6 +20,28 @@ export function LoadingState({ mensagem = 'Carregando…' }: { mensagem?: string
   );
 }
 
+/** Mensagem de quando não há rede nem dado salvo para mostrar (ADR-0005). */
+export const MENSAGEM_SEM_DADOS_OFFLINE =
+  'Sem conexão e nenhum dado salvo para mostrar. Conecte-se à internet e tente de novo.';
+
+/**
+ * Tela de carregamento que sabe do offline: com a consulta em pausa (sem rede) e sem cache, o
+ * spinner nunca terminaria, então mostra o aviso com "Tentar novamente".
+ */
+export function CarregandoOuOffline({
+  pausada,
+  mensagem,
+  onTentarDeNovo,
+}: {
+  pausada: boolean;
+  mensagem?: string;
+  onTentarDeNovo?: () => void;
+}) {
+  if (pausada)
+    return <ErrorState mensagem={MENSAGEM_SEM_DADOS_OFFLINE} onTentarDeNovo={onTentarDeNovo} />;
+  return <LoadingState mensagem={mensagem} />;
+}
+
 export function EmptyState({
   titulo,
   descricao,
