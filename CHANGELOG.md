@@ -27,6 +27,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - O `PATCH` usa `validarTransicao`, exige justificativa para improcedência, aceita a previsão de reparo (só enquanto a denúncia está em aberto) e grava status e histórico **na mesma transação**. A gravação é condicional ao status que o operador viu, então mudanças simultâneas resultam em um único vencedor e `422 TRANSICAO_INVALIDA` para os demais (S-29). O evento `denuncia:status-atualizado` sai depois do commit.
   - 68 testes de integração novos, incluindo atomicidade (um gatilho no banco simula falha ao gravar o histórico e o status não muda), concorrência (seis requisições simultâneas, só uma vence) e o ciclo completo cidadão ↔ operador. Testes de mutação confirmaram que a proteção de concorrência e a exigência do papel `OPERADOR` são realmente exercitadas.
 
+- **Passo 6 – app: base e autenticação** (T-01 Cadastro, T-02 Login, T-08 Perfil mínimo):
+  - **Infraestrutura:** cliente HTTP com tempo limite de 15 s e erros em português (`SEM_CONEXAO`, `TEMPO_ESGOTADO`, mensagens do servidor); sessão em Zustand com o token no `expo-secure-store` (valida o que lê do aparelho e descarta o que estiver corrompido); TanStack Query (só repete leituras em falha de rede ou 5xx; envios nunca repetem sozinhos); um 401 `NAO_AUTENTICADO` com sessão derruba a sessão e limpa o cache.
+  - **Componentes:** `Button`, `TextField` (com mostrar/ocultar senha), `Checkbox`, `TopAuthBar`, `AuthLayout` e os estados `LoadingState`, `EmptyState` e `ErrorState`, todos com alvo de toque de 48 dp e rótulos para leitores de tela.
+  - **Telas:** cadastro (sem CPF e sem nascimento; botão desabilitado até aceitar os Termos; erros do servidor vão para o campo certo) e login (sem "Esqueci a senha" e sem Google); conta de operador é recusada no app com instrução para usar o painel. Termos de Uso e Política de Privacidade abrem no app, em sincronia com `docs/legal/` (um teste confere os títulos e a versão).
+  - **Navegação protegida** com `Stack.Protected`: sem sessão só existe o login; com sessão só existem as abas. Perfil mínimo com "Sair" (RF-004).
+  - **189 testes** em 12 suítes (HTTP, sessão, schemas, API de autenticação, textos legais, componentes, telas de cadastro, login e perfil, e a navegação real com o `renderRouter`). O app empacota para Android e iOS.
+  - **Defeito encontrado e corrigido pelos testes:** sem sessão o app mostrava "Unmatched Route" em vez do login (a rota `/` só existe dentro de `(app)`); o grupo protegido agora tem `redirectTo="/login"`. Um problema de acessibilidade também foi corrigido: o papel de alerta do `ErrorState` ficava num `View` não acessível.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 

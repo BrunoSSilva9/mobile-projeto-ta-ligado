@@ -75,6 +75,16 @@ Status atual: documentação pronta; **Fase 0 concluída e validada na branch `f
 
 ACGM (rodapé), telefones e horário reais da Ouvidoria/Central, textos finais de Termos e Política, chave do Google Maps e credenciais de push, lista real de bairros com coordenadas, telas que faltam no Figma (login, perfil, minhas denúncias, detalhe, sucesso, painel).
 
+## Armadilhas já encontradas (leia antes de mexer)
+
+- **Expo Router + sessão:** o `Stack.Protected` do grupo `(app)` precisa de `redirectTo="/login"`; sem isso o app sem sessão mostra "Unmatched Route". Há testes da navegação real em `apps/mobile/src/__tests__/guarda-de-rotas.test.tsx`.
+- **Arquivos de teste fora de `src/app/`** (o Expo Router os tomaria por rotas). Auxiliares de teste ficam em `src/testing/`, nunca em `__tests__/` (o Jest os trataria como testes).
+- **RNTL v14:** `render`, `rerender` e `fireEvent` são assíncronos (use `await`).
+- **TanStack Query nos testes:** use `configurarCacheParaTestes()` (`gcTime: 0`); sem isso o Jest não encerra, por causa do temporizador de coleta de lixo.
+- **Papel de alerta em leitores de tela:** coloque `accessibilityRole="alert"` no `Text`, não num `View` com botões dentro (um `View` acessível agrupa os filhos).
+- **Prettier:** rode sempre pela raiz (`npm run format`); dentro de `apps/*` ele ignora o `.prettierignore` e reformata os `.md`.
+- **API:** `PATCH` de status usa gravação condicional ao status lido (conflito vira 422). Testes de integração só rodam em banco `*_test`.
+
 ## Ao implementar
 
 1. Leia o RF/RN/US/UC da tarefa e a tela correspondente em `docs/05-telas-e-fluxos.md` (o Figma é fonte visual; consulte-o com o MCP do Figma quando precisar).

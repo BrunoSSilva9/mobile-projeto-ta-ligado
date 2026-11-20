@@ -103,6 +103,7 @@ flowchart LR
 - **Dados coletados:** nome, e-mail, senha, telefone (opcional), consentimento. **Vêm do usuário.**
 - **Ações:** Cadastrar → T-03. Alternar → T-02. Termos/Política → texto.
 - **Estados:** não desenhados. Previstos: validação por campo, carregando no botão, erro de e-mail duplicado, erro de rede.
+- **Implementação (Passo 6):** o botão "CADASTRAR" é **branco com texto verde `#006E2C`** sobre o cartão verde-escuro (o verde do Figma sobre o verde do cartão não tem contraste); o botão fica desabilitado até aceitar os Termos; os links "Termos de Uso" e "Política de Privacidade" abrem telas próprias (`/termos`, `/privacidade`) com o texto de `docs/legal/`. Os cartões "Marabá Integrada" e "Status Imediato" e a ilustração do Figma ainda não foram implementados (decorativos). T-02 usa a mesma estrutura, com os textos "Entre na sua conta" e "ENTRAR".
 - **Ajustes ao protótipo** (decisões do escopo): remover **CPF** e **Nascimento**; trocar "WhatsApp de contato" por "Telefone (opcional)"; remover "Cadastre com Google"; trocar "Seus dados de denúncia são criptografados e anônimos" por "Suas denúncias aparecem para outros cidadãos sem identificação"; ajustar o card "Status Imediato" (sem WhatsApp: "Receba avisos no celular quando o status da sua denúncia mudar"); checkbox na cor da marca (no Figma está azul `#0075FF`, padrão do navegador).
 
 ### T-03 – Início
