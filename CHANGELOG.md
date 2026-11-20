@@ -52,6 +52,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - **Dependência fixada:** `socket.io-client 4.8.4` (mesma versão do servidor).
   - **57 testes novos** (330 no total, 21 suítes): reducers do cache, validação de eventos, status e datas, `SocketProvider` (conexão, evento, reconexão, token recusado, troca de conta) e as telas T-07, T-09 e Perfil, incluindo "mudança do painel aparece na tela aberta sem recarregar". O WebSocket real e o teste com os dois lados continuam sendo manuais.
 
+- **Passo 9 – painel: base** (P-01 Login do operador, P-02 parte 1: lista, filtros e mapa; P-03 ainda é um marcador de tela):
+  - **Login e rotas protegidas:** só o login é público. O token fica em `sessionStorage` (some ao fechar a aba, nunca em `localStorage`, ADR-0004); token expirado ou sessão recusada pelo servidor (401) volta ao login e limpa o cache; conta de cidadão é recusada com instrução para usar o app. Não há cadastro nem "esqueci a senha".
+  - **Lista (RF-028):** tabela com prioridade, protocolo, tipo, bairro/rua, status e "há X min" (atualizado a cada 30 s), mantendo a ordem da API (prioritárias no topo, RN-015); legenda e cabeçalhos de coluna para leitores de tela; carregando, vazio e erro com "Tentar novamente"; paginação de 100 em 100.
+  - **Filtros (RF-029, RF-035):** status (padrão "Em aberto"), tipo, bairro e "Só prioritárias", com "Limpar"; mudar o filtro volta à primeira página.
+  - **Mapa (RF-028):** Leaflet + OpenStreetMap (sem chave) com um pino por denúncia que tem coordenadas, colorido por tipo (vermelho = sem energia, âmbar = oscilação, cinza = encerrada), popup com link para o detalhe e aviso de quantas ficam só na lista. Usa a mesma lista filtrada.
+  - **Dependências fixadas:** `leaflet 1.9.4`, `react-leaflet 5.0.0`, `@types/leaflet 1.9.22`, `@tanstack/react-query 5.108.1`, `zustand 5.1.0`.
+  - **60 testes novos** (Vitest + Testing Library): consulta e filtros, datas, sessão, login (sucesso, erro, papel errado, validação, sem conexão), lista, filtros, paginação, mapa e rotas protegidas. O contrato foi conferido também contra a API real (login do operador e `GET /painel/denuncias` com o filtro de status). O Leaflet é simulado nos testes (o jsdom não tem layout); o mapa de verdade precisa ser visto no navegador.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 

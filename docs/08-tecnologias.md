@@ -120,4 +120,5 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 - **Instalados no Passo 6 (app):** `@tanstack/react-query ^5.108.1`, `zustand ^5.1.0`, `react-hook-form ^7.92.0`, `zod ^4.6.7`, `@hookform/resolvers ^7.0.7`, `expo-secure-store ~58.0.3` e, para testes, `@testing-library/react-native ^14.1.0` (o `render` e o `fireEvent` dessa versão são **assíncronos**).
 - **Instalados no Passo 7 (app):** `expo-location ~58.0.22`, `react-native-maps 1.29.11`, `@react-native-async-storage/async-storage 2.2.0` e `expo-clipboard ~58.0.4`.
 - **Instalado no Passo 8 (app):** `socket.io-client 4.8.4`.
-- **Ainda não instalados** (entram quando a funcionalidade for implementada): **Leaflet** e `socket.io-client` (painel), `expo-image-picker` e `expo-notifications`.
+- **Instalados no Passo 9 (painel):** `leaflet 1.9.4`, `react-leaflet 5.0.0`, `@types/leaflet 1.9.22`, `@tanstack/react-query 5.108.1` e `zustand 5.1.0`.
+- **Ainda não instalados** (entram quando a funcionalidade for implementada): `socket.io-client` (painel, Passo 10), `expo-image-picker` e `expo-notifications`.

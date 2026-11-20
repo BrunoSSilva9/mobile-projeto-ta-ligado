@@ -252,6 +252,8 @@ RF-027 a RF-029, RF-034, RF-035
 - **Alerta de nova denúncia:** toast/banner "Nova denúncia: {tipo} em {bairro}", destaque temporário na linha e som.
 - Estados: carregando, vazio, erro, desconectado.
 
+- **Implementação (Passo 9):** barra superior com o nome do operador e "Sair" (som e indicador de conexão entram no Passo 10); filtros por status (padrão "Em aberto"), tipo, bairro e "Só prioritárias"; abas **Lista** e **Mapa** (a aba "Por bairro" e os indicadores ficam para a Fase 2). Pinos do mapa: vermelho = sem energia em aberto, âmbar = oscilação em aberto, cinza = encerrada; denúncias sem coordenadas aparecem só na lista.
+
 ### P-03 – Painel: Detalhe e atualização de status
 RF-030 a RF-033, RF-036
 - Cabeçalho com protocolo, status atual, selo "Prioritária" quando for o caso.
