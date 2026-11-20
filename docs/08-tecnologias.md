@@ -118,4 +118,5 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 **Diferenças em relação às tabelas acima**
 - **Pino** (logs) e **Husky + lint-staged + commitlint** foram **adiados**: na Fase 0 a API usa `console` e o padrão de commits é conferido na revisão do PR. Entram quando houver necessidade (Fase 2 ou depois).
 - **Instalados no Passo 6 (app):** `@tanstack/react-query ^5.108.1`, `zustand ^5.1.0`, `react-hook-form ^7.92.0`, `zod ^4.6.7`, `@hookform/resolvers ^7.0.7`, `expo-secure-store ~58.0.3` e, para testes, `@testing-library/react-native ^14.1.0` (o `render` e o `fireEvent` dessa versão são **assíncronos**).
-- **Ainda não instalados** (entram quando a funcionalidade for implementada): **Leaflet** e `socket.io-client` (painel e app), `react-native-maps`, `expo-location`, `@react-native-async-storage/async-storage` (rascunho e cache offline), `expo-image-picker` e `expo-notifications`.
+- **Instalados no Passo 7 (app):** `expo-location ~58.0.22`, `react-native-maps 1.29.11`, `@react-native-async-storage/async-storage 2.2.0` e `expo-clipboard ~58.0.4`.
+- **Ainda não instalados** (entram quando a funcionalidade for implementada): **Leaflet** e `socket.io-client` (painel e app), `expo-image-picker` e `expo-notifications`.

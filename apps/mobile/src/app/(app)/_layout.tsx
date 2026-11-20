@@ -6,6 +6,8 @@ export default function AppLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="denunciar" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="denuncia/sucesso" options={{ gestureEnabled: false }} />
+      <Stack.Screen name="denuncia/[id]" />
     </Stack>
   );
 }

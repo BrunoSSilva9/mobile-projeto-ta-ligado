@@ -35,6 +35,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - **189 testes** em 12 suítes (HTTP, sessão, schemas, API de autenticação, textos legais, componentes, telas de cadastro, login e perfil, e a navegação real com o `renderRouter`). O app empacota para Android e iOS.
   - **Defeito encontrado e corrigido pelos testes:** sem sessão o app mostrava "Unmatched Route" em vez do login (a rota `/` só existe dentro de `(app)`); o grupo protegido agora tem `redirectTo="/login"`. Um problema de acessibilidade também foi corrigido: o papel de alerta do `ErrorState` ficava num `View` não acessível.
 
+- **Passo 7 – app: registrar denúncia** (T-05 Registrar Denúncia, T-06 Denúncia enviada; T-07 ainda é um marcador de tela):
+  - **T-05:** tipo (Sem energia / Oscilação), logradouro, bairro (seletor em tela cheia com busca sem diferenciar acentos), CEP opcional, ponto de referência e descrição de até 500 caracteres, com os erros do servidor levados ao campo certo. Fotos, pessoas afetadas e necessidade especial ficam para a Fase 2 (S-38).
+  - **GPS (RF-008):** pede a permissão "ao usar o app", mostra o mini-mapa com o pino que o usuário pode arrastar (S-23), sugere o logradouro (geocodificação reversa) e o bairro mais próximo (RN-025) **sem sobrescrever o que o usuário já escolheu**. Com a permissão negada, o GPS desligado ou sem sinal, a tela avisa e o envio continua sem coordenadas (RN-012). O mapa fica numa barreira de erro: se o módulo nativo falhar, só as coordenadas aparecem em texto.
+  - **Rascunho (RNF-008):** o que foi digitado fica salvo por usuário no `AsyncStorage` e só é apagado quando o servidor confirma; sem internet nada se perde e o usuário reenvia sem redigitar. As coordenadas não entram no rascunho.
+  - **Envio:** o botão fica ocupado enquanto envia (um segundo toque não duplica); `409 DENUNCIA_EM_ABERTO` mostra o aviso e leva ao detalhe da denúncia em aberto; sucesso leva à T-06, que mostra o protocolo `TL-AAAA-NNNNNN` e permite copiá-lo.
+  - **Dependências fixadas:** `expo-location ~58.0.22`, `react-native-maps 1.29.11`, `@react-native-async-storage/async-storage 2.2.0`, `expo-clipboard ~58.0.4`. O plugin do `expo-location` no `app.config.ts` traz o texto da permissão.
+  - **84 testes novos** (273 no total, 18 suítes): schemas, API, rascunho, localização e as telas T-05 e T-06; o teste de navegação real agora abre a T-05 de verdade. Os módulos nativos (mapa, GPS, área de transferência) são simulados nos testes (`jest.setup.js`); o comportamento real no Expo Go precisa ser conferido em um celular.
+
 ### Alterado
 - Prettier com `endOfLine: "auto"`: com `core.autocrlf=true` (Windows) os arquivos ficam em CRLF localmente e o `format:check` falhava sem que houvesse erro real.
 

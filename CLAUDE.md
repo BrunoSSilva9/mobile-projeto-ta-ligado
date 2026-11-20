@@ -83,6 +83,7 @@ ACGM (rodapé), telefones e horário reais da Ouvidoria/Central, textos finais d
 - **TanStack Query nos testes:** use `configurarCacheParaTestes()` (`gcTime: 0`); sem isso o Jest não encerra, por causa do temporizador de coleta de lixo.
 - **Papel de alerta em leitores de tela:** coloque `accessibilityRole="alert"` no `Text`, não num `View` com botões dentro (um `View` acessível agrupa os filhos).
 - **Prettier:** rode sempre pela raiz (`npm run format`); dentro de `apps/*` ele ignora o `.prettierignore` e reformata os `.md`.
+- **Testes do mapa e do GPS:** `react-native-maps` e `@react-native-async-storage/async-storage` são simulados em `apps/mobile/jest.setup.js`; `expo-location` e `expo-clipboard` são simulados em cada teste. O mapa usa `importantForAccessibility="no-hide-descendants"`, então o pino só é achado com `getByTestId('pino', { includeHiddenElements: true })`. Um `setTimeout` pendente (ex.: GPS que nunca responde) impede o Jest de encerrar: nos testes faça o GPS responder.
 - **API:** `PATCH` de status usa gravação condicional ao status lido (conflito vira 422). Testes de integração só rodam em banco `*_test`.
 
 ## Ao implementar

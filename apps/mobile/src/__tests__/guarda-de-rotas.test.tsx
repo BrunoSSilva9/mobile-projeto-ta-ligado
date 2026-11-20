@@ -26,6 +26,14 @@ jest.mock('@expo-google-fonts/plus-jakarta-sans', () => ({
   PlusJakartaSans_800ExtraBold: 5,
 }));
 
+jest.mock('expo-location', () => ({
+  Accuracy: { Balanced: 3 },
+  requestForegroundPermissionsAsync: async () => ({ granted: false, canAskAgain: true }),
+  hasServicesEnabledAsync: async () => false,
+  getCurrentPositionAsync: jest.fn(),
+  reverseGeocodeAsync: jest.fn(),
+}));
+
 jest.mock('expo-splash-screen', () => ({
   preventAutoHideAsync: jest.fn(),
   hideAsync: jest.fn(),
@@ -71,7 +79,7 @@ describe('sem sessão', () => {
     expect(screen).toHavePathname('/login');
   });
 
-  it.each(['/perfil', '/ocorrencias', '/denunciar', '/'])(
+  it.each(['/perfil', '/ocorrencias', '/denunciar', '/denuncia/sucesso', '/denuncia/d1', '/'])(
     'um link direto para %s leva ao login e não mostra o conteúdo do app',
     async (rota) => {
       await abrirApp(rota);
@@ -79,6 +87,7 @@ describe('sem sessão', () => {
       expect(await screen.findByText('Entre na sua conta')).toBeTruthy();
       expect(screen).toHavePathname('/login');
       expect(screen.queryByText(/EM CONSTRUÇÃO/)).toBeNull();
+      expect(screen.queryByText('Onde faltou luz?')).toBeNull();
       expect(screen.queryByRole('button', { name: 'Sair' })).toBeNull();
     },
   );
@@ -156,7 +165,7 @@ describe('com sessão salva no aparelho', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Denunciar falta de luz' }));
 
-    expect(await screen.findByText('T-05 · EM CONSTRUÇÃO')).toBeTruthy();
+    expect(await screen.findByText('Onde faltou luz?')).toBeTruthy();
     expect(screen).toHavePathname('/denunciar');
   });
 

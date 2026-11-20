@@ -27,6 +27,7 @@ type Props = {
   | 'returnKeyType'
   | 'onSubmitEditing'
   | 'maxLength'
+  | 'multiline'
 >;
 
 /** Campo de texto com rótulo visível, erro e ajuda. Altura de 48 dp (decisão D-02). */
@@ -55,7 +56,7 @@ export function TextField({
           testID={testID}
           accessibilityLabel={rotulo}
           accessibilityHint={ajuda}
-          style={[type.body, styles.entrada]}
+          style={[type.body, styles.entrada, entrada.multiline && styles.multilinha]}
           placeholderTextColor={colors.textMuted}
           value={value}
           onChangeText={onChangeText}
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.m,
     color: colors.textPrimary,
   },
+  multilinha: { minHeight: 96, paddingVertical: space.m, textAlignVertical: 'top' },
   olho: {
     width: size.touchMin,
     height: size.touchMin,

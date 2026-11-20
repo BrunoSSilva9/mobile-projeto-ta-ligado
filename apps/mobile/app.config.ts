@@ -33,6 +33,14 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     [
+      'expo-location',
+      {
+        // Só "ao usar o app": a localização é usada apenas para marcar o local da denúncia (LGPD).
+        locationWhenInUsePermission:
+          'O Tá Ligado? usa sua localização apenas para marcar o local da denúncia de falta de energia.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#16382B',
