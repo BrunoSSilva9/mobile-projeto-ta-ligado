@@ -6,16 +6,19 @@ Priorização por **MoSCoW** e por dependência técnica. O prazo informado é d
 
 ```mermaid
 flowchart LR
-  F0["Fase 0<br/>Fundação"] --> F1["Fase 1<br/>MVP (Must)"] --> F2["Fase 2<br/>MVP+ (Should)"] --> F3["Fase 3<br/>Polimento (Could)"] --> FUT["Futuro<br/>(fora do MVP)"]
+  F0["Fase 0<br/>Fundação"] --> F1["Fase 1<br/>MVP (Must)"] --> RD["Redesign<br/>design system v2"] --> F2["Fase 2<br/>MVP+ (Should)"] --> F3["Fase 3<br/>Polimento (Could)"] --> FUT["Futuro<br/>(fora do MVP)"]
 ```
 
 | Fase | Objetivo | Entrega observável |
 |---|---|---|
 | **0 – Fundação** | Monorepo, ambiente, CI, banco, tema | `docker compose up` + apps abrindo, CI verde |
 | **1 – MVP (Must)** | Ciclo completo cidadão → operadora → cidadão | Demonstração: cadastra, denuncia, painel recebe em tempo real, operador atualiza, app reflete |
+| **Redesign do app (v2)** | Novo design system (azul para tocar, situação da energia sempre com ícone e texto, Atkinson Hyperlegible) e telas novas, só em `apps/mobile` | App no novo visual, com o mesmo comportamento da Fase 1 ([17](17-plano-redesign.md)) |
 | **2 – MVP+ (Should)** | Completar experiência e conformidade | Fotos, perfil/exclusão de conta, painel comunitário, previsão, lote, prioridade e, **por último, o push** |
 | **3 – Polimento (Could)** | Refinos | Busca, mapa em tela cheia, alterar endereço, E2E |
 | **Futuro** | Evolução | Itens da seção "Fora do MVP" |
+
+> **Nova ordem (decisão de 2026-11-23):** a Fase 1 está concluída e mergeada na `develop`. O prazo foi estendido: agora vem o **redesign completo do app** (etapas R0 a R10, em [17 – Plano do redesign](17-plano-redesign.md)) e **só depois a Fase 2**, que já será construída com os componentes novos. O cronograma de uma semana abaixo é o plano original e **fica como referência histórica**; as datas dos dias 5 a 7 não valem mais.
 
 ## Cronograma de uma semana
 
@@ -85,15 +88,22 @@ Os últimos dias ficam reservados a **testes, ajustes e preparação da apresent
 | B-038 | Painel comunitário (indicadores de 30 dias) | P | RF-018, RN-017 |
 | B-039 | Acessibilidade: rótulos, contraste, alvos de toque, fontes a 200% | M | RNF-024, [12](12-acessibilidade.md) |
 
+### Redesign do app (design system v2): antes da Fase 2
+
+| ID | Item | Esforço | Referência |
+|---|---|---|---|
+| B-046 | Redesign completo do app do cidadão (tokens e fonte, componentes, barra inferior, Início, Mapa, Denunciar em 3 passos, Sucesso, Ajuda, ajustes nas demais telas), em `feature/redesign-v2`, **sem mudar API, painel nem regras de negócio** | G | [17](17-plano-redesign.md), ADR-0006 |
+
 ### Fase 3 – Polimento (Could)
 
 | ID | Item | Esforço | Requisitos |
 |---|---|---|---|
-| B-040 | Alterar endereço de consulta na Home | P | RF-017 |
-| B-041 | Busca por bairro ou folha | P | RF-021 |
+| B-040 | Alterar endereço de consulta na Home. **Feito no redesign (B-046)**, só no aparelho (AsyncStorage), sem ir para a API | P | RF-017 |
+| B-041 | Busca por bairro ou folha. **Já entregue na Fase 1** (T-04); no redesign o rótulo vira "Procurar bairro ou folha" | P | RF-021 |
 | B-042 | Mapa em tela cheia | P | RF-022 |
 | B-043 | E2E (Playwright e Maestro) | M | [13](13-estrategia-de-testes.md) |
 | B-044 | Revisão de segurança (rate limit, headers, validação de upload) e cobertura | M | RNF-014 |
+| B-045 | **Painel:** alinhar as cores de situação (sem energia, oscilando, normal) e o tema do painel com o design system v2 do app. Fora do redesign de 2026-11 | P | [17](17-plano-redesign.md), [06](06-design-system.md) |
 
 ### Fora do MVP (backlog futuro)
 

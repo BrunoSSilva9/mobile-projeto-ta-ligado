@@ -187,15 +187,16 @@ O risco é trocar 30 arquivos de uma vez e passar dias com o app quebrado. A mig
 
 ## 6. Etapas
 
-Estimativa: **P** ≈ 1–2 h · **M** ≈ 3–5 h · **G** ≈ 6–8 h (uma pessoa, com a atualização dos testes da etapa incluída).
+Todas as etapas estão **dentro do escopo**. Estimativa: **P** ≈ 1–2 h · **M** ≈ 3–5 h · **G** ≈ 6–8 h (uma pessoa, com a atualização dos testes e da documentação da etapa incluídas). **Cada etapa só começa depois do "ok" da anterior.**
 
-### R0 · Preparação (Must, P)
+### R0 · Preparação (P)
 
-- `git checkout develop && git pull` (a `develop` **remota** já tem a Fase 1, PR #4; a local ainda não) e `git checkout -b feature/redesign-v2`.
+- Bruno: `git checkout develop`, `git pull` e `git checkout -b feature/redesign-v2` (a `develop` já tem a Fase 1, PR #4).
 - Abrir o PR em rascunho para a `develop`.
-- **Pronto quando:** a branch existe e a suíte inteira passa nela, sem mudanças.
+- Commit do plano (`docs/17`) e da atualização do backlog (`docs/14`).
+- **Pronto quando:** a branch existe, o plano está commitado e a suíte inteira passa nela, sem mudanças de código.
 
-### R1 · Tokens e fonte (Must, M)
+### R1 · Tokens e fonte (M)
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -209,31 +210,45 @@ Estimativa: **P** ≈ 1–2 h · **M** ≈ 3–5 h · **G** ≈ 6–8 h (uma pes
 
 **Pronto quando:** o app abre inteiro azul e com a fonte nova, e a suíte passa (só `theme.test.ts` e o mock de fonte em `guarda-de-rotas.test.tsx` mudam).
 
-### R2 · Componentes base (Must, G)
+### R2 · Componentes base (G)
 
 `Button`, `TextField`, `Checkbox`, `StatusBadge`, `FilterChip`, `Logo`, `Estados`, `AvisoDeConexao`, `CabecalhoDeTela` (com "Voltar" em texto) e os novos `Cartao`, `Aviso`, `SeloDeSituacao`, `CartaoDeEscolha` e `CabecalhoDePasso`; `features/situacao.ts` (R-13).
 
 **Pronto quando:** `componentes.test.tsx` cobre cada componente novo (papel, estado, altura ≥ 48/56, ícone + texto) e as telas antigas continuam funcionando com os componentes novos.
 
-### R3 · Barra inferior (Must, P)
+### R3 · Barra inferior (P)
 
 `(tabs)/_layout.tsx` com 4 itens com texto. "Ocorrências" vira **"Mapa"** só no rótulo (a rota `/ocorrencias` fica). "Denunciar" vira um item normal (pílula azul 56×32 + texto azul) que abre `/denunciar`. Aba ativa com pílula `actionTabPill` e texto `actionPressed`; fundo branco com borda superior `borderSubtle`. Apaga `ReportFab`.
 
 **Pronto quando:** o teste de navegação acha os 4 botões pelo nome e "Denunciar" abre o formulário.
 
-### R4 · Início (Must, M)
+### R4 · Início, Trocar bairro e Ajuda (G)
 
-Cabeçalho com Logo ("Ajuda" só se R-09 entrar), "Olá, {nome}", cartão **"Energia no seu bairro agora"** (ícone grande, situação em `title2` na cor dela, frase de apoio, divisória, endereço com pino; "Trocar" só com R-07), cartão de ação principal com **"Fazer denúncia"**, atalhos **"Ver onde falta energia"** e **"Minhas denúncias"**, "Como funciona" (3 frases novas) e **"Prefere falar com alguém?"** (R-08). O mini-mapa sai. Os estados de GPS (buscando, negado, fora de Marabá, erro, offline) continuam, no visual novo.
+Cabeçalho com Logo e o botão **"Ajuda"** (ícone + texto); "Olá, {nome}"; cartão **"Energia no seu bairro agora"** (ícone grande, situação em `title2` na cor dela, frase de apoio, divisória, endereço com pino e **"Trocar"**); cartão de ação principal com **"Fazer denúncia"**; atalhos **"Ver onde falta energia"** e **"Minhas denúncias"**; "Como funciona" (3 frases novas); **"Prefere falar com alguém?"** com **"Ligar para a Equatorial"** (R-08). O mini-mapa sai. Os estados de GPS (buscando, negado, fora de Marabá, erro, offline) continuam, no visual novo.
 
-**Pronto quando:** os testes da Início passam com os textos novos, incluindo os estados e o evento `bairro:status-atualizado`.
+| Arquivo | Conteúdo |
+|---|---|
+| `app/(app)/(tabs)/index.tsx`, `components/CartaoEnergiaDoBairro.tsx` | Layout novo; o cartão usa o bairro escolhido, se houver, senão o do GPS |
+| `features/ocorrencias/bairro-escolhido.ts` | Leitura, gravação e limpeza do bairro escolhido, **só em AsyncStorage** (chave por usuário, valores validados como no rascunho; nada vai para a API) |
+| `providers/LocalizacaoProvider.tsx` | Passa a expor `bairroEscolhido`, `escolherBairro(id)` e `usarMinhaLocalizacao()`; a Início e o Mapa leem o mesmo valor |
+| `app/(app)/ajuda.tsx` | **Nova rota `/ajuda`** (R-09): "Como funciona", aviso do **193**, contatos, "Ligar para a Equatorial", links para `/termos` e `/privacidade`; `CabecalhoDeTela` com "Voltar" |
+| `components/BotaoLigar.tsx` | `Linking.canOpenURL`/`openURL('tel:…')` com mensagem clara se o aparelho não puder ligar; usado na Início e na Ajuda |
+| `app/(app)/_layout.tsx` | Registra a rota `ajuda`; regenerar o `typedRoutes` |
 
-### R5 · Mapa, parte 1: cabeçalho, chips e lista (Must, M)
+**Pronto quando:** os testes da Início passam com os textos novos (estados, evento `bairro:status-atualizado`, "Trocar" → bairro escolhido → "Usar minha localização" volta ao GPS, bairro escolhido sobrevive a fechar e reabrir, **nada é enviado à API**); a Ajuda abre pelo botão e mostra tudo; "Ligar" chama `tel:` e mostra a mensagem quando não dá.
 
-`(tabs)/ocorrencias.tsx`: título **"Onde falta energia"**, "Marabá · atualizado há X min" (de `atualizadoEm`), busca **"Procurar bairro ou folha"** (R-05), chips com ícone e contagem ("Todos", "Sem energia", "Oscilando", "Normal"), lista **"Lugares com aviso (n)"** com cartões clicáveis (R-03). O `LocationStatusCard` e o banner saem desta tela. O mapa continua o atual nesta etapa.
+### R5 · Mapa, parte 1: cabeçalho, chips e lista agrupada (G)
 
-**Pronto quando:** os testes de chips, busca, lista, vazio, erro, offline e tempo real passam com os textos novos.
+`(tabs)/ocorrencias.tsx`: título **"Onde falta energia"**, "Marabá · atualizado há X min" (de `atualizadoEm`), busca **"Procurar bairro ou folha"** (R-05), chips com ícone e contagem ("Todos", "Sem energia", "Oscilando", "Normal"), lista **"Lugares com aviso (n)"** **agrupada por bairro** (R-03). O `LocationStatusCard` e o banner saem desta tela. O mapa continua o atual nesta etapa.
 
-### R6 · Denunciar em 3 passos (Must, G)
+| Arquivo | Conteúdo |
+|---|---|
+| `features/ocorrencias/agrupar.ts` | **Função pura** `agruparPorBairro(ocorrencias, bairros)` → `{ chave, nome, folha, situacao, avisos, maisRecente, centro }[]`: situação mais grave do grupo, contagem, aviso mais recente, centro do bairro (de `/bairros/status`); ordem: mais grave primeiro e, empatando, o aviso mais recente primeiro |
+| `components/LugarComAviso.tsx` | Cartão inteiro clicável com `SeloDeSituacao`, nome em negrito, "Há X min · N avisos" e "Ver" com chevron |
+
+**Pronto quando:** `agrupar.test.ts` cobre precedência de situação, contagem, "mais recente", empate, grupo só com resolvidas (Normal), bairro sem centro e lista vazia; os testes de chips, busca, vazio, erro, offline e tempo real passam com os textos novos.
+
+### R6 · Denunciar em 3 passos (G)
 
 Reescrita de `denunciar.tsx` (R-01), reaproveitando `useGps`, `useBairros`, `useCriarDenuncia`, o rascunho e o `MiniMapa`.
 
@@ -249,19 +264,21 @@ Cabeçalho em todos os passos: **"Voltar"** (no passo 1 fecha a tela), "Passo X 
 
 **Pronto quando:** todos os cenários do `denunciar.test.tsx` atual passam no fluxo de 3 passos (com um auxiliar `irAtePasso3`), mais os testes de navegação novos (seção 7).
 
-### R7 · Denúncia enviada (Must, P)
+### R7 · Denúncia enviada (P)
 
 `denuncia/sucesso.tsx`: círculo verde-claro com visto, "Denúncia enviada!", o texto novo, cartão com **número da denúncia**, selo "Recebida" e local, **"Acompanhar minha denúncia"** e **"Voltar ao início"**. O local vem por parâmetro da rota (`bairro` e `logradouro`, que o app já tem no envio); o botão "Copiar" continua.
 
 **Pronto quando:** `sucesso.test.tsx` passa com os textos novos e com o local.
 
-### R8 · Mapa, parte 2: marcadores (Should, G)
+### R8 · Mapa, parte 2: marcadores (G)
 
-`MapaOcorrencias`: marcadores de 40 com borda branca de 3 e ícone da situação (o de "Normal" é **quadrado**), com `tracksViewChanges={false}`; ponto azul de "você está aqui" (`showsUserLocation`); botão flutuante **"Onde estou"** (ícone + texto, a única sombra do app); círculos de zona saem (R-02); "Ver" na lista centraliza o mapa.
+`MapaOcorrencias`: marcadores de 40 dp com **borda branca de 3 e contorno externo de 2 na cor da situação** (R-14) e o ícone da situação (o de "Normal" é **quadrado**), com `tracksViewChanges={false}`; ponto azul de "você está aqui" (`showsUserLocation`); botão flutuante **"Onde estou"** (ícone + texto, a única sombra do app); círculos de zona saem (R-02); "Ver" na lista centraliza o mapa no bairro do grupo.
 
-**Risco:** marcadores com `View` dentro do `react-native-maps` precisam ser vistos no Expo Go (Android e iOS). Se falharem, o corte é voltar ao pino colorido padrão com a lista mantendo ícone e texto.
+**Risco:** marcadores com `View` dentro do `react-native-maps` precisam ser vistos no Expo Go (Android e iOS). Se falharem, o plano B (a combinar com Bruno) é um ícone em imagem para o marcador; a lista mantém ícone e texto de qualquer forma.
 
-### R9 · Ajustes nas demais telas (Should, M)
+**Pronto quando:** testes de marcador (ícone e formato por situação, quadrado para Normal), de "Onde estou" (centraliza no GPS; mensagem clara se não houver localização) e de "Ver"; contraste do contorno testado (7.2).
+
+### R9 · Ajustes nas demais telas (M)
 
 | Tela | Ajuste |
 |---|---|
@@ -272,18 +289,9 @@ Cabeçalho em todos os passos: **"Voltar"** (no passo 1 fecha a tela), "Passo X 
 | `SeletorDeBairro` | "Fechar" com texto; itens com 56 de altura |
 | Termos e Privacidade | Só o tema |
 
-### R10 · Limpeza e documentação (Must, M)
+### R10 · Limpeza e documentação (M)
 
 Apagar os apelidos `@deprecated`, `ReportFab`, `ScreenPlaceholder`, `OpcoesSegmentadas`, `AvisoRecolhivel`, `BannerDenunciar` e `LocationStatusCard` (o que não for mais usado); teste que proíbe cor/fonte fora do tema; documentação da seção 9.
-
-### Could (só se sobrar tempo)
-
-| Item | Estimativa |
-|---|---|
-| R-09 · Tela de Ajuda + botão no cabeçalho da Início | P |
-| R-07 · "Trocar" endereço na Início (RF-017) | M |
-| R-04 · Lista do Mapa agrupada por bairro com "N avisos" | M |
-| Ícone do app e splash novos (PEN-09) | P (depende das imagens) |
 
 ## 7. Testes
 
@@ -307,6 +315,9 @@ Estimativa: **~140 dos 424 testes** do app são tocados (a maioria só no texto 
 
 - **Contraste:** um teste por linha da seção 3.6 (todos os pares de texto ≥ 4,5:1 e de ícone/borda ≥ 3:1), lidos dos próprios tokens.
 - **Regras do tema:** nenhum token de fonte < 14; nenhum `letterSpacing` < 0; uma busca nos arquivos de `src/app` e `src/components` falha se achar `#RRGGBB`, `rgba(`, `fontSize:` ou `toUpperCase()` fora de `src/theme`.
+- **Contorno dos marcadores (R-14):** `#B42318`, `#93370D` e `#067647` contra fundos típicos de mapa (`#F2EFE9` terreno, `#E5E3DF` ruas, `#C8E6C9` parque, `#AADAFF` água) e contra a borda branca: ≥ 3:1 em todos; o caso **Oscilando** é um teste próprio.
+- **Agrupamento por bairro:** `agruparPorBairro` (precedência de situação, contagem, mais recente, empate, só resolvidas).
+- **Trocar bairro e Ajuda:** bairro escolhido salvo só no aparelho (nenhuma chamada à API), "Usar minha localização", Ajuda com os 3 passos, 193, contatos e links, e "Ligar" com e sem suporte a `tel:`.
 - **Situação nunca só por cor:** `SeloDeSituacao` e `StatusBadge` sempre com ícone e texto, para cada valor.
 - **Barra inferior:** 4 itens com texto; aba ativa com `selected`; "Denunciar" abre `/denunciar`.
 - **Denunciar:** "Continuar" desativado sem escolha; 1 → 2 → 3 e voltar; "Voltar" no passo 1 fecha; "Não, quero corrigir" abre os campos; GPS negado já abre os campos; endereço inválido não avança; erro do servidor em `logradouro` leva de volta ao passo 2; 409 no passo 3; rascunho restaurado no passo 1; botão de voltar do Android volta um passo; "Passo X de 3" anunciado.
@@ -336,57 +347,54 @@ Estimativa: **~140 dos 424 testes** do app são tocados (a maioria só no texto 
 | `CLAUDE.md` | Seção "Design" (tokens novos, situação sempre com ícone, sem maiúsculas) e as menções à Plus Jakarta |
 | `README.md` | Roteiro de demonstração com os textos novos ("Fazer denúncia", aba "Mapa", 3 passos) |
 
-## 10. Prazo e estimativa honesta
+## 10. Estimativa e ordem
 
-| Etapa | Prioridade | Estimativa |
-|---|---|---|
-| R0 Preparação | Must | P (0,5 h) |
-| R1 Tokens e fonte | Must | M (4 h) |
-| R2 Componentes base | Must | G (7 h) |
-| R3 Barra inferior | Must | P (2 h) |
-| R4 Início | Must | M (4 h) |
-| R5 Mapa, parte 1 | Must | M (4 h) |
-| R6 Denunciar em 3 passos | Must | G (8 h) |
-| R7 Sucesso | Must | P (1,5 h) |
-| R10 Limpeza e documentação | Must | M (4 h) |
-| **Total Must** | | **≈ 35 h** |
-| R8 Marcadores do mapa | Should | G (7 h) |
-| R9 Demais telas | Should | M (4 h) |
-| **Total Should** | | **≈ 11 h** |
-| Could (Ajuda, Trocar, agrupamento, ícone) | Could | ≈ 10 h |
+O prazo foi estendido: **o redesign inteiro entra, e a Fase 2 vem depois**, já com os componentes novos (a ordem está em [14](14-roadmap-e-backlog.md)).
 
-**Leitura honesta:** hoje é 23/11 e a entrega é por volta de 25/11. O Must sozinho são **cerca de 4 a 5 dias de trabalho de uma pessoa**, sem contar a verificação em aparelho e o ensaio. **O redesign completo não cabe até 25/11, e a Fase 2 também não cabe junto com ele.** As opções:
-
-1. **Redesign reduzido até 25/11** (recomendado se a apresentação valorizar a experiência do usuário): R0, R1, R2, R3, R6 e R7. O app inteiro fica com o tema novo pelos tokens; a Início e o Mapa ficam com o layout atual, mas já azuis, com a fonte nova e os textos novos. **Fase 2 fica para depois da entrega.**
-2. **Fase 2 até 25/11 e redesign depois.**
-3. **Redesign completo, com nova data de entrega.**
-
-## 11. Riscos e cortes
-
-| Risco | Mitigação / corte |
+| Etapa | Estimativa |
 |---|---|
-| Tempo (seção 10) | Cortar nesta ordem: Could → R8 → R9 → R5 → R4. **R1, R2, R3, R6 e R7 não são cortados** |
-| Marcadores com ícone falharem no Expo Go | Voltar ao pino colorido padrão; a lista mantém ícone e texto |
-| Reescrita do Denunciar quebrar rascunho, 409 ou offline | Os 28 testes atuais são portados **antes** de apagar a tela antiga; a etapa só fecha com todos passando |
-| Fonte nova maior quebrar layouts | `minHeight` em vez de `height`; teste em 200% em aparelho |
-| Muitos testes quebrando de uma vez | Migração em três movimentos (seção 4); cada etapa termina com a suíte verde |
-| A troca de paleta afetar o painel | O painel tem `tokens.css` próprio e **não muda**; ele fica com a identidade verde. Unificar fica para depois |
+| R0 Preparação | P (0,5 h) |
+| R1 Tokens e fonte | M (4 h) |
+| R2 Componentes base | G (7 h) |
+| R3 Barra inferior | P (2 h) |
+| R4 Início, Trocar e Ajuda | G (8 h) |
+| R5 Mapa (chips e lista agrupada) | G (6 h) |
+| R6 Denunciar em 3 passos | G (8 h) |
+| R7 Sucesso | P (1,5 h) |
+| R8 Marcadores do mapa | G (7 h) |
+| R9 Demais telas | M (4 h) |
+| R10 Limpeza e documentação | M (4 h) |
+| **Total** | **≈ 52 h** (cerca de 6 a 7 dias de trabalho de uma pessoa, mais a verificação em aparelho a cada etapa) |
 
-**Impacto no roteiro de demonstração (README):** os passos continuam os mesmos, com textos novos: "Fazer denúncia" no lugar de "Registre sua denúncia", a aba **Mapa** no lugar de Ocorrências, o envio em 3 passos e os selos "Sem energia / Oscilando / Normal". Se R8 não entrar, o passo 7 ("o círculo do bairro fica vermelho") passa a ser "o selo do bairro muda para Sem energia". O README é atualizado na R10.
+## 11. Riscos
+
+| Risco | Mitigação |
+|---|---|
+| Marcadores com ícone falharem no Expo Go | Verificação em aparelho já na R8; plano B combinado com Bruno antes de mudar (seção R8) |
+| Reescrita do Denunciar quebrar rascunho, 409 ou offline | Os 28 testes atuais são portados **antes** de apagar a tela antiga; a etapa só fecha com todos passando |
+| Fonte nova maior quebrar layouts | `minHeight` em vez de `height`; teste em 200% em aparelho a cada etapa de tela |
+| Muitos testes quebrando de uma vez | Migração em três movimentos (seção 4); cada etapa termina com a suíte verde |
+| Agrupamento precisar de campo que a API não devolve | **Parar e perguntar**; hoje a resposta traz bairro, folha, tipo, status, coordenadas arredondadas e data, o suficiente |
+| A troca de paleta afetar o painel | O painel tem `tokens.css` próprio e **não muda**; alinhar as cores de situação é o item Could B-045 |
+
+**Impacto no roteiro de demonstração (README):** os passos continuam os mesmos, com textos novos: "Fazer denúncia" no lugar de "Registre sua denúncia", a aba **Mapa** no lugar de Ocorrências, o envio em 3 passos e os selos "Sem energia / Oscilando / Normal". O README é atualizado na R10.
 
 ## 12. Sequência de commits sugerida
 
+0. `docs: adiciona plano do redesign do app e atualiza o backlog` (R0)
 1. `chore(mobile): adiciona Atkinson Hyperlegible e tokens do design system v2` (R1)
 2. `feat(mobile): reescreve componentes base no design system v2` (R2)
 3. `feat(mobile): barra inferior com texto em todos os itens e aba Mapa` (R3)
-4. `feat(mobile): nova tela inicial com energia do bairro e ação principal` (R4)
-5. `feat(mobile): mapa com chips de situação e lista de lugares com aviso` (R5)
+4. `feat(mobile): nova tela inicial com energia do bairro, trocar bairro e ajuda` (R4)
+5. `feat(mobile): mapa com chips de situação e lugares agrupados por bairro` (R5)
 6. `feat(mobile): denúncia em 3 passos` (R6)
 7. `feat(mobile): nova tela de denúncia enviada` (R7)
 8. `feat(mobile): marcadores do mapa com ícone e botão onde estou` (R8)
 9. `style(mobile): aplica o design system v2 nas demais telas` (R9)
-10. `refactor(mobile): remove tokens e componentes antigos` + `docs: design system v2, ADR-0006 e plano do redesign` (R10)
+10. `refactor(mobile): remove tokens e componentes antigos` + `docs: design system v2 e ADR-0006` (R10)
 
-## 13. Pendências de confirmação
+Cada commit de etapa inclui os testes e a documentação daquela etapa (seção 9).
 
-As decisões R-01 a R-15 (seção 5) e, principalmente, a **escolha entre as opções da seção 10** (redesign reduzido, Fase 2 primeiro ou redesign completo com nova data).
+## 13. Decisões
+
+Todas as decisões R-01 a R-16 foram **aprovadas em 2026-11-23** (seção 5). Pendência de produto que **não bloqueia**: o número real do telefone da Equatorial (PEN-02), hoje um placeholder.
