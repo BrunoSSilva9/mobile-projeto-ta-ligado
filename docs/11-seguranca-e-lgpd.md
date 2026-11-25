@@ -24,13 +24,14 @@ Princípio da **minimização**: **CPF e data de nascimento não são coletados.
 | **Geolocalização** (GPS) | Registro da denúncia | Localizar a ocorrência e sugerir endereço | Consentimento (permissão do sistema + aceite) | Autor; Operador (exata). Outros cidadãos veem só posição aproximada (3 casas decimais) |
 | Endereço da ocorrência (logradouro, bairro, CEP, ponto de referência) | Denúncia | Localizar o problema | Consentimento; execução do serviço solicitado | Autor; Operador; público (só logradouro/bairro) |
 | Descrição, fotos, pessoas no local | Denúncia | Avaliar e priorizar o atendimento | Consentimento | Autor; Operador (fotos nunca ao público) |
-| Necessidade especial e detalhe (**dado de saúde = sensível**, art. 11) | Denúncia | Priorizar atendimento a pessoas dependentes de energia | **Consentimento específico e destacado** (art. 11, I) | Autor; Operador |
+| Necessidade especial, **só Sim/Não** (**dado de saúde = sensível**, art. 11) | Denúncia | Priorizar atendimento a pessoas dependentes de energia | **Consentimento específico e destacado** (art. 11, I), separado dos Termos e registrado com data | Autor; Operador (apagada ao fim da denúncia, RN-026) |
 | Token de push | Dispositivo | Notificar mudança de status | Consentimento (permissão do sistema) | Servidor |
 | Histórico de status e logs de acesso | Sistema | Auditoria e segurança | Legítimo interesse (art. 7º, IX) e obrigação de transparência | Operador; equipe técnica |
 
 **Pontos de atenção**
 - A **geolocalização é coletada só ao registrar a denúncia ou consultar o bairro**, com a permissão do sistema "ao usar o app". Não há rastreamento em segundo plano.
-- O campo "necessidade especial" pode revelar dado de **saúde**. O formulário deve explicar o uso e pedir o consentimento específico (texto na tela T-05). O detalhe é opcional além da marcação "Sim".
+- O campo "necessidade especial" pode revelar dado de **saúde**. Por minimização, é **só Sim/Não, sem texto livre** (decisão S-46). Com "Sim", o passo 3 do Denunciar mostra um **consentimento específico e destacado**, separado dos Termos; sem o aceite, a resposta não é enviada. A resposta não fica no rascunho do aparelho (S-56), nunca aparece na visão pública nem em logs, e é **apagada quando a denúncia termina** (RN-026).
+- As **fotos** podem conter a localização exata da casa nos metadados (EXIF). O app reduz a imagem e remove o EXIF antes de enviar, e a API remove de novo; o tipo é validado pelo conteúdo, o nome do arquivo é aleatório e a foto só é servida por rota autenticada ao autor e ao operador (S-49, RNF-015).
 - A **localização do autor** pode identificar onde mora. Por isso o público vê só bairro e rua, com coordenadas arredondadas (RN-014).
 
 ## 3. Consentimento
@@ -46,8 +47,9 @@ Princípio da **minimização**: **CPF e data de nascimento não são coletados.
 | Dado | Retenção | Ao fim |
 |---|---|---|
 | Conta e dados pessoais | Enquanto a conta existir | Remoção ao excluir a conta (RN-024) |
-| Denúncias | Mantidas por prazo indeterminado, para estatística e histórico | **Anonimizadas** (sem vínculo com o autor) quando a conta é excluída |
-| Fotos | Enquanto a denúncia existir | Apagadas na exclusão da conta |
+| Denúncias | Mantidas por prazo indeterminado, para estatística e histórico | **Anonimizadas** (sem vínculo com o autor) quando a conta é excluída; uma denúncia em aberto continua aberta, e o painel mostra "Conta excluída" (S-50) |
+| Fotos | Enquanto a denúncia existir | Apagadas (arquivos e registros) na exclusão da conta |
+| Necessidade especial e consentimento | Enquanto a denúncia estiver em aberto | **Apagados** quando a denúncia fica Resolvida, Improcedente ou Cancelada (RN-026, S-47) e na exclusão da conta |
 | Tokens de push | Até o logout ou a exclusão da conta | Removidos |
 | Logs de acesso | 6 meses | Descarte automático |
 | Histórico de status | Com a denúncia | Nome do autor da alteração removido na anonimização (`alteradoPorId` = nulo) |

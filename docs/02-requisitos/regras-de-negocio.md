@@ -31,6 +31,7 @@ As decisões numeradas (`S-xx`) estão listadas em [01 – seção 8](../01-visa
 | RN-023 | Protocolo |
 | RN-024 | Exclusão de conta |
 | RN-025 | Bairro do usuário |
+| RN-026 | Retenção da necessidade especial |
 
 ## Regras
 
@@ -121,7 +122,7 @@ Opcional; até **3 fotos** por denúncia, **5 MB** cada, tipos JPEG e PNG (decis
 A lista pública usa uma projeção **anonimizada** (sem identificadores do autor). Os pinos públicos usam coordenadas arredondadas (3 casas decimais, ~110 m).
 
 ### RN-015 – Prioridade por necessidade especial
-Denúncias com `necessidadeEspecial = true` são **prioritárias**: destaque visual no painel e ordenação no topo (antes das demais, e dentro do grupo da mais antiga para a mais recente). Quando marcado "Sim", o detalhe da situação é obrigatório.
+Denúncias com `necessidadeEspecial = true` são **prioritárias**: destaque visual no painel e ordenação no topo (antes das demais, e dentro do grupo da mais antiga para a mais recente). A resposta é **só Sim/Não, sem texto livre** (decisão S-46). O "Sim" só é aceito com o **consentimento específico** do autor (LGPD, art. 11, I), registrado com data; sem ele, a resposta não é enviada. A resposta não informada ou já apagada (RN-026) vale como não prioritária.
 
 ### RN-016 – Agrupamento e resolução em lote (decisão S-01)
 O painel agrupa denúncias por bairro. O operador pode "Resolver todas do bairro": todas as denúncias **em aberto** daquele bairro passam a `RESOLVIDA`. É a única regra que permite `RECEBIDA → RESOLVIDA` direto. Cada denúncia gera seu próprio histórico (RN-011) e evento em tempo real. A ação exige confirmação.
@@ -131,6 +132,8 @@ O painel agrupa denúncias por bairro. O operador pode "Resolver todas do bairro
 - **Denúncias registradas:** criadas nos últimos 30 dias.
 - **Em atendimento:** denúncias com status `EM_ATENDIMENTO` no momento.
 - **Resolvidas:** denúncias que passaram a `RESOLVIDA` nos últimos 30 dias; a **taxa** é `resolvidas ÷ registradas` no período (limitada a 100%).
+
+Os indicadores são exibidos **só no painel da operadora** (decisão S-52).
 
 ### RN-018 – Duplicidade de denúncias
 Não há deduplicação automática. A mitigação é o limite de RN-006 e o **agrupamento por bairro** no painel (RN-016), onde o operador identifica vários relatos do mesmo problema. Confirmação de denúncias por vizinhos está **fora do MVP**.
@@ -151,7 +154,10 @@ Nome (2 a 100 caracteres), e-mail válido e único (sem diferenciar maiúsculas)
 Cada denúncia recebe um protocolo único legível no formato `TL-AAAA-NNNNNN` (ano e sequência de 6 dígitos), gerado no servidor.
 
 ### RN-024 – Exclusão de conta (decisão S-11)
-Ao excluir a conta, nome, e-mail, telefone, senha e tokens de push são removidos; as denúncias são mantidas **anonimizadas** (sem vínculo com o autor) e as fotos são apagadas. Denúncias em aberto são canceladas automaticamente antes da exclusão.
+Ao excluir a conta, numa transação, nome, e-mail, telefone, senha, tokens de push, fotos (arquivos e registros) e a resposta de necessidade especial são removidos; as denúncias e o histórico são mantidos **anonimizados** (sem vínculo com o autor). **Uma denúncia em aberto continua aberta**, porque a falta de energia pode ser real: o operador só perde o contato e vê "Conta excluída" (decisão S-50). A exclusão exige confirmação explícita no app.
 
 ### RN-025 – Bairro do usuário (decisão S-05)
 O bairro do usuário na Home é o de **centro mais próximo** das coordenadas do GPS (distância de Haversine), limitado a um raio máximo de 15 km; fora dele, o usuário escolhe o bairro manualmente. Sem GPS, usa-se o último bairro escolhido (guardado só no dispositivo).
+
+### RN-026 – Retenção da necessidade especial (decisão S-47)
+A resposta de necessidade especial e o registro do consentimento são **apagados** (passam a nulos) quando a denúncia chega a um status final (`RESOLVIDA`, `IMPROCEDENTE` ou `CANCELADA`), em qualquer caminho: mudança pelo operador, resolução em lote (RN-016) ou cancelamento pelo autor (RN-005). Depois disso a denúncia deixa de ser prioritária e o painel mostra que a informação foi apagada.

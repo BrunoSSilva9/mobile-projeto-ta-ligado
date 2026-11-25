@@ -23,7 +23,7 @@ Pessoas maiores de 18 anos, ou menores com autorização de responsável, que us
 
 - Informe dados verdadeiros e mantenha sua senha em segredo.
 - Você é responsável pelo que for feito com a sua conta.
-- Você pode **editar** seu nome e telefone e **excluir** sua conta a qualquer momento, no Perfil.
+- Você pode **editar** seu nome e telefone e **excluir** sua conta a qualquer momento, no Perfil. Ao excluir, apagamos seus dados pessoais, suas fotos e as respostas de necessidade especial; as denúncias ficam sem o seu nome (uma denúncia em aberto continua sendo atendida).
 
 ## 5. Como registrar denúncias
 
@@ -42,7 +42,7 @@ Outros cidadãos veem apenas o **tipo, o bairro, a rua, a descrição, o status 
 
 ## 7. O que a operadora vê
 
-A operadora (simulada) vê a denúncia **completa**: seu nome, telefone, endereço, coordenadas, fotos, quantidade de pessoas no local e se há alguém com necessidade especial.
+A operadora (simulada) vê a denúncia **completa**: seu nome, telefone, endereço, coordenadas, fotos, quantidade de pessoas no local e, **só se você autorizar**, se há alguém com necessidade especial (essa resposta é apagada quando a denúncia termina).
 
 ## 8. Conduta proibida
 

@@ -1,6 +1,6 @@
 # 14 – Roadmap e backlog
 
-Priorização por **MoSCoW** e por dependência técnica. O prazo informado é de **uma semana**, contada a partir de **2026-11-18** (entrega por volta de 2026-11-25). As fases foram distribuídas em **dias** na seção [Cronograma](#cronograma-de-uma-semana); as datas são **referência**, e a equipe avança por prioridade, sem se prender a elas. Esforço: **P** (≤ 1 dia), **M** (2 a 3 dias), **G** (≥ 4 dias), estimativa inicial.
+Priorização por **MoSCoW** e por dependência técnica. O prazo inicial de uma semana (a partir de 2026-11-18) foi **estendido**: as fases avançam por ordem de dependência, uma etapa por vez, sem datas fixas. Esforço: **P** (≤ 1 dia), **M** (2 a 3 dias), **G** (≥ 4 dias), estimativa inicial.
 
 ## Roadmap
 
@@ -14,28 +14,32 @@ flowchart LR
 | **0 – Fundação** | Monorepo, ambiente, CI, banco, tema | `docker compose up` + apps abrindo, CI verde |
 | **1 – MVP (Must)** | Ciclo completo cidadão → operadora → cidadão | Demonstração: cadastra, denuncia, painel recebe em tempo real, operador atualiza, app reflete |
 | **Redesign do app (v2)** | Novo design system (azul para tocar, situação da energia sempre com ícone e texto, Atkinson Hyperlegible) e telas novas, só em `apps/mobile` | App no novo visual, com o mesmo comportamento da Fase 1 ([17](17-plano-redesign.md)) |
-| **2 – MVP+ (Should)** | Completar experiência e conformidade | Fotos, perfil/exclusão de conta, painel comunitário, previsão, lote, prioridade e, **por último, o push** |
+| **2 – MVP+ (Should)** | Completar experiência e conformidade, **por camada** (API, painel e app) | Cancelar, pessoas e necessidade especial (com consentimento e retenção), fotos, perfil e exclusão de conta, previsão, lote e indicadores no painel; **push condicional, por último** ([18](18-plano-fase-2.md)) |
 | **3 – Polimento (Could)** | Refinos | Busca, mapa em tela cheia, alterar endereço, E2E |
 | **Futuro** | Evolução | Itens da seção "Fora do MVP" |
 
-> **Nova ordem (decisão de 2026-11-23):** a Fase 1 está concluída e mergeada na `develop`. O prazo foi estendido: agora vem o **redesign completo do app** (etapas R0 a R10, em [17 – Plano do redesign](17-plano-redesign.md)) e **só depois a Fase 2**, que já será construída com os componentes novos. O cronograma de uma semana abaixo é o plano original e **fica como referência histórica**; as datas dos dias 5 a 7 não valem mais.
+> **Estado (2026-11-25):** Fases 0 e 1 concluídas; **redesign do app (B-046) concluído e mergeado na `develop`** (PR #5). Agora vem a **Fase 2**, por camada, com o plano em [18 – Plano da Fase 2](18-plano-fase-2.md) (decisões S-45 a S-60). O cronograma de uma semana do plano original foi **substituído** pela ordem abaixo.
 
-## Cronograma de uma semana
+## Ordem da Fase 2
 
-Os últimos dias ficam reservados a **testes, ajustes e preparação da apresentação**. A ordem de desenvolvimento segue a decisão D-03: tudo o que é **Must** roda no **Expo Go** (tempo real por WebSocket); o **push** (Should) e o *development build* ficam **por último**.
+Uma etapa por vez, na branch `feature/fase-2`; cada etapa só começa depois da verificação da anterior (S-54). A ordem segue as dependências: a exclusão de conta vem depois de necessidade especial e fotos, porque precisa apagar os dois; o que faltava da prioridade (B-033) entra junto com a necessidade especial.
 
-| Dia | Data (ref.) | Foco | Itens do backlog |
+| Etapa | Itens | Camadas | Estimativa |
 |---|---|---|---|
-| 1 | 18/11 (qua) | **Fase 0:** monorepo, banco, esqueletos, tema, lint e CI | B-001 a B-006 |
-| 2 | 19/11 (qui) | **Fase 1, backend:** domínio com testes, auth, denúncias, Socket.IO | B-010, B-011, B-013, B-014, B-017, B-019 |
-| 3 | 20/11 (sex) | **Fase 1, app e painel (base):** cadastro/login, Registrar Denúncia, sucesso; login do painel e lista | B-012, B-015, B-016, B-020 |
-| 4 | 21/11 (sáb) | **Fase 1, fechamento do Must:** Home, Ocorrências, detalhe, alerta em tempo real e atualização de status no painel | B-018, B-021, B-022, B-023 |
-| 5 | 22/11 (dom) | **Fase 2 (Should, sem push):** fotos, pessoas/necessidade especial, prioridade, previsão, lote, cancelar, perfil e exclusão de conta, indicadores, acessibilidade | B-031 a B-039 |
-| 6 | 23/11 (seg) | **Testes e ajustes:** integração da API, correções; *Could* (B-040 a B-042) só se sobrar tempo; **push por último** (B-030, com *development build*) se houver tempo | B-024, B-030, B-040 a B-044 |
-| 7 | 24/11 (ter) | **Congelar o escopo:** testes finais, correções, README com roteiro de demonstração, ensaio e preparação da apresentação | B-025 |
-| — | 25/11 (qua) | Entrega / apresentação | — |
+| F2-0 Preparação | Plano, decisões, regras e backlog | docs | P (1 h) |
+| F2-1 Cancelar denúncia | B-036 | API, app, painel | P (4 h) |
+| F2-2 Pessoas, necessidade especial e prioridade | B-032, B-033 | API, app, painel | M (8 h) |
+| F2-3 Fotos | B-031 | API, app, painel | G (14 h) |
+| F2-4 Perfil e exclusão de conta | B-037 | API, app, painel | M (8 h) |
+| F2-5 Previsão de reparo | B-034 | API, painel | P (4 h) |
+| F2-6 Resolução em lote | B-035 | API, painel | M (6 h) |
+| F2-7 Indicadores (só no painel) | B-038 | API, painel | P (4 h) |
+| F2-8 Acessibilidade e fechamento | B-039 | app, painel, docs | M (4 h) |
+| **Total sem push** | | | **≈ 53 h** |
+| F2-9 Push (condicional: *development build* + PEN-04) | B-030 | API, app | G (10 h) |
+| Could | B-045 | painel | P (3 h) |
 
-> **Risco declarado:** a soma das estimativas das Fases 1 e 2 é maior que sete dias de uma única pessoa. Com **três integrantes** em paralelo (API, app, painel) é viável, mas, se o prazo apertar, corta-se nesta ordem: B-044, B-043, B-040 a B-042, B-030 (push), B-035 (lote), B-038 (indicadores). O **Must** não é cortado.
+> **Se for preciso cortar**, nesta ordem: B-045, B-030 (push), B-035 (lote), B-038 (indicadores). Cancelar, necessidade especial, fotos e exclusão de conta não são cortados.
 
 > O **plano detalhado da Fase 1** (PRs, arquivos, testes e critérios) está em [16 – Plano de implementação da Fase 1](16-plano-fase-1.md).
 
@@ -77,22 +81,22 @@ Os últimos dias ficam reservados a **testes, ajustes e preparação da apresent
 
 | ID | Item | Esforço | Requisitos |
 |---|---|---|---|
-| B-030 | **Push (último item a ser feito):** registro de token, envio com `expo-server-sdk`, abrir detalhe pelo toque; exige *development build* (D-03) | G | RF-025, RN-019 |
-| B-031 | Anexar até 3 fotos (upload, rota autenticada, miniaturas) | M | RF-009, RN-013, RNF-015 |
-| B-032 | Pessoas afetadas e necessidade especial (consentimento específico) | P | RF-010, RN-015 |
-| B-033 | Prioridade no painel (destaque e ordenação) | P | RF-035 |
-| B-034 | Previsão de reparo (painel, detalhe e card do bairro) | M | RF-033, RN-009 |
-| B-035 | Agrupamento por bairro e resolução em lote | M | RF-034, RN-016 |
-| B-036 | Cancelar denúncia recebida | P | RF-015, RN-005 |
-| B-037 | Perfil: ver/editar dados; **excluir conta** (anonimização) | M | RF-004, RF-005, RF-006, RN-024 |
-| B-038 | Painel comunitário (indicadores de 30 dias) | P | RF-018, RN-017 |
-| B-039 | Acessibilidade: rótulos, contraste, alvos de toque, fontes a 200% | M | RNF-024, [12](12-acessibilidade.md) |
+| B-030 | **Push (condicional, F2-9):** registro de token, envio com `expo-server-sdk`, abrir detalhe pelo toque; exige *development build* (D-03) e credenciais (PEN-04). Nenhuma etapa depende dele (S-45) | G | RF-025, RN-019 |
+| B-031 | Anexar até 3 fotos: redução e remoção de EXIF no app e na API, tipo pelo conteúdo, rota autenticada, miniaturas (F2-3, S-49) | G | RF-009, RN-013, RNF-015 |
+| B-032 | Pessoas no local e necessidade especial **só Sim/Não**, com consentimento específico e retenção até o fim da denúncia (F2-2, S-46 a S-48) | M | RF-010, RN-015, RN-026 |
+| B-033 | Prioridade no painel. Destaque, ordenação e filtro **já entregues na Fase 1**; o que falta (nulos na ordem, pessoas e retenção no detalhe) entra na F2-2 | P | RF-035 |
+| B-034 | Previsão de reparo editável e removível no painel; o app já mostra no detalhe e no cartão do bairro (F2-5) | P | RF-033, RN-009 |
+| B-035 | Aba "Por bairro" e resolução em lote, com confirmação (F2-6; menor prioridade do painel) | M | RF-034, RN-016 |
+| B-036 | Cancelar denúncia recebida, no detalhe (F2-1) | P | RF-015, RN-005 |
+| B-037 | Perfil: editar nome e telefone; **excluir conta** (anonimização; denúncia aberta continua aberta) (F2-4, S-50) | M | RF-004, RF-005, RF-006, RN-024 |
+| B-038 | Indicadores dos últimos 30 dias **só no painel da operadora** (F2-7, S-52) | P | RF-018, RN-017 |
+| B-039 | Acessibilidade: só o que o redesign não cobriu (telas novas do app e do painel) (F2-8) | M | RNF-024, [12](12-acessibilidade.md) |
 
 ### Redesign do app (design system v2): antes da Fase 2
 
 | ID | Item | Esforço | Referência |
 |---|---|---|---|
-| B-046 | Redesign completo do app do cidadão (tokens e fonte, componentes, barra inferior, Início, Mapa, Denunciar em 3 passos, Sucesso, Ajuda, ajustes nas demais telas), em `feature/redesign-v2`, **sem mudar API, painel nem regras de negócio. **Implementado (R0 a R10) na branch; falta o ensaio no celular e o merge** | G | [17](17-plano-redesign.md), ADR-0006 |
+| B-046 | Redesign completo do app do cidadão (tokens e fonte, componentes, barra inferior, Início, Mapa, Denunciar em 3 passos, Sucesso, Ajuda, ajustes nas demais telas), em `feature/redesign-v2`, **sem mudar API, painel nem regras de negócio. **Concluído e mergeado na `develop` (PR #5)** | G | [17](17-plano-redesign.md), ADR-0006 |
 
 ### Fase 3 – Polimento (Could)
 
@@ -103,7 +107,7 @@ Os últimos dias ficam reservados a **testes, ajustes e preparação da apresent
 | B-042 | Mapa em tela cheia | P | RF-022 |
 | B-043 | E2E (Playwright e Maestro) | M | [13](13-estrategia-de-testes.md) |
 | B-044 | Revisão de segurança (rate limit, headers, validação de upload) e cobertura | M | RNF-014 |
-| B-045 | **Painel:** alinhar as cores de situação (sem energia, oscilando, normal) e o tema do painel com o design system v2 do app. Fora do redesign de 2026-11 | P | [17](17-plano-redesign.md), [06](06-design-system.md) |
+| B-045 | **Painel:** alinhar as cores de situação (sem energia, oscilando, normal) e o tema do painel com o design system v2 do app. Fora do redesign de 2026-11; fica no fim da Fase 2 como Could (S-53) | P | [17](17-plano-redesign.md), [06](06-design-system.md) |
 
 ### Fora do MVP (backlog futuro)
 

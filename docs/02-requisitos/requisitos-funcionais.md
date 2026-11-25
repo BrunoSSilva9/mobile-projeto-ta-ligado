@@ -22,10 +22,10 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 | RF-012 | Tela de sucesso com protocolo | Must | T-06 |
 | RF-013 | Minhas denúncias | Must | T-09 |
 | RF-014 | Detalhe da denúncia com histórico | Must | T-07 |
-| RF-015 | Cancelar denúncia recebida | Should | T-07, T-09 |
+| RF-015 | Cancelar denúncia recebida | Should | T-07 |
 | RF-016 | Home com bairro e status da rede | Must | T-03 |
 | RF-017 | Alterar endereço de consulta | Could | T-03 |
-| RF-018 | Painel comunitário (30 dias) | Should | T-03 |
+| RF-018 | Indicadores dos últimos 30 dias (painel da operadora) | Should | P-02 |
 | RF-019 | Mapa de ocorrências por bairro | Must | T-04 |
 | RF-020 | Lista pública de ocorrências com filtro por status | Must | T-04 |
 | RF-021 | Busca por bairro ou folha | Could | T-04 |
@@ -83,11 +83,12 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 - **Critérios de aceitação:** alterações válidas são salvas e refletidas na tela; telefone inválido exibe erro.
 
 ### RF-006 – Excluir conta
-- **Descrição:** o usuário pode excluir a própria conta (direito do titular, LGPD). Regra: RN-024.
+- **Descrição:** o usuário pode excluir a própria conta (direito do titular, LGPD). Regra: RN-024 (decisão S-50).
 - **Prioridade:** Should · **Tela:** T-08.
 - **Critérios de aceitação:**
-  - Há confirmação explícita antes da exclusão.
-  - Após excluir, os dados pessoais são removidos, as denúncias passam a ser anônimas e a sessão é encerrada.
+  - Há confirmação explícita antes da exclusão, que explica o que é apagado e o que fica.
+  - Após excluir, os dados pessoais, as fotos e a resposta de necessidade especial são removidos, as denúncias passam a ser anônimas (uma denúncia em aberto continua aberta) e a sessão é encerrada.
+  - O painel mostra "Conta excluída" no lugar do autor.
 
 ## Denúncia (app)
 
@@ -108,17 +109,21 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
   - Editar o endereço mantém as coordenadas originais do GPS, salvo se o usuário mover o pino (decisão S-23).
 
 ### RF-009 – Anexar fotos
-- **Descrição:** anexo **opcional** de até 3 fotos (JPEG/PNG) de até 5 MB cada, com opção de remover e substituir. Vídeo não é aceito. Texto de apoio: "Se puder, anexe fotos". Regra: RN-013.
+- **Descrição:** anexo **opcional** de até 3 fotos (JPEG/PNG) de até 5 MB cada, da câmera ou da galeria, com opção de remover. Vídeo não é aceito. Texto de apoio: "Se puder, anexe fotos". O app reduz a imagem e remove os metadados (EXIF) antes de enviar; a API remove de novo (decisão S-49). Regra: RN-013.
 - **Prioridade:** Should · **Tela:** T-05.
 - **Critérios de aceitação:**
   - Foto acima de 5 MB ou o 4º anexo é recusado com mensagem.
   - O contador "N anexos" acompanha a lista.
   - As fotos só são visíveis ao autor e à operadora (RN-014).
+  - O arquivo gravado não tem metadados de localização.
 
 ### RF-010 – Pessoas afetadas e necessidade especial
-- **Descrição:** o usuário informa a faixa de pessoas no local (1 a 3, 4 a 8, 9 a 20, Rua toda) e se há alguém com necessidade especial (Sim/Não); em caso afirmativo, detalha a situação. Regra: RN-015.
+- **Descrição:** no passo 3 do Denunciar, o usuário informa, se quiser, a faixa de pessoas no local (1 a 3, 4 a 8, 9 a 20, Rua toda) e responde **Sim ou Não**: "Alguém no local depende de aparelho elétrico, como respirador ou geladeira de remédios, ou tem necessidade especial?". Não há campo de texto livre (decisões S-46 e S-48). Regras: RN-015, RN-026.
 - **Prioridade:** Should · **Tela:** T-05.
-- **Critérios de aceitação:** ao marcar "Sim, prioridade", o campo de detalhe aparece e é obrigatório; a denúncia é marcada como prioritária.
+- **Critérios de aceitação:**
+  - Ao marcar "Sim", aparece um consentimento específico e destacado, separado dos Termos; com ele marcado, a denúncia é prioritária.
+  - Sem o consentimento, o "Sim" não é enviado e o resumo avisa isso.
+  - A resposta é apagada quando a denúncia termina (RN-026).
 
 ### RF-011 – Limite de uma denúncia em aberto
 - **Descrição:** o cidadão só pode ter **uma** denúncia `RECEBIDA` ou `EM_ATENDIMENTO` por vez. Regra: RN-006.
@@ -142,7 +147,7 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 
 ### RF-015 – Cancelar denúncia recebida
 - **Descrição:** o autor pode cancelar uma denúncia que ainda esteja `RECEBIDA`. Regra: RN-005.
-- **Prioridade:** Should · **Tela:** T-07, T-09.
+- **Prioridade:** Should · **Tela:** T-07 (decisão S-55).
 - **Critérios de aceitação:** o botão "Cancelar denúncia" só aparece em `RECEBIDA`; após confirmar, o status vira `CANCELADA`, o painel é notificado e o limite de RN-006 é liberado.
 
 ## Home e ocorrências (app)
@@ -158,8 +163,8 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 - **Critérios de aceitação:** ao escolher outro bairro, a Home mostra o status dele com aviso "Consultando: {bairro}" e opção "Voltar à minha localização".
 
 ### RF-018 – Painel comunitário (30 dias)
-- **Descrição:** quatro indicadores calculados do banco: usuários cadastrados, denúncias registradas, em atendimento e resolvidas (com taxa de resolução). Regra: RN-017.
-- **Prioridade:** Should · **Tela:** T-03.
+- **Descrição:** quatro indicadores calculados do banco: usuários cadastrados, denúncias registradas, em atendimento e resolvidas (com taxa de resolução). Exibidos **só no painel da operadora**; o app não mostra indicadores (decisão S-52). Regra: RN-017.
+- **Prioridade:** Should · **Tela:** P-02.
 - **Critérios de aceitação:** os valores batem com a contagem do banco no período; os selos "+12%" e "Em rota" do protótipo não são exibidos (não há dados para eles).
 
 ### RF-019 – Mapa de ocorrências por bairro

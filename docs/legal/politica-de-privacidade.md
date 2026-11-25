@@ -23,9 +23,13 @@ Coletamos **o mínimo necessário**. **Não pedimos CPF nem data de nascimento.*
 | Endereço da ocorrência, ponto de referência, descrição | Denúncia | Localizar e entender o problema | Consentimento |
 | Fotos (opcional) | Denúncia | Ajudar a operadora a avaliar o problema | Consentimento |
 | Quantidade de pessoas no local | Denúncia | Dimensionar o atendimento | Consentimento |
-| **Necessidade especial** (ex.: pessoa que depende de aparelho de saúde) | Denúncia, se você marcar "Sim" | **Priorizar** o atendimento. Pode revelar **dado de saúde** (dado sensível) | **Consentimento específico e destacado** (art. 11, I) |
+| **Necessidade especial** (só "Sim" ou "Não": alguém no local depende de aparelho elétrico, como respirador ou geladeira de remédios, ou tem necessidade especial) | Denúncia, só se você responder "Sim" **e autorizar** | **Priorizar** o atendimento. Pode revelar **dado de saúde** (dado sensível). Não pedimos detalhes | **Consentimento específico e destacado** (art. 11, I), pedido na hora, separado destes termos |
 | Token de notificação | Se você permitir notificações | Avisar você quando o status da denúncia mudar | Consentimento |
 | Histórico de mudanças de status e registros de acesso | Uso do app | Segurança e auditoria | Legítimo interesse (art. 7º, IX) |
+
+**Sobre a necessidade especial:** se você responder "Sim", o app pede uma autorização própria: "Autorizo enviar essa informação à Equatorial, só para dar prioridade ao atendimento. Ela é apagada quando a denúncia termina." Sem essa autorização, a resposta não é enviada e a denúncia segue sem prioridade.
+
+**Sobre as fotos:** antes de enviar, o app diminui a foto e apaga os dados escondidos nela (como o local exato onde foi tirada); o servidor apaga de novo, por garantia.
 
 **Sobre a localização:** só coletamos o GPS **enquanto você usa o app**, quando precisa dele (registrar denúncia ou ver seu bairro). **Não rastreamos você em segundo plano.** Se você negar a permissão, ainda pode denunciar digitando o endereço e escolhendo o bairro.
 
@@ -41,8 +45,9 @@ Coletamos **o mínimo necessário**. **Não pedimos CPF nem data de nascimento.*
 | Dado | Prazo |
 |---|---|
 | Conta e dados pessoais | Enquanto sua conta existir |
-| Denúncias | Mantidas para estatística, **sem vínculo com você** depois que você excluir a conta |
+| Denúncias | Mantidas para estatística, **sem vínculo com você** depois que você excluir a conta. Uma denúncia ainda em aberto continua sendo atendida, mas a operadora deixa de ver seu nome e telefone |
 | Fotos | Enquanto a denúncia existir; apagadas se você excluir a conta |
+| Necessidade especial | Só enquanto a denúncia estiver em aberto: apagada quando ela é resolvida, considerada improcedente ou cancelada |
 | Token de notificação | Até você sair do app ou excluir a conta |
 | Registros de acesso | 6 meses |
 

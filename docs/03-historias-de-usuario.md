@@ -17,7 +17,7 @@ Personas: **Maria** (cidadã) e **Carlos** (operador), descritas em [01](01-visa
 | US-009 | Receber notificação push | RF-025 | RN-019 |
 | US-010 | Gerenciar perfil e conta | RF-004, RF-005, RF-006 | RN-024 |
 | US-011 | Consultar outro endereço | RF-017 | RN-025 |
-| US-012 | Ver indicadores da cidade | RF-018 | RN-017 |
+| US-012 | Ver indicadores dos últimos 30 dias (operador) | RF-018 | RN-017 |
 | US-013 | Entrar no painel | RF-026 | RN-001 |
 | US-014 | Receber denúncias em tempo real | RF-027 | — |
 | US-015 | Filtrar lista e mapa | RF-028, RF-029 | — |
@@ -116,10 +116,18 @@ Cenário: Foto fora do limite
   Quando tento anexar uma foto de 8 MB ou uma 4ª foto
   Então a foto é recusada com uma mensagem explicando o limite
 
-Cenário: Necessidade especial
-  Quando marco "Sim, prioridade"
-  Então o campo "Detalhe a situação prioritária" aparece e é obrigatório
-  E a denúncia será tratada como prioritária pela operadora
+Cenário: Necessidade especial com consentimento
+  Quando respondo "Sim" à pergunta de necessidade especial
+  Então vejo um consentimento específico, separado dos Termos
+  E, se eu autorizar, a denúncia será tratada como prioritária pela operadora
+
+Cenário: Necessidade especial sem consentimento
+  Quando respondo "Sim" e não autorizo o envio
+  Então a resposta não é enviada e o resumo me avisa disso
+
+Cenário: Retenção
+  Dado que minha denúncia prioritária foi resolvida
+  Então a resposta de necessidade especial é apagada
 ```
 
 ### US-005 – Acompanhar minhas denúncias
@@ -229,9 +237,11 @@ Cenário: Sair
   Então volto ao login e a sessão é encerrada
 
 Cenário: Excluir conta
-  Quando toco em "Excluir conta" e confirmo
-  Então meus dados pessoais são removidos
+  Quando toco em "Excluir minha conta", leio o que será apagado e confirmo
+  Então meus dados pessoais, minhas fotos e a resposta de necessidade especial são removidos
   E minhas denúncias passam a ser anônimas
+  E uma denúncia em aberto continua aberta para a operadora
+  E volto à tela de login
 ```
 
 ### US-011 – Consultar outro endereço
@@ -245,12 +255,12 @@ Cenário: Alterar endereço de consulta
   E meu cadastro não é alterado
 ```
 
-### US-012 – Ver indicadores da cidade
-**Como** Maria, **quero** ver números gerais dos últimos 30 dias **para** entender o alcance do serviço.
+### US-012 – Ver indicadores dos últimos 30 dias (operador)
+**Como** Carlos, **quero** ver números gerais dos últimos 30 dias **para** acompanhar o volume e a resolução das denúncias (decisão S-52: só no painel).
 
 ```gherkin
 Cenário: Indicadores
-  Quando abro a Home
+  Quando abro o painel
   Então vejo usuários cadastrados, denúncias registradas, em atendimento e resolvidas
   E a taxa de resolução calculada sobre os últimos 30 dias
 ```
