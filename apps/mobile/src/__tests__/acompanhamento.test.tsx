@@ -142,10 +142,10 @@ describe('T-09 Minhas denúncias (RF-013)', () => {
 
     expect(await screen.findByText('TL-2026-000002')).toBeTruthy();
     expect(screen.getByText('Sem energia · Nova Marabá (Folha 28)')).toBeTruthy();
-    expect(screen.getByText('RECEBIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Recebida')).toBeTruthy();
     expect(screen.getByText('TL-2026-000001')).toBeTruthy();
     expect(screen.getByText('Oscilação · Cidade Nova')).toBeTruthy();
-    expect(screen.getByText('RESOLVIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Resolvida')).toBeTruthy();
     expect(screen.getByText('Enviada em 19/11/2026')).toBeTruthy();
   });
 
@@ -205,8 +205,8 @@ describe('T-09 Minhas denúncias (RF-013)', () => {
 
     await act(async () => ultimoSocket()!.__emitir('denuncia:status-atualizado', evento()));
 
-    expect(await screen.findByText('EM ATENDIMENTO')).toBeTruthy();
-    expect(screen.queryByText('RECEBIDA')).toBeNull();
+    expect(await screen.findByLabelText('Status: Em atendimento')).toBeTruthy();
+    expect(screen.queryByLabelText('Status: Recebida')).toBeNull();
     expect(mockFetch.mock.calls.length).toBe(chamadas);
   });
 
@@ -230,7 +230,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     await renderizarTela(<DetalheScreen />);
 
     expect(await screen.findByText('Rua das Flores, 10')).toBeTruthy();
-    expect(screen.getByText('RECEBIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Recebida')).toBeTruthy();
     expect(screen.getByText('Sem energia')).toBeTruthy();
     expect(screen.getByText('Nova Marabá (Folha 28)')).toBeTruthy();
     expect(screen.getByText('CEP 68500-000')).toBeTruthy();
@@ -324,8 +324,8 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
 
     await act(async () => ultimoSocket()!.__emitir('denuncia:status-atualizado', evento()));
 
-    expect(await screen.findByText('EM ATENDIMENTO')).toBeTruthy();
-    expect(screen.queryByText('RECEBIDA')).toBeNull();
+    expect(await screen.findByLabelText('Status: Em atendimento')).toBeTruthy();
+    expect(screen.queryByLabelText('Status: Recebida')).toBeNull();
     expect(screen.getByText('PREVISÃO DE REPARO')).toBeTruthy();
     expect(screen.getByText('Equatorial Pará · 19/11/2026 às 14:10')).toBeTruthy();
     expect(mockFetch.mock.calls.length).toBe(chamadas);
@@ -346,7 +346,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
       ),
     );
 
-    expect(await screen.findByText('IMPROCEDENTE')).toBeTruthy();
+    expect(await screen.findByLabelText('Status: Improcedente')).toBeTruthy();
     expect(screen.getAllByText('Falha no padrão do imóvel.').length).toBeGreaterThan(0);
   });
 
@@ -358,7 +358,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
       ultimoSocket()!.__emitir('denuncia:status-atualizado', evento({ id: 'outra' })),
     );
 
-    expect(screen.getByText('RECEBIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Recebida')).toBeTruthy();
   });
 });
 

@@ -11,9 +11,12 @@ type Props = {
   onBlur?: () => void;
   erro?: string;
   ajuda?: string;
-  /** `escura`: o campo está sobre um cartão verde-escuro (rótulos claros). */
+  /**
+   * @deprecated Só existe enquanto login e cadastro têm o cartão escuro (etapa R9 os deixa
+   * brancos). `escura` clareia o rótulo e a mensagem de erro para ler sobre o azul-noite.
+   */
   superficie?: 'clara' | 'escura';
-  /** Campo de senha: mostra o botão de mostrar/ocultar. */
+  /** Campo de senha: mostra o botão "Mostrar" / "Ocultar". */
   senha?: boolean;
   testID?: string;
 } & Pick<
@@ -30,7 +33,10 @@ type Props = {
   | 'multiline'
 >;
 
-/** Campo de texto com rótulo visível, erro e ajuda. Altura de 48 dp (decisão D-02). */
+/**
+ * Campo de texto do design system v2: 56 dp de altura, borda de 2, **rótulo sempre visível acima**
+ * (nunca só placeholder). No erro: borda vermelha, ícone de aviso e uma frase dizendo como resolver.
+ */
 export function TextField({
   rotulo,
   value,
@@ -45,10 +51,11 @@ export function TextField({
 }: Props) {
   const [oculta, setOculta] = useState(true);
   const escura = superficie === 'escura';
+  const corDoErro = escura ? colors.situacao.semEnergia.fundo : colors.danger;
 
   return (
     <View style={styles.bloco}>
-      <Text style={[type.label, { color: escura ? colors.surfaceMint : colors.textSecondary }]}>
+      <Text style={[type.label, { color: escura ? colors.actionTabPill : colors.textPrimary }]}>
         {rotulo}
       </Text>
       <View style={[styles.campo, !!erro && styles.campoComErro]}>
@@ -57,7 +64,7 @@ export function TextField({
           accessibilityLabel={rotulo}
           accessibilityHint={ajuda}
           style={[type.body, styles.entrada, entrada.multiline && styles.multilinha]}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.textSecondary}
           value={value}
           onChangeText={onChangeText}
           onBlur={onBlur}
@@ -77,22 +84,27 @@ export function TextField({
               size={22}
               color={colors.textSecondary}
             />
+            <Text style={[type.caption, { color: colors.textSecondary }]}>
+              {oculta ? 'Mostrar' : 'Ocultar'}
+            </Text>
           </Pressable>
         )}
       </View>
       {erro ? (
-        <Text
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          style={[
-            type.caption,
-            { color: escura ? colors.status.noPowerBg : colors.status.noPowerText },
-          ]}
-        >
-          {erro}
-        </Text>
+        <View style={styles.mensagem}>
+          <Ionicons name="warning" size={18} color={corDoErro} />
+          <Text
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            style={[type.bodySmall, styles.textoDaMensagem, { color: corDoErro }]}
+          >
+            {erro}
+          </Text>
+        </View>
       ) : ajuda ? (
-        <Text style={[type.caption, { color: escura ? colors.surfaceMint : colors.textMuted }]}>
+        <Text
+          style={[type.bodySmall, { color: escura ? colors.actionTabPill : colors.textSecondary }]}
+        >
           {ajuda}
         </Text>
       ) : null}
@@ -103,26 +115,29 @@ export function TextField({
 const styles = StyleSheet.create({
   bloco: { gap: space.xs },
   campo: {
-    minHeight: size.touchMin,
+    minHeight: size.field,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: radius.card,
+    backgroundColor: colors.surface,
+    borderRadius: radius.campo,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: colors.borderField,
   },
-  campoComErro: { borderColor: colors.status.noPower },
+  campoComErro: { borderColor: colors.danger },
   entrada: {
     flex: 1,
-    minHeight: size.touchMin,
+    minHeight: size.field - 4, // a borda de 2 dp de cada lado completa os 56 dp
     paddingHorizontal: space.m,
     color: colors.textPrimary,
   },
-  multilinha: { minHeight: 96, paddingVertical: space.m, textAlignVertical: 'top' },
+  multilinha: { minHeight: 120, paddingVertical: space.m, textAlignVertical: 'top' },
   olho: {
-    width: size.touchMin,
-    height: size.touchMin,
+    minWidth: size.touchMin,
+    minHeight: size.touchMin,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: space.xs,
   },
+  mensagem: { flexDirection: 'row', alignItems: 'flex-start', gap: space.xs },
+  textoDaMensagem: { flex: 1 },
 });

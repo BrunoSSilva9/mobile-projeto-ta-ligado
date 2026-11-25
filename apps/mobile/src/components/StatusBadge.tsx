@@ -1,14 +1,24 @@
+import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { corDoStatus, rotuloDoStatus } from '@/features/acompanhamento/status';
+import { andamentoDe, rotuloDoAndamento } from '@/features/situacao';
 import { colors, radius, space, type } from '@/theme';
 
-/** Selo de status da denúncia: ponto colorido + nome (a cor nunca é a única pista, RNF-018). */
+/**
+ * Selo do andamento da denúncia: **ícone + texto** em caixa normal ("Recebida"). A cor nunca é a
+ * única pista (WCAG 1.4.1). Um status desconhecido aparece com o visual neutro de "Recebida".
+ */
 export function StatusBadge({ status }: { status: string }) {
+  const visual = colors.andamento[andamentoDe(status) ?? 'RECEBIDA'];
+  const rotulo = rotuloDoAndamento(status);
   return (
-    <View accessible accessibilityLabel={`Status: ${rotuloDoStatus(status)}`} style={styles.selo}>
-      <View style={[styles.ponto, { backgroundColor: corDoStatus(status) }]} />
-      <Text style={[type.label, styles.texto]}>{rotuloDoStatus(status).toUpperCase()}</Text>
+    <View
+      accessible
+      accessibilityLabel={`Status: ${rotulo}`}
+      style={[styles.selo, { backgroundColor: visual.fundo }]}
+    >
+      <Ionicons name={visual.icone} size={18} color={visual.texto} />
+      <Text style={[type.label, { color: visual.texto }]}>{rotulo}</Text>
     </View>
   );
 }
@@ -21,9 +31,6 @@ const styles = StyleSheet.create({
     gap: space.xs,
     paddingHorizontal: space.m,
     paddingVertical: space.xs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bgSoft,
+    borderRadius: radius.pilula,
   },
-  ponto: { width: 10, height: 10, borderRadius: radius.pill },
-  texto: { color: colors.textPrimary },
 });
