@@ -95,7 +95,7 @@ Regras: os tamanhos são `sp` e **escalam com a fonte do sistema até 200%** (RN
 
 ## 5. Componentes
 
-Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `Button`, `TextField`, `Checkbox`, `StatusBadge`, `SeloDeSituacao`, `FilterChip`, `Logo`, `Cartao`, `Aviso`, `CartaoDeEscolha`, `CabecalhoDePasso`, `CabecalhoDeTela`, `Estados` e `AvisoDeConexao`. A barra inferior vem na R3 e o marcador do mapa na R8 ([plano](17-plano-redesign.md)). A apresentação da situação e do andamento (textos e ícones) fica em `features/situacao.ts`.
+Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `Button`, `TextField`, `Checkbox`, `StatusBadge`, `SeloDeSituacao`, `FilterChip`, `Logo`, `Cartao`, `Aviso`, `CartaoDeEscolha`, `CabecalhoDePasso`, `CabecalhoDeTela`, `Estados` e `AvisoDeConexao`. A barra inferior (R3, sem FAB) já está pronta; o marcador do mapa vem na R8 ([plano](17-plano-redesign.md)). A apresentação da situação e do andamento (textos e ícones) fica em `features/situacao.ts`.
 
 | Componente | Regras |
 |---|---|
@@ -108,7 +108,7 @@ Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `B
 | `Cartao` | Branco, canto 16, sem sombra; `destaque` = borda azul de 2 |
 | `Aviso` | Faixa com **ícone e texto** (erro, atenção, informação); o papel de alerta fica no `Text`, não no `View` |
 | `CabecalhoDePasso` | "Voltar" (ícone + texto), "Passo X de 3" e barra de 3 segmentos |
-| Barra inferior | 4 itens com ícone e texto (14 negrito): **Início, Mapa, Denunciar, Perfil**; aba ativa com pílula `actionTabPill` e texto `actionPressed`; fundo branco com borda superior `borderSubtle`; "Denunciar" com o ícone dentro de uma pílula azul cheia (56×32) |
+| Barra inferior (`BarraInferior.tsx`, **pronta na R3**) | 4 itens com ícone e texto (14 negrito): **Início, Mapa, Denunciar, Perfil**; aba ativa com pílula `actionTabPill` e texto `actionPressed`; fundo branco com borda superior `borderSubtle`; "Denunciar" com o ícone dentro de uma pílula azul cheia (56×32) |
 | Marcador do mapa | Círculo de 40 com borda branca de 3, contorno externo de 2 e ícone da situação; **"Normal" é quadrado** |
 
 ## 6. Mudanças de linguagem

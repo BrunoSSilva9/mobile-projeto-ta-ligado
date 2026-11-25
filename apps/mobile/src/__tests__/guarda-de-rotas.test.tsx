@@ -163,20 +163,48 @@ describe('com sessão salva no aparelho', () => {
     expect(screen).not.toHavePathname('/cadastro');
   });
 
-  it('tem as abas Início, Ocorrências e Perfil e o botão central Denunciar', async () => {
+  it('a barra inferior tem 4 itens, cada um com texto visível: Início, Mapa, Denunciar e Perfil', async () => {
     await abrirApp();
     await screen.findByText('Olá, Maria!');
 
-    for (const nome of ['Início', 'Ocorrências', 'Perfil', 'Denunciar falta de luz']) {
+    for (const nome of ['Início', 'Mapa', 'Denunciar', 'Perfil']) {
       expect(screen.getByRole('button', { name: nome })).toBeTruthy();
+      expect(screen.getByText(nome)).toBeTruthy(); // o texto aparece na tela, não só no leitor
     }
   });
 
-  it('o botão central abre o formulário de denúncia (T-05)', async () => {
+  it('"Ocorrências" virou "Mapa" só no texto, e o botão flutuante não existe mais', async () => {
     await abrirApp();
     await screen.findByText('Olá, Maria!');
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Denunciar falta de luz' }));
+    expect(screen.queryByRole('button', { name: 'Ocorrências' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Denunciar falta de luz' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Mapa' }));
+    expect(await screen.findByText('Localização atual')).toBeTruthy();
+    expect(screen).toHavePathname('/ocorrencias'); // a rota continua a mesma
+  });
+
+  it('a aba ativa é marcada como selecionada e muda ao navegar', async () => {
+    await abrirApp();
+    await screen.findByText('Olá, Maria!');
+    const selecionada = (nome: string) =>
+      screen.getByRole('button', { name: nome }).props.accessibilityState?.selected;
+
+    expect(selecionada('Início')).toBe(true);
+    expect(selecionada('Mapa')).toBe(false);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Mapa' }));
+    await screen.findByText('Localização atual');
+
+    expect(selecionada('Mapa')).toBe(true);
+    expect(selecionada('Início')).toBe(false);
+  });
+
+  it('"Denunciar" abre o formulário de denúncia (T-05) e não vira uma aba selecionada', async () => {
+    await abrirApp();
+    await screen.findByText('Olá, Maria!');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Denunciar' }));
 
     expect(await screen.findByText('Onde faltou luz?')).toBeTruthy();
     expect(screen).toHavePathname('/denunciar');

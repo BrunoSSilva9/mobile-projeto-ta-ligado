@@ -1,23 +1,27 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ReportFab } from '@/components/ReportFab';
-import { colors, size, type } from '@/theme';
+import {
+  ALTURA_DA_BARRA,
+  ESTILO_DA_BARRA,
+  ESTILO_DO_TEXTO_DA_BARRA,
+  IconeDaAba,
+  ItemDenunciarDaBarra,
+} from '@/components/BarraInferior';
+import { colors, size, space } from '@/theme';
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
-
-function tabIcon(active: IconName, inactive: IconName) {
+function icone(ativo: React.ComponentProps<typeof IconeDaAba>['ativo'], inativo: typeof ativo) {
   // eslint-disable-next-line react/display-name
   return ({ color, focused }: { color: ColorValue; focused: boolean }) => (
-    <Ionicons name={focused ? active : inactive} size={22} color={color as string} />
+    <IconeDaAba ativo={ativo} inativo={inativo} focado={focused} cor={color as string} />
   );
 }
 
 /**
- * Barra inferior (componente C-01): Início, Ocorrências, Denunciar (FAB) e Perfil.
- * Cada item tem altura mínima de 48 dp (decisão D-02).
+ * Barra inferior (componente C-01, design system v2): **Início, Mapa, Denunciar e Perfil**, todos
+ * com ícone e texto (14, negrito). Sem botão flutuante. A aba "Mapa" é a rota `/ocorrencias`: só o
+ * texto mudou. Fundo branco sólido com borda superior; aba ativa com pílula e texto `actionPressed`.
  */
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -26,18 +30,17 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.action,
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: colors.actionPressed,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarLabelStyle: { ...type.label, fontSize: 12 },
+        tabBarLabelStyle: ESTILO_DO_TEXTO_DA_BARRA,
         tabBarStyle: {
-          height: size.tabBar + insets.bottom,
-          paddingBottom: insets.bottom,
-          paddingTop: 4,
-          backgroundColor: 'rgba(255,255,255,0.95)',
-          borderTopWidth: 0,
-          elevation: 8,
+          ...ESTILO_DA_BARRA,
+          height: ALTURA_DA_BARRA + insets.bottom,
+          paddingTop: space.s,
+          paddingBottom: Math.max(insets.bottom, space.s),
         },
-        tabBarItemStyle: { minHeight: size.touchMin },
+        tabBarItemStyle: { minHeight: size.touchMin, gap: space.xs },
       }}
     >
       <Tabs.Screen
@@ -45,23 +48,23 @@ export default function TabsLayout() {
         options={{
           title: 'Início',
           tabBarAccessibilityLabel: 'Início',
-          tabBarIcon: tabIcon('home', 'home-outline'),
+          tabBarIcon: icone('home', 'home-outline'),
         }}
       />
       <Tabs.Screen
         name="ocorrencias"
         options={{
-          title: 'Ocorrências',
-          tabBarAccessibilityLabel: 'Ocorrências',
-          tabBarIcon: tabIcon('map', 'map-outline'),
+          title: 'Mapa',
+          tabBarAccessibilityLabel: 'Mapa',
+          tabBarIcon: icone('map', 'map-outline'),
         }}
       />
-      {/* Botão central: abre o modal T-05. O arquivo fab.tsx desta pasta é só um marcador. */}
+      {/* "Denunciar": item normal que abre o modal T-05. O arquivo fab.tsx é só um marcador. */}
       <Tabs.Screen
         name="fab"
         options={{
           title: 'Denunciar',
-          tabBarButton: () => <ReportFab />,
+          tabBarButton: () => <ItemDenunciarDaBarra />,
         }}
       />
       <Tabs.Screen
@@ -69,7 +72,7 @@ export default function TabsLayout() {
         options={{
           title: 'Perfil',
           tabBarAccessibilityLabel: 'Perfil',
-          tabBarIcon: tabIcon('person', 'person-outline'),
+          tabBarIcon: icone('person', 'person-outline'),
         }}
       />
     </Tabs>

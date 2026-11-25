@@ -37,7 +37,7 @@ flowchart TD
 
   subgraph TABS[Barra inferior]
     T03[T-03 Início]
-    T04[T-04 Ocorrências]
+    T04[T-04 Mapa]
     T08[T-08 Perfil]
   end
 
@@ -49,8 +49,8 @@ flowchart TD
   T03 -->|Alterar endereço| T03b{{Seletor de bairro}}
   T04 -->|expandir| T04b{{Mapa em tela cheia}}
 
-  T03 -->|CTA / FAB Denunciar| T05[T-05 Registrar Denúncia]
-  T04 -->|Denunciar / FAB| T05
+  T03 -->|CTA / item Denunciar| T05[T-05 Registrar Denúncia]
+  T04 -->|Denunciar / item Denunciar| T05
   T05 -->|Voltar| T03
   T05 -->|Enviar: sucesso| T06[T-06 Denúncia enviada]
   T05 -->|Enviar: já há denúncia em aberto| T07
@@ -120,7 +120,7 @@ flowchart LR
 | Painel Comunitário | "Últimos 30 dias": usuários cadastrados, casos restabelecidos (taxa), denúncias registradas, casos em atendimento |
 | Como funciona | 3 passos: "Notifique a queda em 2 cliques", "Mapeamos a área afetada", "Cobramos a concessionária" |
 | Atendimento | Horário da Central e telefone da Ouvidoria (placeholders, PEN-02) |
-| Barra inferior | Início, Ocorrências, Denunciar (FAB), Perfil |
+| Barra inferior | Início, Mapa, Denunciar, Perfil (todos com texto; sem FAB, ver [C-01](#c-01--barra-inferior-componente)) |
 
 - **Dados:** nome (cadastro); posição/bairro (GPS → servidor, RN-025); status do bairro, contagens, indicadores e zonas (servidor).
 - **Ações:** "Registre sua denúncia" e FAB → T-05. "Ver mapa ampliado" → T-04. Perfil → T-08. "Alterar endereço" → seletor de bairro (RF-017).
@@ -179,9 +179,16 @@ flowchart LR
 - **Implementação (Passos 7 e 8) – T-07/T-09:** T-09 lista as denúncias do usuário (até 50) e atualiza em tempo real; T-07 mostra status, local, descrição, previsão (só em aberto), justificativa (improcedente) e o histórico em linha do tempo. **Ainda não há** mini-mapa no detalhe, fotos, pessoas afetadas/necessidade especial nem o botão "Cancelar denúncia" (Fase 2). O Perfil tem o item "Minhas denúncias" com o contador de abertas; editar dados e excluir conta ficam na Fase 2.
 
 ### C-01 – Barra inferior (componente)
-[Figma `2033:1080`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-1080)
 
-4 itens em 390 px: **Início**, **Ocorrências**, **Denunciar** (botão central flutuante verde) e **Perfil**. "Mapa" e "Bairros" estão unificados em "Ocorrências". Esta especificação vale sobre as telas (que ainda dizem "Mapa").
+> **Design system v2 (S-44, etapa R3):** substitui o desenho do Figma ([`2033:1080`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-1080)), que tinha o botão central flutuante só com ícone.
+
+4 itens, **cada um com ícone e texto** (14, negrito): **Início**, **Mapa**, **Denunciar** e **Perfil**.
+
+- **"Ocorrências" passou a se chamar "Mapa" só no texto.** A rota continua `/ocorrencias`, então a navegação e os links não mudam.
+- **Sem botão flutuante.** "Denunciar" é um item normal: o ícone fica numa **pílula azul cheia (56 × 32)** e o texto, em azul. Ele abre o formulário (modal T-05); não é uma aba selecionável.
+- **Aba ativa:** o ícone fica numa pílula `#DBE6FE` (56 × 32) e o texto em `#1E3A8A`. **Abas inativas:** `#475569`.
+- **Fundo:** branco sólido com borda superior `#CBD5E1` e sem sombra. Alvos de toque de pelo menos 48 dp; a barra cresce com a fonte do sistema.
+- Para o leitor de tela: cada aba é um botão com o nome e o estado "selecionado"; "Denunciar" tem a dica "Abre o formulário para avisar que faltou energia".
 
 ### C-02 – Identidade visual
 [Figma `2033:1136`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-1136)
