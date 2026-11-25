@@ -100,7 +100,7 @@ describe('sem sessão', () => {
       expect(screen).toHavePathname('/login');
       expect(screen.queryByText(/EM CONSTRUÇÃO/)).toBeNull();
       expect(screen.queryByText('Olá, Maria')).toBeNull();
-      expect(screen.queryByText('Onde faltou luz?')).toBeNull();
+      expect(screen.queryByText('O que está acontecendo?')).toBeNull();
       expect(screen.queryByRole('button', { name: 'Sair' })).toBeNull();
     },
   );
@@ -206,7 +206,7 @@ describe('com sessão salva no aparelho', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Denunciar' }));
 
-    expect(await screen.findByText('Onde faltou luz?')).toBeTruthy();
+    expect(await screen.findByText('O que está acontecendo?')).toBeTruthy();
     expect(screen).toHavePathname('/denunciar');
   });
 

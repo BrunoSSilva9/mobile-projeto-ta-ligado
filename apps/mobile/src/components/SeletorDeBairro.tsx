@@ -20,7 +20,11 @@ type Props = {
   carregando?: boolean;
 };
 
-/** Seletor de bairro/folha em tela cheia com busca (a lista é fixa, RN-021). */
+/**
+ * Seletor de bairro/folha (a lista é fixa, RN-021). Mesmo visual de um campo de texto do design
+ * system v2: rótulo visível acima, 56 dp, borda de 2 e, no erro, borda vermelha, ícone e frase.
+ * Toca para abrir a lista em tela cheia, com busca.
+ */
 export function SeletorDeBairro({ rotulo, bairros, valor, onAlterar, erro, carregando }: Props) {
   const [aberto, setAberto] = useState(false);
 
@@ -28,7 +32,7 @@ export function SeletorDeBairro({ rotulo, bairros, valor, onAlterar, erro, carre
 
   return (
     <View style={styles.bloco}>
-      <Text style={[type.label, styles.rotulo]}>{rotulo}</Text>
+      <Text style={[type.label, { color: colors.textPrimary }]}>{rotulo}</Text>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${rotulo}: ${atual ? rotuloDo(atual) : 'não escolhido'}`}
@@ -39,20 +43,23 @@ export function SeletorDeBairro({ rotulo, bairros, valor, onAlterar, erro, carre
       >
         <Text
           numberOfLines={1}
-          style={[type.body, { flex: 1, color: atual ? colors.textPrimary : colors.textMuted }]}
+          style={[type.body, { flex: 1, color: atual ? colors.textPrimary : colors.textSecondary }]}
         >
           {carregando ? 'Carregando bairros…' : atual ? rotuloDo(atual) : 'Escolha o bairro'}
         </Text>
-        <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+        <Ionicons name="chevron-down" size={22} color={colors.textSecondary} />
       </Pressable>
       {erro ? (
-        <Text
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          style={[type.caption, { color: colors.status.noPowerBg }]}
-        >
-          {erro}
-        </Text>
+        <View style={styles.mensagem}>
+          <Ionicons name="warning" size={18} color={colors.danger} />
+          <Text
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            style={[type.bodySmall, styles.textoDaMensagem]}
+          >
+            {erro}
+          </Text>
+        </View>
       ) : null}
 
       <ListaDeBairrosModal
@@ -69,17 +76,18 @@ export function SeletorDeBairro({ rotulo, bairros, valor, onAlterar, erro, carre
 
 const styles = StyleSheet.create({
   bloco: { gap: space.xs },
-  rotulo: { color: colors.surfaceMint },
   campo: {
-    minHeight: size.touchMin,
+    minHeight: size.field,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.s,
     paddingHorizontal: space.m,
-    backgroundColor: colors.white,
-    borderRadius: radius.card,
+    backgroundColor: colors.surface,
+    borderRadius: radius.campo,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: colors.borderField,
   },
-  campoComErro: { borderColor: colors.status.noPower },
+  campoComErro: { borderColor: colors.danger },
+  mensagem: { flexDirection: 'row', alignItems: 'flex-start', gap: space.xs },
+  textoDaMensagem: { flex: 1, color: colors.danger },
 });
