@@ -2,18 +2,16 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Logo } from '@/components/Logo';
-import { colors, hitSlopFor, radius, space, type } from '@/theme';
+import { colors, radius, size, space, type } from '@/theme';
 
 type Props = {
   /** Qual modo está ativo: o botão correspondente fica em destaque. */
   ativo: 'entrar' | 'cadastrar';
 };
 
-const ALTURA_VISUAL = 36;
-
 /**
- * Barra superior das telas de acesso (T-01 e T-02): logo e os botões "Entrar" e "Cadastrar",
- * que alternam entre os dois modos. O visual tem 36 dp e a área de toque chega a 48 dp (D-02).
+ * Barra superior das telas de acesso (T-01 e T-02): a marca e os botões "Entrar" e "Cadastrar",
+ * que alternam entre os dois modos. O ativo é azul cheio; o outro tem borda azul. Alvo de 48 dp.
  */
 export function TopAuthBar({ ativo }: Props) {
   return (
@@ -49,13 +47,10 @@ function Alternar({
       accessibilityRole="button"
       accessibilityLabel={titulo}
       accessibilityState={{ selected: ativo }}
-      hitSlop={hitSlopFor(ALTURA_VISUAL)}
       onPress={onPress}
       style={[styles.alternar, ativo ? styles.ativo : styles.inativo]}
     >
-      <Text style={[type.button, { color: ativo ? colors.white : colors.textSecondary }]}>
-        {titulo}
-      </Text>
+      <Text style={[type.label, { color: ativo ? colors.onAction : colors.action }]}>{titulo}</Text>
     </Pressable>
   );
 }
@@ -66,17 +61,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: space.s,
     paddingHorizontal: space.l,
-    backgroundColor: colors.bgCard,
+    paddingVertical: space.xs,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderDivider,
   },
   botoes: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   alternar: {
-    height: ALTURA_VISUAL,
-    paddingHorizontal: space.l,
+    minHeight: size.touchMin,
+    paddingHorizontal: space.m,
     borderRadius: radius.pill,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ativo: { backgroundColor: colors.action },
-  inativo: { backgroundColor: colors.bgSoft },
+  ativo: { backgroundColor: colors.action, borderColor: colors.action },
+  inativo: { backgroundColor: colors.surface, borderColor: colors.action },
 });

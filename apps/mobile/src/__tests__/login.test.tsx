@@ -46,10 +46,23 @@ beforeEach(async () => {
 async function preencherEEntrar(email = 'maria@exemplo.com', senha = 'minhasenha1') {
   await digitar('E-mail', email);
   await digitar('Senha', senha);
-  await tocar('ENTRAR');
+  await tocar('Entrar na conta');
 }
 
 describe('T-02 Login (RF-003)', () => {
+  it('o formulário fica num cartão branco, com "Entrar" em caixa normal e o erro como aviso com ícone', async () => {
+    await renderizarTela(<LoginScreen />);
+
+    expect(screen.getByRole('header', { name: 'Entre na sua conta' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Entrar na conta' })).toBeTruthy();
+    expect(screen.queryByText('ENTRAR')).toBeNull();
+    expect(screen.queryByText('Marabá • PA')).toBeNull();
+    // A barra do topo tem o seu "Entrar" (selecionado) e o de enviar tem outro nome.
+    expect(screen.getByRole('button', { name: 'Entrar' }).props.accessibilityState).toMatchObject({
+      selected: true,
+    });
+  });
+
   it('mostra e-mail e senha, sem "Esqueci a senha" e sem login com Google (fora do MVP)', async () => {
     await renderizarTela(<LoginScreen />);
 
@@ -72,7 +85,7 @@ describe('T-02 Login (RF-003)', () => {
     it('campos vazios: mostra os erros e não chama a API', async () => {
       await renderizarTela(<LoginScreen />);
 
-      await tocar('ENTRAR');
+      await tocar('Entrar na conta');
 
       expect(await screen.findByText('Informe o e-mail.')).toBeTruthy();
       expect(screen.getByText('Informe a senha.')).toBeTruthy();
@@ -109,7 +122,7 @@ describe('T-02 Login (RF-003)', () => {
       await renderizarTela(<LoginScreen />);
 
       await preencherEEntrar();
-      const botao = await screen.findByRole('button', { name: 'ENTRAR' });
+      const botao = await screen.findByRole('button', { name: 'Entrar na conta' });
       expect(botao.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
       await fireEvent.press(botao);
 
@@ -198,7 +211,7 @@ describe('T-02 Login (RF-003)', () => {
       expect(await screen.findByText('E-mail ou senha incorretos.')).toBeTruthy();
 
       await digitar('Senha', 'senha-certa-1');
-      await tocar('ENTRAR');
+      await tocar('Entrar na conta');
 
       await waitFor(() => expect(useSessao.getState().token).not.toBeNull());
       expect(screen.queryByText('E-mail ou senha incorretos.')).toBeNull();

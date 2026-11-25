@@ -67,6 +67,18 @@ const aceitarTermos = () =>
   );
 
 describe('T-01 Cadastro (RF-001, RF-002)', () => {
+  it('"Cadastrar" em caixa normal e os links dos termos aparecem no texto do aceite', async () => {
+    await renderizarTela(<CadastroScreen />);
+
+    expect(screen.getByRole('button', { name: 'Cadastrar e criar conta' })).toBeTruthy();
+    expect(screen.queryByText('CADASTRAR')).toBeNull();
+    expect(screen.getByText('Termos de Uso')).toBeTruthy();
+    expect(screen.getByText('Política de Privacidade')).toBeTruthy();
+    expect(
+      screen.getByText('Suas denúncias aparecem para outros cidadãos sem identificação.'),
+    ).toBeTruthy();
+  });
+
   it('mostra os campos do cadastro, sem CPF nem data de nascimento (minimização)', async () => {
     await renderizarTela(<CadastroScreen />);
 
@@ -97,13 +109,15 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
     it('o botão Cadastrar fica desabilitado até aceitar os Termos', async () => {
       await renderizarTela(<CadastroScreen />);
       expect(
-        screen.getByRole('button', { name: 'CADASTRAR' }).props.accessibilityState.disabled,
+        screen.getByRole('button', { name: 'Cadastrar e criar conta' }).props.accessibilityState
+          .disabled,
       ).toBe(true);
 
       await aceitarTermos();
 
       expect(
-        screen.getByRole('button', { name: 'CADASTRAR' }).props.accessibilityState.disabled,
+        screen.getByRole('button', { name: 'Cadastrar e criar conta' }).props.accessibilityState
+          .disabled,
       ).toBe(false);
     });
 
@@ -111,7 +125,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await renderizarTela(<CadastroScreen />);
       await preencherCadastro();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -139,7 +153,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await renderizarTela(<CadastroScreen />);
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       expect(await screen.findByText('O nome precisa ter pelo menos 2 caracteres.')).toBeTruthy();
       expect(screen.getByText('Informe um e-mail válido.')).toBeTruthy();
@@ -153,7 +167,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await preencherCadastro({ senha: 'minhasenha1', confirmar: 'outra-senha-1' });
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       expect(await screen.findByText('As senhas não são iguais.')).toBeTruthy();
       expect(mockFetch).not.toHaveBeenCalled();
@@ -164,7 +178,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await preencherCadastro({ telefone: '123' });
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       expect(
         await screen.findByText('Informe o telefone com DDD, ex.: (94) 90000-0000.'),
@@ -180,7 +194,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await preencherCadastro({ nome: '  Maria Silva ', email: ' MARIA@Exemplo.com ' });
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       await waitFor(() => expect(useSessao.getState().token).toBe(SESSAO_DE_CIDADAO.token));
       const [url, init] = mockFetch.mock.calls[0]!;
@@ -204,7 +218,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await preencherCadastro({ telefone: '' });
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
       expect(JSON.parse(mockFetch.mock.calls[0]![1].body)).not.toHaveProperty('telefone');
@@ -216,7 +230,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await preencherCadastro();
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       await waitFor(() => expect(mockFetch).toHaveBeenCalled());
       expect(mockFetch.mock.calls[0]![1].body).not.toMatch(/confirmarSenha|cpf|nascimento/i);
@@ -229,8 +243,8 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await preencherCadastro();
       await aceitarTermos();
 
-      await tocar('CADASTRAR');
-      const botao = await screen.findByRole('button', { name: 'CADASTRAR' });
+      await tocar('Cadastrar e criar conta');
+      const botao = await screen.findByRole('button', { name: 'Cadastrar e criar conta' });
       expect(botao.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
       await fireEvent.press(botao);
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -245,7 +259,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       await renderizarTela(<CadastroScreen />);
       await preencherCadastro();
       await aceitarTermos();
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
     }
 
     it('e-mail já cadastrado: o erro aparece no campo de e-mail e não cria sessão', async () => {
@@ -357,7 +371,7 @@ describe('T-01 Cadastro (RF-001, RF-002)', () => {
       expect(await screen.findByText('E-mail já cadastrado.')).toBeTruthy();
 
       await digitar('Seu melhor e-mail', 'outro@exemplo.com');
-      await tocar('CADASTRAR');
+      await tocar('Cadastrar e criar conta');
 
       await waitFor(() => expect(useSessao.getState().token).not.toBeNull());
       expect(JSON.parse(mockFetch.mock.calls[1]![1].body).email).toBe('outro@exemplo.com');

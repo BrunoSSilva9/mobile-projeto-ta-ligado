@@ -104,12 +104,6 @@ describe('Button (design system v2)', () => {
     expect(estiloDe(screen.getByRole('button')).minHeight).toBeGreaterThanOrEqual(size.touchMin);
   });
 
-  it('a variante antiga `claro` agora é igual ao secundário', async () => {
-    await render(<Button titulo="Entrar" variante="claro" onPress={jest.fn()} />);
-
-    expect(estiloDe(screen.getByRole('button')).borderColor).toBe(colors.action);
-  });
-
   it('desativado: fundo e texto cinzas legíveis, sem opacidade e sem disparar o toque', async () => {
     const onPress = jest.fn();
     await render(<Button titulo="Continuar" onPress={onPress} desabilitado />);

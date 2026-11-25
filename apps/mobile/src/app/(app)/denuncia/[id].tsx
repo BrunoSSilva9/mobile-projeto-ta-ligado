@@ -1,8 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Aviso } from '@/components/Aviso';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
+import { Cartao } from '@/components/Cartao';
 import { CabecalhoDeTela } from '@/components/CabecalhoDeTela';
 import { CarregandoOuOffline, EmptyState, ErrorState } from '@/components/Estados';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -13,7 +15,7 @@ import { useDenuncia } from '@/features/acompanhamento/hooks';
 import { statusEmAberto } from '@/features/acompanhamento/status';
 import { rotuloDoTipo } from '@/features/denuncia/schemas';
 import { ErroDeApi } from '@/services/http';
-import { colors, radius, space, type } from '@/theme';
+import { colors, space, type } from '@/theme';
 
 /**
  * T-07: detalhe da denúncia (RF-014, RF-024, RF-036). Só o autor vê. O status e o histórico mudam
@@ -66,49 +68,53 @@ function Conteudo({ d }: { d: DenunciaDetalhe }) {
 
   return (
     <>
-      <View style={styles.cartao}>
+      <Cartao>
         <StatusBadge status={d.status} />
-        <Text style={[type.h1, styles.titulo]}>{rotuloDoTipo(d.tipo)}</Text>
+        <Text style={[type.title2, styles.titulo]}>{rotuloDoTipo(d.tipo)}</Text>
         <Text style={[type.caption, styles.muted]}>Enviada em {formatarDataHora(d.criadoEm)}</Text>
-      </View>
+      </Cartao>
 
       {d.status === 'IMPROCEDENTE' && d.justificativa ? (
-        <View style={styles.cartaoAlerta}>
-          <Text style={[type.label, styles.rotulo]}>JUSTIFICATIVA DA OPERADORA</Text>
-          <Text style={[type.body, styles.texto]}>{d.justificativa}</Text>
-        </View>
+        <Cartao>
+          <Text accessibilityRole="header" style={[type.label, styles.rotulo]}>
+            Justificativa da operadora
+          </Text>
+          <Aviso tom="atencao" icone="chatbox-ellipses-outline" anunciar={false}>
+            {d.justificativa}
+          </Aviso>
+        </Cartao>
       ) : null}
 
       {aberta && d.previsaoReparo ? (
-        <View style={styles.cartao}>
-          <Text style={[type.label, styles.rotulo]}>PREVISÃO DE REPARO</Text>
-          <Text style={[type.subtitle, styles.texto]}>{formatarDataHora(d.previsaoReparo)}</Text>
-        </View>
+        <Cartao>
+          <Text style={[type.label, styles.rotulo]}>Previsão de reparo</Text>
+          <Text style={[type.title3, styles.texto]}>{formatarDataHora(d.previsaoReparo)}</Text>
+        </Cartao>
       ) : null}
 
-      <View style={styles.cartao}>
-        <Text style={[type.label, styles.rotulo]}>LOCAL</Text>
-        <Text style={[type.subtitle, styles.texto]}>{d.logradouro}</Text>
+      <Cartao>
+        <Text style={[type.label, styles.rotulo]}>Local</Text>
+        <Text style={[type.title3, styles.texto]}>{d.logradouro}</Text>
         <Text style={[type.body, styles.muted]}>{bairro}</Text>
         {d.cep ? <Text style={[type.body, styles.muted]}>CEP {d.cep}</Text> : null}
         {d.pontoReferencia ? (
           <Text style={[type.body, styles.muted]}>Referência: {d.pontoReferencia}</Text>
         ) : null}
-      </View>
+      </Cartao>
 
       {d.descricao ? (
-        <View style={styles.cartao}>
-          <Text style={[type.label, styles.rotulo]}>DESCRIÇÃO</Text>
+        <Cartao>
+          <Text style={[type.label, styles.rotulo]}>Descrição</Text>
           <Text style={[type.body, styles.texto]}>{d.descricao}</Text>
-        </View>
+        </Cartao>
       ) : null}
 
-      <View style={styles.cartao}>
+      <Cartao>
         <Text accessibilityRole="header" style={[type.label, styles.rotulo]}>
-          HISTÓRICO
+          Histórico
         </Text>
         <StatusTimeline historico={d.historico} />
-      </View>
+      </Cartao>
     </>
   );
 }
@@ -116,18 +122,6 @@ function Conteudo({ d }: { d: DenunciaDetalhe }) {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: colors.bgPage },
   conteudo: { padding: space.l, gap: space.m, paddingBottom: space.xxl },
-  cartao: {
-    backgroundColor: colors.bgCard,
-    borderRadius: radius.cardLarge,
-    padding: space.l,
-    gap: space.xs,
-  },
-  cartaoAlerta: {
-    backgroundColor: colors.status.noPowerBg,
-    borderRadius: radius.cardLarge,
-    padding: space.l,
-    gap: space.xs,
-  },
   rotulo: { color: colors.textSecondary },
   titulo: { color: colors.textPrimary },
   texto: { color: colors.textPrimary },

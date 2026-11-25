@@ -1,24 +1,25 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Aviso } from '@/components/Aviso';
 import type { DocumentoLegal } from '@/legal/conteudo';
-import { colors, radius, space, type } from '@/theme';
+import { colors, space, type } from '@/theme';
 
 /** Mostra um documento legal (Termos de Uso ou Política de Privacidade) com rolagem. */
 export function DocumentoLegalView({ documento }: { documento: DocumentoLegal }) {
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      <Text accessibilityRole="header" style={[type.h1, styles.titulo]}>
+      <Text accessibilityRole="header" style={[type.title1, styles.titulo]}>
         {documento.titulo}
       </Text>
       <Text style={[type.caption, styles.versao]}>Versão {documento.versao}</Text>
 
-      <View style={styles.aviso} accessibilityRole="summary">
-        <Text style={[type.caption, styles.avisoTexto]}>{documento.aviso}</Text>
-      </View>
+      <Aviso tom="info" anunciar={false}>
+        {documento.aviso}
+      </Aviso>
 
       {documento.secoes.map((secao, indice) => (
         <View key={secao.titulo} style={styles.secao}>
-          <Text accessibilityRole="header" style={[type.subtitle, styles.secaoTitulo]}>
+          <Text accessibilityRole="header" style={[type.title3, styles.secaoTitulo]}>
             {`${indice + 1}. ${secao.titulo}`}
           </Text>
           {secao.paragrafos?.map((paragrafo) => (
@@ -43,8 +44,6 @@ const styles = StyleSheet.create({
   conteudo: { padding: space.l, gap: space.m, paddingBottom: space.xxl },
   titulo: { color: colors.textPrimary },
   versao: { color: colors.textSecondary },
-  aviso: { backgroundColor: colors.bgSoft, borderRadius: radius.card, padding: space.m },
-  avisoTexto: { color: colors.textSecondary },
   secao: { gap: space.s },
   secaoTitulo: { color: colors.textPrimary },
   paragrafo: { color: colors.textSecondary },

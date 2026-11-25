@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { Aviso } from '@/components/Aviso';
 import { AuthLayout } from '@/components/AuthLayout';
 import { Button } from '@/components/Button';
 import { Checkbox } from '@/components/Checkbox';
@@ -15,7 +15,7 @@ import {
   VALORES_INICIAIS_DO_CADASTRO,
   type DadosDoCadastro,
 } from '@/features/auth/schemas';
-import { colors, size, space, type } from '@/theme';
+import { colors, size, type } from '@/theme';
 
 const CAMPOS = ['nome', 'email', 'telefone', 'senha', 'confirmarSenha', 'aceiteTermos'] as const;
 
@@ -52,9 +52,7 @@ export default function CadastroScreen() {
           onPress={() => router.replace('/login')}
           style={styles.link}
         >
-          <Text style={[type.button, { color: colors.action }]}>
-            Já tem uma conta? Faça login aqui.
-          </Text>
+          <Text style={[type.button, styles.textoDoLink]}>Já tem uma conta? Faça login aqui.</Text>
         </Pressable>
       }
     >
@@ -63,7 +61,6 @@ export default function CadastroScreen() {
         name="nome"
         render={({ field }) => (
           <TextField
-            superficie="escura"
             rotulo="Nome completo"
             placeholder="Digite seu nome completo"
             autoCapitalize="words"
@@ -81,7 +78,6 @@ export default function CadastroScreen() {
         name="email"
         render={({ field }) => (
           <TextField
-            superficie="escura"
             rotulo="Seu melhor e-mail"
             placeholder="exemplo@maraba.com.br"
             keyboardType="email-address"
@@ -101,7 +97,6 @@ export default function CadastroScreen() {
         name="telefone"
         render={({ field }) => (
           <TextField
-            superficie="escura"
             rotulo="Telefone de contato (opcional)"
             placeholder="(94) 90000-0000"
             ajuda="Permite que a operadora ligue para você sobre a denúncia."
@@ -120,7 +115,6 @@ export default function CadastroScreen() {
         name="senha"
         render={({ field }) => (
           <TextField
-            superficie="escura"
             senha
             rotulo="Senha"
             placeholder="Pelo menos 8 caracteres"
@@ -140,7 +134,6 @@ export default function CadastroScreen() {
         name="confirmarSenha"
         render={({ field }) => (
           <TextField
-            superficie="escura"
             senha
             rotulo="Confirmar senha"
             placeholder="Repita a senha"
@@ -161,7 +154,6 @@ export default function CadastroScreen() {
         name="aceiteTermos"
         render={({ field }) => (
           <Checkbox
-            superficie="escura"
             marcado={field.value}
             onAlterar={field.onChange}
             rotuloAcessivel="Eu concordo com os Termos de Uso e a Política de Privacidade"
@@ -180,49 +172,31 @@ export default function CadastroScreen() {
         )}
       />
 
-      {erroGeral ? (
-        <Text
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          style={[type.body, styles.erroGeral]}
-        >
-          {erroGeral}
-        </Text>
-      ) : null}
+      {erroGeral ? <Aviso tom="erro">{erroGeral}</Aviso> : null}
 
       <Button
         testID="botao-cadastrar"
-        titulo="CADASTRAR"
-        variante="claro"
+        titulo="Cadastrar"
+        accessibilityLabel="Cadastrar e criar conta"
         carregando={registrar.isPending}
         desabilitado={!aceitou}
         onPress={() => void enviar()}
-        icone={<Ionicons name="arrow-forward" size={18} color={colors.action} />}
+        nomeDoIcone="arrow-forward"
       />
 
-      <View style={styles.privacidade}>
-        <Ionicons name="shield-checkmark-outline" size={16} color={colors.surfaceMint} />
-        <Text style={[type.caption, styles.privacidadeTexto]}>
-          Suas denúncias aparecem para outros cidadãos sem identificação.
-        </Text>
-      </View>
+      <Aviso tom="info" icone="shield-checkmark-outline" anunciar={false}>
+        Suas denúncias aparecem para outros cidadãos sem identificação.
+      </Aviso>
     </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
   link: { minHeight: size.touchMin, alignItems: 'center', justifyContent: 'center' },
+  textoDoLink: { color: colors.action, textDecorationLine: 'underline' },
   linkNoTexto: {
-    color: colors.mint,
+    color: colors.action,
     textDecorationLine: 'underline',
     fontFamily: type.button.fontFamily,
   },
-  erroGeral: {
-    color: colors.status.noPowerBg,
-    backgroundColor: 'rgba(186,26,26,0.25)',
-    borderRadius: 8,
-    padding: space.m,
-  },
-  privacidade: { flexDirection: 'row', alignItems: 'center', gap: space.s },
-  privacidadeTexto: { color: colors.surfaceMint, flex: 1 },
 });

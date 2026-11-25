@@ -102,6 +102,7 @@ flowchart LR
 | Rodapé | "© 2026 Equipe Tá Ligado?" e a iniciativa (a sigla "ACGM" do Figma foi substituída, PEN-01) |
 
 - **Dados coletados:** nome, e-mail, senha, telefone (opcional), consentimento. **Vêm do usuário.**
+- **Redesign v2 (R9) – T-01/T-02:** fundo `#F6F7F9`, barra com a marca e os botões **"Entrar"** e **"Cadastrar"** (48 dp; o ativo é azul cheio, o outro tem borda azul), título e **cartão branco** com o formulário (sem o cartão verde/azul-noite, sem o selo "Marabá • PA" e sem variante escura nos campos; decisão R-10). Botão primário **"Cadastrar"** / **"Entrar"** (caixa normal, ícone de seta; rótulo para leitor de tela "Cadastrar e criar conta" / "Entrar na conta", para não repetir o nome da barra), erro geral em `Aviso` (ícone + texto), links dos termos em azul sublinhado e a nota de privacidade em `Aviso` informativo.
 - **Ações:** Cadastrar → T-03. Alternar → T-02. Termos/Política → texto.
 - **Estados:** não desenhados. Previstos: validação por campo, carregando no botão, erro de e-mail duplicado, erro de rede.
 - **Implementação (Passo 6):** o botão "CADASTRAR" é **branco com texto verde `#006E2C`** sobre o cartão verde-escuro (o verde do Figma sobre o verde do cartão não tem contraste); o botão fica desabilitado até aceitar os Termos; os links "Termos de Uso" e "Política de Privacidade" abrem telas próprias (`/termos`, `/privacidade`) com o texto de `docs/legal/`. Os cartões "Marabá Integrada" e "Status Imediato" e a ilustração do Figma ainda não foram implementados (decorativos). T-02 usa a mesma estrutura, com os textos "Entre na sua conta" e "ENTRAR".
@@ -216,6 +217,7 @@ RF-003 · mesma estrutura de T-01 com o botão "Entrar" ativo.
 - Botão "ENTRAR →"; link "Não tem conta? Cadastre-se".
 - Sem "Esqueci a senha" e sem Google (fora do MVP).
 - Estados: carregando, "E-mail ou senha incorretos", sem conexão.
+- **Redesign v2 (R9):** mesmo layout do cadastro (cartão branco, botão "Entrar" em caixa normal); ver T-01.
 
 ### T-06 – Denúncia enviada
 RF-012
@@ -236,11 +238,13 @@ RF-014, RF-015, RF-024, RF-036 · UC-05
 - **Histórico de status**: linha do tempo com status, data/hora e quem mudou ("Equatorial Pará" ou "Você").
 - Botão "Cancelar denúncia" (somente `RECEBIDA`), com confirmação.
 - Estados: carregando, offline (cache), não encontrada.
+- **Redesign v2 (R9):** cartões brancos; rótulos em caixa normal ("Local", "Descrição", "Previsão de reparo", "Histórico"); a **justificativa** (improcedente) aparece num `Aviso` de atenção com ícone; o histórico usa o **ícone do andamento** em cada passo (Recebida, Em atendimento, Resolvida, Improcedente, Cancelada).
 
 ### T-08 – Perfil
 RF-004, RF-005, RF-006
 - Avatar com iniciais, nome, e-mail, telefone, com "Editar" (nome e telefone).
 - Item "Minhas denúncias" (com contador de abertas) → T-09.
+- **Redesign v2 (R9):** dados da conta num cartão branco; o contador agora é **"{n} em aberto"** (caixa normal); "Sair" é botão secundário.
 - Item "Termos de Uso e Política de Privacidade".
 - Botão "Sair" e botão discreto "Excluir conta" (confirmação em duas etapas).
 - Versão do app no rodapé.
@@ -251,6 +255,7 @@ RF-013
 - Lista de cartões com protocolo, tipo, bairro, data e selo de status; atualiza em tempo real.
 - Ação "Cancelar" nos itens `RECEBIDA`.
 - Estado vazio "Você ainda não fez denúncias" com botão "Fazer denúncia"; carregando e erro.
+- **Redesign v2 (R9):** cartão branco com número, selo do andamento (ícone + texto, caixa normal), tipo e bairro, data e **"Ver"** com seta; o cartão todo é um botão de 48 dp ou mais.
 
 ### T-10 – Ajuda
 S-44 · design system v2 (etapa R4)

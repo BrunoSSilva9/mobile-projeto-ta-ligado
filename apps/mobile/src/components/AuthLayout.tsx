@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Cartao } from '@/components/Cartao';
 import { TopAuthBar } from '@/components/TopAuthBar';
 import { APP } from '@/config/constants';
-import { colors, radius, space, type } from '@/theme';
+import { colors, space, type } from '@/theme';
 
 type Props = {
   ativo: 'entrar' | 'cadastrar';
@@ -16,7 +17,11 @@ type Props = {
   rodapeDoCartao?: ReactNode;
 };
 
-/** Estrutura compartilhada de T-01 (cadastro) e T-02 (login): barra, título, cartão verde e rodapé. */
+/**
+ * Estrutura compartilhada de T-01 (cadastro) e T-02 (login), no design system v2: fundo `bgPage`,
+ * barra com a marca, título, **cartão branco** com o formulário e rodapé. O azul-noite fica só no
+ * logo (decisão R-10).
+ */
 export function AuthLayout({
   ativo,
   titulo,
@@ -38,25 +43,18 @@ export function AuthLayout({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.cabecalho}>
-            <Text accessibilityRole="header" style={[type.h1, styles.titulo]}>
+            <Text accessibilityRole="header" style={[type.title1, styles.titulo]}>
               {titulo}
             </Text>
             <Text style={[type.body, styles.subtitulo]}>{subtitulo}</Text>
           </View>
 
-          <View style={styles.cartao}>
-            <View style={styles.cartaoCabecalho}>
-              <Text accessibilityRole="header" style={[type.subtitle, styles.cartaoTitulo]}>
-                {tituloDoCartao}
-              </Text>
-              <View style={styles.selo}>
-                <Text style={[type.label, styles.seloTexto]}>
-                  {APP.cidade} • {APP.uf}
-                </Text>
-              </View>
-            </View>
+          <Cartao style={styles.cartao}>
+            <Text accessibilityRole="header" style={[type.title3, styles.tituloDoCartao]}>
+              {tituloDoCartao}
+            </Text>
             {children}
-          </View>
+          </Cartao>
 
           {rodapeDoCartao}
 
@@ -71,23 +69,10 @@ const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: colors.bgPage },
   fluxo: { flex: 1 },
   conteudo: { padding: space.l, gap: space.l },
-  cabecalho: { gap: space.s, alignItems: 'center' },
-  titulo: { color: colors.textPrimary, textAlign: 'center' },
-  subtitulo: { color: colors.textSecondary, textAlign: 'center' },
-  cartao: {
-    backgroundColor: colors.brand900,
-    borderRadius: radius.cardLarge,
-    padding: space.l,
-    gap: space.m,
-  },
-  cartaoCabecalho: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cartaoTitulo: { color: colors.white },
-  selo: {
-    backgroundColor: 'rgba(218,229,220,0.2)',
-    borderRadius: radius.pill,
-    paddingHorizontal: space.s,
-    paddingVertical: space.half,
-  },
-  seloTexto: { color: colors.surfaceMint },
-  rodape: { color: colors.textMuted, textAlign: 'center', paddingBottom: space.m },
+  cabecalho: { gap: space.s },
+  titulo: { color: colors.textPrimary },
+  subtitulo: { color: colors.textSecondary },
+  cartao: { gap: space.m },
+  tituloDoCartao: { color: colors.textPrimary },
+  rodape: { color: colors.textSecondary, textAlign: 'center', paddingBottom: space.m },
 });

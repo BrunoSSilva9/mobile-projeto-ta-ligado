@@ -16,9 +16,8 @@ import { colors, radius, size, space, type } from '@/theme';
  * - `primario`: azul cheio, 56 dp, largura total. **Um por tela**: é sempre o próximo passo.
  * - `secundario`: fundo branco com borda azul de 2, 56 dp, largura total.
  * - `texto`: sem fundo, azul, negrito e **sublinhado** (links de ação).
- * - `claro`: **obsoleto**, igual ao `secundario` (existia para cartões escuros; some na etapa R10).
  */
-export type VarianteDoBotao = 'primario' | 'secundario' | 'texto' | 'claro';
+export type VarianteDoBotao = 'primario' | 'secundario' | 'texto';
 
 type NomeDoIcone = ComponentProps<typeof Ionicons>['name'];
 
@@ -62,7 +61,7 @@ export function coresDoBotao(
         texto: inativo ? colors.disabledText : pressionado ? colors.actionPressed : colors.action,
         borda: 'transparent',
       };
-    default: // secundario e claro
+    default: // secundario
       return {
         fundo: pressionado ? colors.actionSoft : colors.surface,
         texto: pressionado ? colors.actionPressed : colors.action,

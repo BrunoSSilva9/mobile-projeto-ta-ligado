@@ -11,26 +11,12 @@ type Props = {
   rotuloAcessivel: string;
   children: ReactNode;
   erro?: string;
-  /**
-   * @deprecated Só existe enquanto login e cadastro têm o cartão escuro (etapa R9 os deixa
-   * brancos). `escura` clareia o texto para ler sobre o azul-noite.
-   */
-  superficie?: 'clara' | 'escura';
   testID?: string;
 };
 
 /** Caixa de seleção com rótulo livre (pode ter links). A linha toda tem 48 dp ou mais. */
-export function Checkbox({
-  marcado,
-  onAlterar,
-  rotuloAcessivel,
-  children,
-  erro,
-  superficie = 'clara',
-  testID,
-}: Props) {
-  const escura = superficie === 'escura';
-  const corDoErro = escura ? colors.situacao.semEnergia.fundo : colors.danger;
+export function Checkbox({ marcado, onAlterar, rotuloAcessivel, children, erro, testID }: Props) {
+  const corDoErro = colors.danger;
 
   return (
     <View style={styles.bloco}>
@@ -45,13 +31,7 @@ export function Checkbox({
         <View style={[styles.caixa, marcado && styles.caixaMarcada]}>
           {marcado && <Ionicons name="checkmark" size={20} color={colors.onAction} />}
         </View>
-        <Text
-          style={[
-            type.bodySmall,
-            styles.rotulo,
-            { color: escura ? colors.actionTabPill : colors.textPrimary },
-          ]}
-        >
+        <Text style={[type.bodySmall, styles.rotulo, { color: colors.textPrimary }]}>
           {children}
         </Text>
       </Pressable>

@@ -11,11 +11,6 @@ type Props = {
   onBlur?: () => void;
   erro?: string;
   ajuda?: string;
-  /**
-   * @deprecated Só existe enquanto login e cadastro têm o cartão escuro (etapa R9 os deixa
-   * brancos). `escura` clareia o rótulo e a mensagem de erro para ler sobre o azul-noite.
-   */
-  superficie?: 'clara' | 'escura';
   /** Campo de senha: mostra o botão "Mostrar" / "Ocultar". */
   senha?: boolean;
   testID?: string;
@@ -44,20 +39,16 @@ export function TextField({
   onBlur,
   erro,
   ajuda,
-  superficie = 'clara',
   senha = false,
   testID,
   ...entrada
 }: Props) {
   const [oculta, setOculta] = useState(true);
-  const escura = superficie === 'escura';
-  const corDoErro = escura ? colors.situacao.semEnergia.fundo : colors.danger;
+  const corDoErro = colors.danger;
 
   return (
     <View style={styles.bloco}>
-      <Text style={[type.label, { color: escura ? colors.actionTabPill : colors.textPrimary }]}>
-        {rotulo}
-      </Text>
+      <Text style={[type.label, { color: colors.textPrimary }]}>{rotulo}</Text>
       <View style={[styles.campo, !!erro && styles.campoComErro]}>
         <TextInput
           testID={testID}
@@ -102,11 +93,7 @@ export function TextField({
           </Text>
         </View>
       ) : ajuda ? (
-        <Text
-          style={[type.bodySmall, { color: escura ? colors.actionTabPill : colors.textSecondary }]}
-        >
-          {ajuda}
-        </Text>
+        <Text style={[type.bodySmall, { color: colors.textSecondary }]}>{ajuda}</Text>
       ) : null}
     </View>
   );

@@ -282,7 +282,7 @@ Cabeçalho em todos os passos: **"Voltar"** (no passo 1 fecha a tela), "Passo X 
 
 | Tela | Ajuste |
 |---|---|
-| Login e cadastro (`AuthLayout`, `TopAuthBar`) | Cartão branco (R-10), sem variante escura dos campos; "Entrar"/"Cadastrar" em caixa normal; erro geral com `Aviso`; links do texto dos termos em `action` sublinhado |
+| Login e cadastro (`AuthLayout`, `TopAuthBar`) | **(feito na R9)** Cartão branco (R-10), sem variante escura dos campos; "Entrar"/"Cadastrar" em caixa normal; erro geral com `Aviso`; links do texto dos termos em `action` sublinhado |
 | Perfil | "{n} em aberto"; "Sair" vira botão secundário |
 | Minhas denúncias | Cartões com `StatusBadge` novo (ícone + texto em caixa normal) |
 | Detalhe | Rótulos em caixa normal; justificativa em `Aviso`; `StatusTimeline` com os ícones de andamento |
