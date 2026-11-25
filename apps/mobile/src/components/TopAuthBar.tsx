@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   alternar: {
     minHeight: size.touchMin,
     paddingHorizontal: space.m,
-    borderRadius: radius.pill,
+    borderRadius: radius.pilula,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',

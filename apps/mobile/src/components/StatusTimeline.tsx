@@ -64,5 +64,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fio: { flex: 1, width: 2, backgroundColor: colors.borderSubtle, marginVertical: 2 },
-  texto: { flex: 1, paddingBottom: space.l, gap: space.half },
+  texto: { flex: 1, paddingBottom: space.l, gap: space.xs },
 });

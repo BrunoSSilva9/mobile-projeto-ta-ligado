@@ -59,5 +59,5 @@ const styles = StyleSheet.create({
   linha: { color: colors.textSecondary },
   rodape: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   data: { color: colors.textSecondary },
-  ver: { flexDirection: 'row', alignItems: 'center', gap: space.half },
+  ver: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

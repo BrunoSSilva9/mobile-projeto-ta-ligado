@@ -92,7 +92,7 @@ Os últimos dias ficam reservados a **testes, ajustes e preparação da apresent
 
 | ID | Item | Esforço | Referência |
 |---|---|---|---|
-| B-046 | Redesign completo do app do cidadão (tokens e fonte, componentes, barra inferior, Início, Mapa, Denunciar em 3 passos, Sucesso, Ajuda, ajustes nas demais telas), em `feature/redesign-v2`, **sem mudar API, painel nem regras de negócio** | G | [17](17-plano-redesign.md), ADR-0006 |
+| B-046 | Redesign completo do app do cidadão (tokens e fonte, componentes, barra inferior, Início, Mapa, Denunciar em 3 passos, Sucesso, Ajuda, ajustes nas demais telas), em `feature/redesign-v2`, **sem mudar API, painel nem regras de negócio. **Implementado (R0 a R10) na branch; falta o ensaio no celular e o merge** | G | [17](17-plano-redesign.md), ADR-0006 |
 
 ### Fase 3 – Polimento (Could)
 

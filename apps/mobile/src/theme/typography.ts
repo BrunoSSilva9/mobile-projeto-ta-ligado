@@ -22,22 +22,6 @@ export const type = {
   label: { fontFamily: fontFamily.bold, fontSize: 16, lineHeight: 22 },
   /** Menor texto do app. */
   caption: { fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 20 },
-
-  // ------------------------------------------------------------------------------------------
-  // APELIDOS TEMPORÁRIOS da migração (docs/17, seção 4). Somem na etapa R10.
-  // ------------------------------------------------------------------------------------------
-  /** @deprecated use `title1` */
-  h1Large: { fontFamily: fontFamily.bold, fontSize: 28, lineHeight: 34 },
-  /** @deprecated use `title2` */
-  h1: { fontFamily: fontFamily.bold, fontSize: 22, lineHeight: 28 },
-  /** @deprecated use `title3` */
-  title: { fontFamily: fontFamily.bold, fontSize: 20, lineHeight: 26 },
-  /** @deprecated use `label` */
-  subtitle: { fontFamily: fontFamily.bold, fontSize: 16, lineHeight: 22 },
-  /** @deprecated o logo é refeito na etapa R2 */
-  logo: { fontFamily: fontFamily.bold, fontSize: 20, lineHeight: 24 },
-  /** @deprecated o logo é refeito na etapa R2 */
-  tagline: { fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 20 },
 } as const;
 
 export type TypeToken = keyof typeof type;

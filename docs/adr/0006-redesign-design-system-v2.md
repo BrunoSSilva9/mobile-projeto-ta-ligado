@@ -47,3 +47,7 @@ Os valores estão em [06](../06-design-system.md). Todos os pares de texto passa
 | Só trocar a paleta e a fonte, mantendo as telas | A tela de denunciar continua com muitos campos e várias ações competindo, pesada para o público |
 | Biblioteca de UI pronta (Paper, NativeBase) | Perde o controle do visual e da escala de fontes (decisão S-27) |
 | Redesenhar também o painel agora | Fora do escopo pedido; o painel é de uso interno da operadora (item B-045) |
+
+## Implementação
+
+Implementado em 2026-11 (etapas R0 a R10, branch `feature/redesign-v2`). Os apelidos de migração foram removidos na R10 e um teste (`regras-do-tema.test.ts`) impede cor, fonte e caixa alta fora de `src/theme`. Ajuste feito depois da aprovação: no mapa, a zona do bairro afetado virou uma linha tracejada de apoio, sem preenchimento (decisão R-02 ajustada em [17](../17-plano-redesign.md)).

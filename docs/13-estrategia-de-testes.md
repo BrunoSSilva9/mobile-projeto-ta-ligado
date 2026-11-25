@@ -67,6 +67,10 @@ Se faltar tempo, os E2E automatizados cedem lugar ao **roteiro manual de demonst
 
 A CI falha se a cobertura do `domain` cair abaixo da meta.
 
+### 4.1 Regras do design system (app)
+
+O teste `apps/mobile/src/theme/regras-do-tema.test.ts` lê o código de `apps/mobile/src` (menos `theme/`, testes e auxiliares) e **falha** se achar cor `#RRGGBB`/`rgba(`, `fontSize`, `fontWeight`, `letterSpacing`, `textTransform`, `toUpperCase()` ou nome de fonte escrito à mão. `theme.test.ts` confere o contraste de todos os pares de cor (texto ≥ 4,5:1; ícone e borda ≥ 3:1), a fonte mínima de 14 e os alvos de 48/56 dp.
+
 ## 5. Ferramentas
 
 | Camada | Ferramentas |

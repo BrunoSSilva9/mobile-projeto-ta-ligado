@@ -20,7 +20,7 @@ const CABECALHO_LEGAL = {
   headerBackTitle: 'Voltar',
   headerTintColor: colors.action,
   headerStyle: { backgroundColor: colors.bgPage },
-  headerTitleStyle: { ...type.subtitle, color: colors.textPrimary },
+  headerTitleStyle: { ...type.label, color: colors.textPrimary },
 } as const;
 
 export default function RootLayout() {

@@ -215,16 +215,3 @@ describe('alvos de toque (decisão D-02)', () => {
     expect(hitSlopFor(56)).toEqual({ top: 0, bottom: 0, left: 0, right: 0 });
   });
 });
-
-describe('apelidos temporários da migração (somem na etapa R10)', () => {
-  it('os nomes antigos já apontam para os valores novos (nada de verde no tema)', () => {
-    expect(colors.primary).toBe(colors.action);
-    expect(colors.bgCard).toBe(colors.surface);
-    expect(colors.white).toBe(colors.surface);
-    expect(colors.status.noPowerText).toBe(situacao.semEnergia.texto);
-    expect(colors.status.flickerText).toBe(situacao.oscilando.texto);
-    expect(colors.status.restoredText).toBe(situacao.normal.texto);
-    expect(type.h1).toEqual(type.title2);
-    expect(type.subtitle).toEqual(type.label);
-  });
-});

@@ -1,6 +1,6 @@
 # 17 – Plano de implementação do redesign do app (design system v2)
 
-> **Estado:** plano **aprovado com ajustes em 2026-11-23**. O prazo foi estendido: o redesign será feito **por completo, de R0 a R10**, e a **Fase 2 vem depois dele**, já usando os componentes novos. Nada além disso é cortado por prazo.
+> **Estado:** plano **aprovado com ajustes em 2026-11-23**; **etapas R0 a R10 implementadas** na branch `feature/redesign-v2` (falta o ensaio no celular e o merge). O prazo foi estendido: o redesign será feito **por completo, de R0 a R10**, e a **Fase 2 vem depois dele**, já usando os componentes novos. Nada além disso é cortado por prazo.
 > **Escopo:** **somente `apps/mobile`**. O painel e a API não mudam; os contratos de [10 – API](10-api.md) e os eventos WebSocket continuam iguais.
 > **Regra de ouro:** **nenhuma regra de negócio nova.** O fluxo de denúncia muda só na apresentação. O schema (`features/denuncia/schemas.ts`), o rascunho, o tratamento do 409, o modo offline e o GPS continuam os mesmos.
 > **Como será feito:** **uma branch (`feature/redesign-v2`) e um PR**, no mesmo modelo da Fase 1 (S-42). **Uma etapa por vez:** ao fim de cada uma, `lint`, `typecheck` e `test` passam, e eu entrego a mensagem de commit, a lista de arquivos e um checklist do que conferir no celular. A etapa seguinte só começa depois do "ok" de Bruno, que faz os commits e pushes.
@@ -291,7 +291,7 @@ Cabeçalho em todos os passos: **"Voltar"** (no passo 1 fecha a tela), "Passo X 
 
 ### R10 · Limpeza e documentação (M)
 
-Apagar os apelidos `@deprecated`, `ReportFab`, `ScreenPlaceholder`, `OpcoesSegmentadas`, `AvisoRecolhivel`, `BannerDenunciar` e `LocationStatusCard` (o que não for mais usado); teste que proíbe cor/fonte fora do tema; documentação da seção 9.
+**(feito)** Apagar os apelidos `@deprecated`, `ReportFab`, `ScreenPlaceholder`, `OpcoesSegmentadas`, `AvisoRecolhivel`, `BannerDenunciar` e `LocationStatusCard` (o que não for mais usado; também saíram `ContatosDeAtendimento` e `OccurrenceListItem`); teste que proíbe cor/fonte fora do tema; documentação da seção 9.
 
 ## 7. Testes
 

@@ -131,8 +131,8 @@ Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `B
 
 ## 7. Notas para a implementação
 
-- Tokens em `apps/mobile/src/theme/` (`colors.ts`, `typography.ts`, `spacing.ts`). **Nenhuma cor ou fonte solta** nos componentes (verificado por teste na etapa R10).
-- Durante a migração, os nomes antigos (`bgCard`, `brand900`, `status.*`, `h1`, `subtitle`…) existem como **apelidos `@deprecated`** apontando para os valores novos; somem na etapa R10.
+- Tokens em `apps/mobile/src/theme/` (`colors.ts`, `typography.ts`, `spacing.ts`). **Nenhuma cor ou fonte solta** nos componentes (verificado pelo teste `regras-do-tema.test.ts`, que falha com `#RRGGBB`, `rgba(`, `fontSize`, `fontWeight`, `letterSpacing`, `toUpperCase()` ou nome de fonte fora de `src/theme`).
+- Os apelidos da migração (`bgCard`, `brand900`, `status.*`, `h1`, `subtitle`, `radius.card`, `space.half`…) **foram removidos na R10**: só existem os tokens deste documento.
 - Estilo: **`StyleSheet` do React Native + tema próprio**, sem biblioteca de UI (decisão S-27).
 - Título de cada tela marcado como `header`.
 - No painel: HTML semântico, `aria-live` para novas denúncias, tabela com `scope` (tema verde próprio; alinhamento em B-045).

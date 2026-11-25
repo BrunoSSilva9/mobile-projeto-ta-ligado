@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   corpo: { flex: 1, padding: space.l, gap: space.l },
   titulo: { color: colors.textPrimary },
   cartao: { gap: space.m },
-  linha: { gap: space.half },
+  linha: { gap: space.xs },
   rotulo: { color: colors.textSecondary },
   valor: { color: colors.textPrimary },
   item: {

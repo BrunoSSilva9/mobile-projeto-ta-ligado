@@ -57,7 +57,7 @@ npm run dev:painel   # http://localhost:5173
 
 **Banco de teste:** os testes de integração da API usam o banco `taligado_test` (o mesmo servidor do Docker), **criado e migrado automaticamente** na primeira execução. Eles apagam as tabelas desse banco a cada teste, então **nunca** apontam para o banco de desenvolvimento: o `vitest.config.ts` troca o nome do banco para `*_test` e o `globalSetup` recusa qualquer banco cujo nome não termine em `_test`. Rode `npm run db:up` antes de `npm test`.
 
-**Dados de demonstração (opcional):** `npm run db:seed:demo -w apps/api` cria 3 contas de cidadão de exemplo (`demo1@taligado.local`, `demo2@taligado.local` e `demo3@taligado.local`, senha `demo-12345`) e 5 denúncias em estados variados (recebida, em atendimento, oscilação, resolvida e improcedente), para a Home, as Ocorrências e o painel não ficarem vazios. Pode rodar várias vezes (só recria as denúncias dessas contas) e **nunca roda em produção**.
+**Dados de demonstração (opcional):** `npm run db:seed:demo -w apps/api` cria 3 contas de cidadão de exemplo (`demo1@taligado.local`, `demo2@taligado.local` e `demo3@taligado.local`, senha `demo-12345`) e 5 denúncias em estados variados (recebida, em atendimento, oscilação, resolvida e improcedente), para a Início, o Mapa e o painel não ficarem vazios. Pode rodar várias vezes (só recria as denúncias dessas contas) e **nunca roda em produção**.
 
 ## Roteiro de demonstração
 
@@ -65,12 +65,12 @@ Teste ponta a ponta, com os três lados ao mesmo tempo (API, painel no navegador
 
 1. `npm run db:up`, `npm run db:seed` e `npm run dev` (API em `:3000` e painel em `:5173`). Em **outro terminal**, `npm run dev:mobile` (Expo e QR code).
 2. **Painel:** entre como `operador@taligado.local` (senha em `apps/api/.env`). Abra a aba **Lista** e clique em **Ativar som**.
-3. **Celular (Expo Go):** **cadastre** uma conta de cidadão e entre. Na Início, confira "Olá, {nome}!", o selo **Rede Estável** e o mini-mapa.
-4. **Denunciar:** toque em "Registre sua denúncia", escolha **Sem energia**, confira o bairro sugerido pelo GPS e **envie**. Anote o protocolo (`TL-AAAA-NNNNNN`).
+3. **Celular (Expo Go):** **cadastre** uma conta de cidadão e entre. Na Início, confira "Olá, {nome}", o cartão **"Energia no seu bairro agora"** (situação **Normal**) e os atalhos.
+4. **Denunciar:** toque em **"Fazer denúncia"** e siga os 3 passos: escolha **"Estou sem energia"**, confira o endereço achado pelo GPS ("Sim, está certo") e toque em **"Enviar denúncia"**. Anote o número da denúncia (`TL-AAAA-NNNNNN`).
 5. **Painel, sem recarregar:** em até 2 s a denúncia aparece na lista com o alerta "Nova denúncia" e o som.
 6. **Painel:** filtre por status, veja a denúncia no **Mapa**, abra o detalhe e clique em **Iniciar atendimento** (com previsão de reparo).
-7. **App:** o detalhe e "Minhas denúncias" mostram **Em atendimento** em até 2 s, com o histórico e a previsão. Em Início e Ocorrências o selo muda para **Rede Instável**, e o círculo do bairro fica vermelho.
-8. **Painel:** marque como **Resolvida**. O app atualiza, o bairro volta a **Normal** (círculo verde) e a ocorrência aparece em "Restabelecidos".
+7. **App:** o detalhe e "Minhas denúncias" mostram **Em atendimento** em até 2 s, com o histórico e a previsão. Na Início o cartão muda para **Sem energia**, e na aba **Mapa** o bairro ganha o marcador e uma linha de área na cor da situação.
+8. **Painel:** marque como **Resolvida**. O app atualiza, o bairro volta a **Normal** e a ocorrência aparece no filtro **Normal** da aba Mapa.
 9. **Limite:** com a denúncia em aberto, tente enviar uma segunda: o app avisa e leva à que está aberta (409). Depois de resolvida, é possível enviar outra.
 10. **Improcedente:** no painel, o botão exige a justificativa (10 a 500 caracteres); ela aparece para o cidadão no detalhe.
 11. **Offline:** desligue a internet do celular. As telas continuam com os dados salvos e o aviso "Sem conexão" com a data da última atualização; o formulário guarda o rascunho. Religue: tudo atualiza sozinho.

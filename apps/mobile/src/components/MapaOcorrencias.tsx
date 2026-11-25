@@ -169,10 +169,10 @@ export function MapaOcorrencias({
 
 const styles = StyleSheet.create({
   bloco: { gap: space.s },
-  mapa: { borderRadius: radius.card, overflow: 'hidden' },
+  mapa: { borderRadius: radius.botao, overflow: 'hidden' },
   alternativa: {
     height: 80,
-    backgroundColor: colors.bgSoft,
+    backgroundColor: colors.actionSoft,
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.l,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.xs,
     paddingHorizontal: space.m,
-    borderRadius: radius.pill,
+    borderRadius: radius.pilula,
     backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.action,
