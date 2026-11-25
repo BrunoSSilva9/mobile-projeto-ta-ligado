@@ -29,6 +29,11 @@ export function situacaoDoTipo(tipo: string): SituacaoDaEnergia {
   return tipo === 'SEM_ENERGIA' ? 'semEnergia' : 'oscilando';
 }
 
+/** Situação que o marcador de uma ocorrência mostra no mapa: resolvida = normal; senão, pelo tipo. */
+export function situacaoDaOcorrencia(o: { tipo: string; status: string }): SituacaoDaEnergia {
+  return o.status === 'RESOLVIDA' ? 'normal' : situacaoDoTipo(o.tipo);
+}
+
 /** Texto de cada andamento da denúncia (caixa normal, nunca em maiúsculas). */
 export const ROTULOS_DO_ANDAMENTO: Record<StatusDeAndamento, string> = {
   RECEBIDA: 'Recebida',

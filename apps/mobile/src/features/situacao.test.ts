@@ -7,6 +7,7 @@ import {
   rotuloDaSituacao,
   rotuloDoAndamento,
   situacaoDoBairro,
+  situacaoDaOcorrencia,
   situacaoDoTipo,
 } from './situacao';
 
@@ -68,5 +69,17 @@ describe('andamento da denúncia', () => {
   it('status desconhecido: sem andamento, e o texto vem como estava', () => {
     expect(andamentoDe('OUTRO')).toBeNull();
     expect(rotuloDoAndamento('OUTRO')).toBe('OUTRO');
+  });
+});
+
+describe('situacaoDaOcorrencia (marcador do mapa)', () => {
+  it.each([
+    ['SEM_ENERGIA', 'RECEBIDA', 'semEnergia'],
+    ['SEM_ENERGIA', 'EM_ATENDIMENTO', 'semEnergia'],
+    ['OSCILACAO', 'RECEBIDA', 'oscilando'],
+    ['SEM_ENERGIA', 'RESOLVIDA', 'normal'],
+    ['OSCILACAO', 'RESOLVIDA', 'normal'],
+  ])('%s em %s → %s', (tipo, status, esperado) => {
+    expect(situacaoDaOcorrencia({ tipo, status })).toBe(esperado);
   });
 });

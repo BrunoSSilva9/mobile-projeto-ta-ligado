@@ -143,14 +143,14 @@ De cima para baixo:
 |---|---|
 | Cabeçalho branco | Título **"Onde falta energia"**, o apoio **"Marabá · atualizado há X min"** (horário da própria resposta) e a busca com rótulo visível **"Procurar bairro ou folha"** (a API só procura bairro e folha) |
 | Chips | **Todos (n), Sem energia (n), Oscilando (n), Normal (n)**, 48 dp, cada um com ícone; o selecionado é azul cheio com texto branco e os outros brancos com borda. "Normal" é o filtro `RESTABELECIDO` da API (resolvidas nas últimas 24 h, S-21); "Todos" é a soma dos três |
-| Mapa | Círculo por bairro na cor da situação e pinos das ocorrências com coordenadas. **Os marcadores com ícone, o ponto "você está aqui" e o botão "Onde estou" vêm na etapa R8** |
+| Mapa | **Um marcador por ocorrência** com coordenadas (40 dp, ícone da situação, borda branca de 3 e contorno de 2 na cor da situação; **Sem energia e Oscilando redondos, Normal quadrado**); como **apoio**, uma **linha tracejada sem preenchimento** em volta de cada bairro afetado (o tracejado só no iOS; no Android a linha é contínua); ponto azul "você está aqui"; botão flutuante **"Onde estou"** (ícone e texto); legenda com os 3 marcadores e texto |
 | **Lugares com aviso (n)** | **Um item por bairro**, agrupado no app a partir das ocorrências públicas (sem mudar a API): selo da situação (ícone + texto), "Bairro (Folha)" em negrito, **"Há X min · N avisos"** e "Ver" com seta. O cartão inteiro é clicável: **"Ver" centraliza o mapa no bairro** e leva a tela até ele |
 
 **Regras do agrupamento (decisão R-03):** o lugar é o bairro + a folha; **a situação do lugar é a mais grave entre os avisos** (Sem energia > Oscilando > Normal, a mesma regra do status do bairro, RN-007), e um aviso resolvido conta como Normal; **"Há X min" conta a partir do aviso mais recente** do lugar; **N** é quantos avisos o lugar tem. Ordem: o mais grave primeiro e, empatando, o aviso mais recente primeiro. O centro do bairro (para o "Ver") vem de `/bairros/status`.
 
 - **Dados:** servidor (`/ocorrencias` anonimizada, `/bairros/status`). **Nada pessoal:** sem protocolo, autor ou telefone (RN-014).
 - **Estados:** carregando, vazio ("Nenhum lugar com aviso"), busca sem resultado, erro com "Tentar novamente", offline (dados salvos e aviso de conexão). Mostra os 50 avisos mais recentes e diz quando há mais.
-- **Tempo real:** `ocorrencia:atualizada` busca a lista e os totais de novo; `bairro:status-atualizado` troca a cor do círculo na hora.
+- **Tempo real:** `ocorrencia:atualizada` busca a lista e os totais de novo; `bairro:status-atualizado` troca a cor da área do bairro na hora (e tira a área se o bairro voltar ao normal).
 - **Saíram desta tela:** o cartão "Localização atual" (a energia do bairro agora fica na Início), o banner de denunciar e o bloco de atendimento (agora na Início e na Ajuda).
 
 ### T-05 – Registrar Denúncia

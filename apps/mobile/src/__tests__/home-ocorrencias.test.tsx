@@ -767,17 +767,20 @@ describe('Mapa (T-04, design system v2): "Onde falta energia"', () => {
   });
 
   describe('mapa e tempo real', () => {
-    it('o mapa tem um círculo por bairro e pinos só das ocorrências com coordenadas', async () => {
+    it('o mapa tem um marcador por ocorrência com coordenadas e uma área só dos bairros afetados', async () => {
       await renderizarTela(comTudo(<OcorrenciasScreen />));
       await screen.findByText('Há 5 min · 1 aviso');
 
-      await waitFor(() => expect(screen.getAllByTestId('circulo')).toHaveLength(2));
+      // Só o bairro Nova Marabá (Sem luz) tem área; Cidade Nova (Normal) não tem.
+      await waitFor(() => expect(screen.getAllByTestId('circulo')).toHaveLength(1));
       const pinos = screen.getAllByTestId('pino');
-      expect(pinos).toHaveLength(1);
+      expect(pinos).toHaveLength(1); // ITEM_B não tem coordenadas
       expect(JSON.parse(pinos[0]!.props.accessibilityLabel)).toEqual({
         latitude: -5.371,
         longitude: -49.123,
       });
+      expect(pinos[0]!.props.title).toBe('Sem energia');
+      expect(pinos[0]!.props.description).toBe('Nova Marabá');
     });
 
     it('uma ocorrência nova (ocorrencia:atualizada) busca a lista e os totais de novo', async () => {
@@ -803,7 +806,7 @@ describe('Mapa (T-04, design system v2): "Onde falta energia"', () => {
       expect(urlsDe('/ocorrencias').length).toBeGreaterThan(antes);
     });
 
-    it('o círculo do bairro muda de cor em tempo real quando o painel atualiza o bairro', async () => {
+    it('a área do bairro muda em tempo real quando o painel atualiza o bairro', async () => {
       await renderizarTela(comTudo(<OcorrenciasScreen />));
       await screen.findByText('Há 5 min · 1 aviso');
 
@@ -820,8 +823,187 @@ describe('Mapa (T-04, design system v2): "Onde falta energia"', () => {
         const cores = screen
           .getAllByTestId('circulo')
           .map((c) => JSON.parse(c.props.accessibilityLabel).strokeColor as string);
-        expect(cores).toContain(colors.situacao.oscilando.marcador);
+        expect(cores).toEqual([colors.situacao.oscilando.texto]);
       });
+    });
+
+    it('um bairro que volta ao normal perde a área tracejada', async () => {
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await screen.findByText('Há 5 min · 1 aviso');
+      await waitFor(() => expect(screen.getAllByTestId('circulo')).toHaveLength(1));
+
+      await act(async () =>
+        ultimoSocket()!.__emitir('bairro:status-atualizado', {
+          bairroId: 2,
+          status: 'NORMAL',
+          emAberto: 0,
+          previsaoReparo: null,
+        }),
+      );
+
+      await waitFor(() => expect(screen.queryByTestId('circulo')).toBeNull());
+    });
+  });
+
+  describe('mapa: marcadores, área de apoio e "Onde estou" (R8)', () => {
+    const ITEM_RESOLVIDO = {
+      ...ITEM_A,
+      id: 'o4',
+      status: 'RESOLVIDA',
+      latitude: -5.36,
+      longitude: -49.11,
+    };
+    const ITEM_OSCILANDO = {
+      ...ITEM_A,
+      id: 'o5',
+      tipo: 'OSCILACAO',
+      latitude: -5.355,
+      longitude: -49.105,
+    };
+
+    const comMarcadores = () =>
+      simularApi({
+        ocorrencias: () =>
+          resposta200([ITEM_A, ITEM_OSCILANDO, ITEM_RESOLVIDO], 3, {
+            todos: 3,
+            semLuz: 1,
+            oscilacao: 1,
+            restabelecidos: 1,
+          }),
+      });
+    const estiloDe = (id: string) =>
+      StyleSheet.flatten(screen.getAllByTestId(id)[0]!.props.style) as Record<string, unknown>;
+
+    it('cada situação tem o seu marcador: redondo para Sem energia e Oscilando, quadrado para Normal', async () => {
+      comMarcadores();
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await waitFor(() => expect(screen.getAllByTestId('pino')).toHaveLength(3));
+
+      // No mapa há um de cada; a legenda repete cada marcador em tamanho menor (dois por situação).
+      expect(screen.getAllByTestId('marcador-semEnergia')).toHaveLength(2);
+      expect(screen.getAllByTestId('marcador-oscilando')).toHaveLength(2);
+      expect(screen.getAllByTestId('marcador-normal')).toHaveLength(2);
+
+      expect(estiloDe('marcador-semEnergia').borderRadius).toBe(20); // 40 / 2: círculo
+      expect(estiloDe('marcador-oscilando').borderRadius).toBe(20);
+      expect(Number(estiloDe('marcador-normal').borderRadius)).toBeLessThan(20); // quadrado
+    });
+
+    it('o marcador de uma ocorrência resolvida é o de Normal e os pinos dizem a situação', async () => {
+      comMarcadores();
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await waitFor(() => expect(screen.getAllByTestId('pino')).toHaveLength(3));
+
+      expect(screen.getAllByTestId('pino').map((p) => p.props.title)).toEqual([
+        'Sem energia',
+        'Oscilando',
+        'Normal',
+      ]);
+    });
+
+    it('o marcador tem 40 dp, borda branca de 3 e contorno de 2 na cor de texto da situação (R-14)', async () => {
+      comMarcadores();
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await waitFor(() => expect(screen.getAllByTestId('pino')).toHaveLength(3));
+
+      for (const [id, chave] of [
+        ['marcador-semEnergia', 'semEnergia'],
+        ['marcador-oscilando', 'oscilando'],
+        ['marcador-normal', 'normal'],
+      ] as const) {
+        expect(estiloDe(id)).toMatchObject({
+          width: 40,
+          height: 40,
+          borderWidth: 2,
+          borderColor: colors.situacao[chave].texto,
+          padding: 3,
+          backgroundColor: colors.surface,
+        });
+      }
+    });
+
+    it('os marcadores só deixam de ser redesenhados depois de um instante (a fonte dos ícones carrega)', async () => {
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await screen.findByText('Há 5 min · 1 aviso');
+      const pino = await screen.findByTestId('pino');
+      expect(pino.props.tracksViewChanges).toBe(true);
+
+      await waitFor(() => expect(screen.getByTestId('pino').props.tracksViewChanges).toBe(false), {
+        timeout: 2000,
+      });
+    });
+
+    it('a área do bairro afetado é só uma linha: sem preenchimento, 2 dp, na cor de texto da situação', async () => {
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      const circulo = await screen.findByTestId('circulo');
+
+      expect(circulo.props.fillColor).toBe('transparent');
+      expect(circulo.props.strokeWidth).toBe(2);
+      expect(circulo.props.strokeColor).toBe(colors.situacao.semEnergia.texto);
+    });
+
+    it('a legenda tem os 3 marcadores com texto, e não só cor', async () => {
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await screen.findByText('Há 5 min · 1 aviso');
+
+      const legenda = screen.getByLabelText(/^Legenda do mapa: Sem energia, Oscilando, Normal\./);
+      expect(legenda.props.accessibilityLabel).toMatch(/área aproximada/);
+    });
+
+    it('o ponto azul "você está aqui" aparece quando há localização do celular', async () => {
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await screen.findByText('Há 5 min · 1 aviso');
+
+      await waitFor(() => expect(screen.getByTestId('mapa').props.showsUserLocation).toBe(true));
+      expect(screen.getByTestId('mapa').props.showsMyLocationButton).toBe(false);
+    });
+
+    it('sem permissão de localização não há ponto azul', async () => {
+      simularGps('negada');
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await screen.findByText('Há 5 min · 1 aviso');
+
+      expect(screen.getByTestId('mapa').props.showsUserLocation).toBe(false);
+    });
+
+    it('"Onde estou" (ícone e texto) centraliza o mapa no celular', async () => {
+      const animar = jest.requireMock('react-native-maps').__animarParaRegiao as jest.Mock;
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await waitFor(() => expect(screen.getByTestId('mapa').props.showsUserLocation).toBe(true));
+      animar.mockClear();
+
+      expect(screen.getByText('Onde estou')).toBeTruthy();
+      await tocar('Onde estou');
+
+      expect(animar).toHaveBeenCalledWith(
+        expect.objectContaining({ latitude: -5.371, longitude: -49.12 }),
+        400,
+      );
+      expect(screen.queryByText(/Não foi possível achar a sua localização/)).toBeNull();
+    });
+
+    it('"Onde estou" sem localização explica o que fazer, sem mexer no mapa', async () => {
+      simularGps('negada');
+      const animar = jest.requireMock('react-native-maps').__animarParaRegiao as jest.Mock;
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      await screen.findByText('Há 5 min · 1 aviso');
+      animar.mockClear();
+
+      await tocar('Onde estou');
+
+      expect(
+        await screen.findByText(/Não foi possível achar a sua localização\. Ligue o GPS/),
+      ).toBeTruthy();
+      expect(animar).not.toHaveBeenCalled();
+    });
+
+    it('"Onde estou" tem alvo de 48 dp e é um botão flutuante com sombra', async () => {
+      await renderizarTela(comTudo(<OcorrenciasScreen />));
+      const botao = await screen.findByRole('button', { name: 'Onde estou' });
+      const estilo = StyleSheet.flatten(botao.props.style) as Record<string, unknown>;
+
+      expect(Number(estilo.minHeight)).toBeGreaterThanOrEqual(48);
+      expect(Number(estilo.elevation)).toBeGreaterThan(0);
     });
   });
 });

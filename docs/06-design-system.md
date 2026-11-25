@@ -46,7 +46,7 @@ Selo = fundo + texto + ícone. Marcador do mapa = preenchimento + ícone.
 
 Em `colors.situacao.semEnergia | oscilando | normal`. O marcador de "Normal" é **quadrado** e os outros são circulares: o formato também diferencia a situação.
 
-**Contorno do marcador no mapa:** o marcador laranja sozinho dá só 2,35:1 contra a borda branca. Por isso cada marcador tem um **contorno externo de 2 dp** por fora da borda branca, na cor de texto da própria situação (`#B42318`, `#93370D`, `#067647`), que passa de 3:1 contra os fundos típicos de mapa (decisão R-14).
+**Contorno do marcador no mapa:** o marcador laranja sozinho dá só 2,35:1 contra a borda branca. Por isso cada marcador tem um **contorno externo de 2 dp** por fora da borda branca, na cor de texto da própria situação (`#B42318`, `#93370D`, `#067647`), que passa de 3:1 contra os fundos típicos de mapa (decisão R-14). **Zona do bairro (R-02, ajustada):** no mapa, o bairro afetado ganha só uma **linha de 2 dp, sem preenchimento (tracejada no iOS)**, na cor de texto da situação; bairro Normal não tem área. A zona é apoio e nunca a única pista: o que informa são os marcadores (ícone e formato), a legenda e a lista. O botão **"Onde estou"** é o único elemento com sombra (`shadow.flutuante`).
 
 ### Andamento da denúncia
 
@@ -95,7 +95,7 @@ Regras: os tamanhos são `sp` e **escalam com a fonte do sistema até 200%** (RN
 
 ## 5. Componentes
 
-Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `Button`, `TextField`, `Checkbox`, `StatusBadge`, `SeloDeSituacao`, `FilterChip`, `Logo`, `Cartao`, `Aviso`, `CartaoDeEscolha`, `CabecalhoDePasso`, `CabecalhoDeTela`, `Estados` e `AvisoDeConexao`. A barra inferior (R3, sem FAB) já está pronta; o marcador do mapa vem na R8 ([plano](17-plano-redesign.md)). O formulário de denúncia (R6) usa `CabecalhoDePasso`, `CartaoDeEscolha`, `Aviso`, `Cartao` e `SeloDeSituacao`, com rodapé fixo de botões de 56 dp; `SeletorDeBairro` e `MiniMapa` já estão no estilo v2. A apresentação da situação e do andamento (textos e ícones) fica em `features/situacao.ts`.
+Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `Button`, `TextField`, `Checkbox`, `StatusBadge`, `SeloDeSituacao`, `FilterChip`, `Logo`, `Cartao`, `Aviso`, `CartaoDeEscolha`, `CabecalhoDePasso`, `CabecalhoDeTela`, `Estados` e `AvisoDeConexao`. A barra inferior (R3, sem FAB) e o mapa (R8: `MarcadorDeSituacao`, área tracejada de apoio e botão "Onde estou") já estão prontos ([plano](17-plano-redesign.md)). O formulário de denúncia (R6) usa `CabecalhoDePasso`, `CartaoDeEscolha`, `Aviso`, `Cartao` e `SeloDeSituacao`, com rodapé fixo de botões de 56 dp; `SeletorDeBairro` e `MiniMapa` já estão no estilo v2. A apresentação da situação e do andamento (textos e ícones) fica em `features/situacao.ts`.
 
 | Componente | Regras |
 |---|---|

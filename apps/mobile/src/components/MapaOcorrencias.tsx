@@ -1,26 +1,23 @@
-import { Component, useEffect, useRef, type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 
-import {
-  CORES_DO_STATUS_DO_BAIRRO,
-  corDaOcorrencia,
-  type BairroComStatus,
-  type OcorrenciaPublica,
-} from '@/features/ocorrencias/tipos';
-import { colors, radius, space, type } from '@/theme';
+import { MarcadorDeSituacao } from '@/components/MarcadorDeSituacao';
+import type { BairroComStatus, OcorrenciaPublica } from '@/features/ocorrencias/tipos';
+import { rotuloDaSituacao, situacaoDaOcorrencia, situacaoDoBairro } from '@/features/situacao';
+import { colors, radius, shadow, size, space, type, type SituacaoDaEnergia } from '@/theme';
 
 /** Centro de Marabá-PA. */
 export const CENTRO_DE_MARABA = { latitude: -5.3686, longitude: -49.1178 };
 
-/** Raio do círculo de cada bairro no mapa (aproximado: a base de bairros tem só o centro). */
+/** Raio da área de cada bairro afetado no mapa (aproximado: a base de bairros tem só o centro). */
 export const RAIO_DO_BAIRRO_M = 700;
 
-/** Cor translúcida do círculo, a partir do `#RRGGBB` do status. */
-function comTransparencia(hex: string, alfa: number): string {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alfa})`;
-}
+/** Depois deste tempo os marcadores param de ser redesenhados (a fonte dos ícones já carregou). */
+export const TEMPO_DE_RASTREIO_MS = 600;
+
+const SITUACOES: readonly SituacaoDaEnergia[] = ['semEnergia', 'oscilando', 'normal'];
 
 /** Se o módulo nativo do mapa falhar, a tela continua com os chips e a lista. */
 class LimiteDeErro extends Component<
@@ -38,37 +35,52 @@ class LimiteDeErro extends Component<
 
 type Props = {
   bairros: readonly BairroComStatus[];
-  /** Pinos das ocorrências (já anonimizadas e arredondadas). Vazio na Home. */
+  /** Ocorrências (já anonimizadas e arredondadas): um marcador por uma que tem coordenadas. */
   ocorrencias?: readonly OcorrenciaPublica[];
-  /** Mini-mapa da Home: menor, sem gestos. */
+  /** Versão menor, sem gestos. */
   compacto?: boolean;
   /** Centraliza o mapa neste ponto (o "Ver" da lista "Lugares com aviso"). Um novo objeto repete o movimento. */
   foco?: { latitude: number; longitude: number } | null;
+  /** Mostra o ponto azul "você está aqui" (só com a localização do celular disponível). */
+  mostrarMinhaLocalizacao?: boolean;
+  /** Toque em "Onde estou". Sem esta função o botão não aparece. */
+  onOndeEstou?: () => void;
 };
 
 /**
- * Mapa público de Marabá (RF-019, RF-023): um círculo por bairro na cor do status (RN-007) e,
- * na tela de Ocorrências, um pino por ocorrência que tem coordenadas. Os bairros normais ficam
- * bem discretos para destacar os afetados.
+ * Mapa público de Marabá (RF-019, RF-023): **um marcador por ocorrência** com coordenadas, com o
+ * ícone e o formato da situação (Sem energia e Oscilando redondos, Normal quadrado), e, como
+ * **apoio** (decisão R-02, ajustada), uma **área tracejada sem preenchimento** em volta de cada
+ * bairro afetado. A informação não depende da área: está nos marcadores, na legenda e na lista.
  */
 export function MapaOcorrencias({
   bairros,
   ocorrencias = [],
   compacto = false,
   foco = null,
+  mostrarMinhaLocalizacao = false,
+  onOndeEstou,
 }: Props) {
   const mapa = useRef<MapView>(null);
+  // Os marcadores são `View`s: o mapa os fotografa. Rastreia só no começo, até a fonte dos ícones
+  // carregar, e depois solta (`tracksViewChanges={false}`) para o mapa não gastar bateria.
+  const [rastrear, setRastrear] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setRastrear(false), TEMPO_DE_RASTREIO_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     if (foco) {
       mapa.current?.animateToRegion?.({ ...foco, latitudeDelta: 0.02, longitudeDelta: 0.02 }, 400);
     }
   }, [foco]);
 
-  const afetados = bairros.filter((b) => b.status !== 'NORMAL').length;
+  const afetados = bairros.filter((b) => b.status !== 'NORMAL');
   const resumo =
-    afetados === 0
+    afetados.length === 0
       ? 'Mapa de Marabá: nenhum bairro afetado no momento.'
-      : `Mapa de Marabá: ${afetados} ${afetados === 1 ? 'bairro afetado' : 'bairros afetados'}.`;
+      : `Mapa de Marabá: ${afetados.length} ${afetados.length === 1 ? 'bairro afetado' : 'bairros afetados'}.`;
 
   return (
     <View style={styles.bloco}>
@@ -79,57 +91,74 @@ export function MapaOcorrencias({
           </View>
         }
       >
-        <MapView
-          ref={mapa}
-          accessible
-          accessibilityLabel={resumo}
-          style={[styles.mapa, { height: compacto ? 180 : 280 }]}
-          initialRegion={{ ...CENTRO_DE_MARABA, latitudeDelta: 0.14, longitudeDelta: 0.14 }}
-          scrollEnabled={!compacto}
-          zoomEnabled={!compacto}
-          rotateEnabled={false}
-          pitchEnabled={false}
-          toolbarEnabled={false}
-        >
-          {bairros.map((b) => {
-            const cor = CORES_DO_STATUS_DO_BAIRRO[b.status].destaque;
-            return (
+        <View>
+          <MapView
+            ref={mapa}
+            accessible
+            accessibilityLabel={`${resumo} A lista abaixo tem as mesmas informações.`}
+            style={[styles.mapa, { height: compacto ? 180 : 320 }]}
+            initialRegion={{ ...CENTRO_DE_MARABA, latitudeDelta: 0.14, longitudeDelta: 0.14 }}
+            scrollEnabled={!compacto}
+            zoomEnabled={!compacto}
+            rotateEnabled={false}
+            pitchEnabled={false}
+            toolbarEnabled={false}
+            showsUserLocation={mostrarMinhaLocalizacao}
+            showsMyLocationButton={false}
+          >
+            {afetados.map((b) => (
               <Circle
                 key={b.bairroId}
                 center={{ latitude: b.latitude, longitude: b.longitude }}
                 radius={RAIO_DO_BAIRRO_M}
-                strokeColor={cor}
-                strokeWidth={b.status === 'NORMAL' ? 1 : 2}
-                fillColor={comTransparencia(cor, b.status === 'NORMAL' ? 0.08 : 0.3)}
+                strokeColor={colors.situacao[situacaoDoBairro(b.status)].texto}
+                strokeWidth={2}
+                fillColor="transparent"
+                // Tracejado só no iOS; no Android a linha é contínua (limite da biblioteca).
+                lineDashPattern={Platform.OS === 'ios' ? [8, 6] : undefined}
               />
-            );
-          })}
-          {ocorrencias.map((o) =>
-            o.latitude !== null && o.longitude !== null ? (
-              <Marker
-                key={o.id}
-                coordinate={{ latitude: o.latitude, longitude: o.longitude }}
-                pinColor={corDaOcorrencia(o)}
-              />
-            ) : null,
-          )}
-        </MapView>
+            ))}
+            {ocorrencias.map((o) => {
+              if (o.latitude === null || o.longitude === null) return null;
+              const situacao = situacaoDaOcorrencia(o);
+              return (
+                <Marker
+                  key={o.id}
+                  coordinate={{ latitude: o.latitude, longitude: o.longitude }}
+                  title={rotuloDaSituacao(situacao)}
+                  description={o.bairro}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                  tracksViewChanges={rastrear}
+                >
+                  <MarcadorDeSituacao situacao={situacao} />
+                </Marker>
+              );
+            })}
+          </MapView>
+          {onOndeEstou && !compacto ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Onde estou"
+              accessibilityHint="Mostra a sua localização no mapa"
+              onPress={onOndeEstou}
+              style={styles.ondeEstou}
+            >
+              <Ionicons name="locate" size={22} color={colors.action} />
+              <Text style={[type.label, { color: colors.action }]}>Onde estou</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </LimiteDeErro>
       <View
         style={styles.legenda}
         accessible
-        accessibilityLabel="Legenda do mapa: vermelho sem luz, âmbar oscilação, verde normal"
+        accessibilityLabel={`Legenda do mapa: ${SITUACOES.map(rotuloDaSituacao).join(', ')}. A linha em volta de um bairro mostra a área aproximada de um bairro afetado.`}
       >
-        {(['SEM_LUZ', 'OSCILACAO', 'NORMAL'] as const).map((s) => (
+        {SITUACOES.map((s) => (
           <View key={s} style={styles.legendaItem}>
-            <View
-              style={[
-                styles.legendaPonto,
-                { backgroundColor: CORES_DO_STATUS_DO_BAIRRO[s].destaque },
-              ]}
-            />
-            <Text style={[type.caption, { color: colors.textSecondary }]}>
-              {s === 'SEM_LUZ' ? 'Sem luz' : s === 'OSCILACAO' ? 'Oscilação' : 'Normal'}
+            <MarcadorDeSituacao situacao={s} tamanho={28} />
+            <Text style={[type.bodySmall, { color: colors.textPrimary }]}>
+              {rotuloDaSituacao(s)}
             </Text>
           </View>
         ))}
@@ -149,7 +178,22 @@ const styles = StyleSheet.create({
     padding: space.l,
   },
   alternativaTexto: { color: colors.textSecondary, textAlign: 'center' },
-  legenda: { flexDirection: 'row', gap: space.l },
+  /** Botão flutuante: a única sombra do app (precisa se destacar do mapa). */
+  ondeEstou: {
+    position: 'absolute',
+    right: space.s,
+    bottom: space.s,
+    minHeight: size.touchMin,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    paddingHorizontal: space.m,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.action,
+    ...shadow.flutuante,
+  },
+  legenda: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m },
   legendaItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  legendaPonto: { width: 12, height: 12, borderRadius: radius.pill },
 });

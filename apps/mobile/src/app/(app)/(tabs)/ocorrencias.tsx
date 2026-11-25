@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Aviso } from '@/components/Aviso';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { EmptyState, ErrorState, MENSAGEM_SEM_DADOS_OFFLINE } from '@/components/Estados';
 import { FilterChip } from '@/components/FilterChip';
@@ -17,6 +18,7 @@ import {
   useValorComAtraso,
 } from '@/features/ocorrencias/hooks';
 import { CHIPS, type FiltroPublico } from '@/features/ocorrencias/tipos';
+import { useLocalizacaoAtual } from '@/providers/LocalizacaoProvider';
 import { colors, space, type } from '@/theme';
 
 /** "Marabá · atualizado agora" / "… há 5 min": o horário vem da própria resposta da lista. */
@@ -35,6 +37,8 @@ export default function OcorrenciasScreen() {
   const [filtro, setFiltro] = useState<FiltroPublico>(undefined);
   const [busca, setBusca] = useState('');
   const [foco, setFoco] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
+  const localizacao = useLocalizacaoAtual();
   const buscaAtrasada = useValorComAtraso(busca);
   const rolagem = useRef<ScrollViewInstance>(null);
   const alturaDoMapa = useRef(0);
@@ -54,6 +58,18 @@ export default function OcorrenciasScreen() {
     setFoco({ ...lugar.centro }); // objeto novo: repete o movimento mesmo no mesmo bairro
     rolagem.current?.scrollTo({ y: alturaDoMapa.current, animated: true });
   };
+
+  /** "Onde estou": centraliza o mapa no celular; sem localização, tenta de novo e explica. */
+  const ondeEstou = () => {
+    setPediuLocalizacao(true);
+    if (localizacao.coordenadas) {
+      setFoco({ ...localizacao.coordenadas }); // objeto novo: repete o movimento
+    } else {
+      localizacao.tentarDeNovo();
+    }
+  };
+  const semLocalizacao =
+    pediuLocalizacao && !localizacao.coordenadas && localizacao.estado !== 'buscando';
 
   return (
     <SafeAreaView style={styles.tela} edges={['top']}>
@@ -107,8 +123,18 @@ export default function OcorrenciasScreen() {
               bairros={bairros.data.bairros}
               ocorrencias={lista.data?.itens ?? []}
               foco={foco}
+              mostrarMinhaLocalizacao={localizacao.coordenadas !== null}
+              onOndeEstou={ondeEstou}
             />
           </View>
+        ) : null}
+
+        {semLocalizacao ? (
+          <Aviso tom="atencao" icone="locate-outline">
+            {
+              'Não foi possível achar a sua localização. Ligue o GPS e permita a localização para este aplicativo, depois toque em "Onde estou" de novo.'
+            }
+          </Aviso>
         ) : null}
 
         <Text accessibilityRole="header" style={[type.title2, styles.tituloDaSecao]}>

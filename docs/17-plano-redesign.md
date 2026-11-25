@@ -131,7 +131,7 @@ Pesos: só **Regular 400** e **Bold 700** (Atkinson Hyperlegible não tem semibo
 | `ReportFab` | **Some** |
 | `LocationStatusCard` | Substituído por `CartaoEnergiaDoBairro` (Início). No Mapa ele sai |
 | `BannerDenunciar` | Some (vira o cartão da ação principal da Início) |
-| `MapaOcorrencias` | Marcadores com ícone (R8); os círculos de zona saem (decisão R-02) |
+| `MapaOcorrencias` | Marcadores com ícone (R8); a zona vira linha tracejada sem preenchimento, só nos bairros afetados (decisão R-02, ajustada) |
 | `OccurrenceListItem` | Cartão inteiro clicável com selo, nome, "Há X min" e "Ver" |
 | `OpcoesSegmentadas`, `AvisoRecolhivel` | Deixam de ser usados no Denunciar (podem ser apagados) |
 | `ContatosDeAtendimento` | Vira "Prefere falar com alguém?" com o botão de ligar |
@@ -170,7 +170,7 @@ O risco é trocar 30 arquivos de uma vez e passar dias com o app quebrado. A mig
 | ID | Decisão |
 |---|---|
 | R-01 | **Denunciar em uma rota só**, com `passo` em estado e o mesmo `useForm`; cada passo valida só os seus campos com `trigger` (passo 1: `tipo`; passo 2: `bairroId`, `logradouro`, `cep`; passo 3: o schema inteiro no `handleSubmit`). O rascunho, o GPS, o 409 e o offline já vivem nesta tela e continuam num lugar só; um link direto não cai no meio do fluxo. O "voltar" do Android volta um passo (`BackHandler`) |
-| R-02 | **Mapa sem os círculos de zona:** só marcadores (ícone + formato), um por ocorrência com coordenadas. A situação de cada bairro continua na lista e na Início |
+| R-02 | **Mapa com marcadores e a zona só como apoio** (ajustada em 2026-11-25, a pedido de Bruno): os marcadores (ícone + formato), um por ocorrência com coordenadas, são a informação principal. Os círculos de zona **deixam de ser preenchidos** e viram uma **linha tracejada de 2 dp, sem preenchimento, só em volta dos bairros afetados** (Sem energia e Oscilando), na cor de texto da situação. Bairro Normal não tem área. A situação de cada bairro continua na legenda, na lista e na Início. A zona é apoio visual: nada se perde sem ela, então ela não é a única pista (WCAG 1.4.1). O tracejado só existe no iOS: no Android a biblioteca não aceita (a linha fica contínua) |
 | R-03 | **Lista "Lugares com aviso" agrupada por bairro, no app**, a partir das ocorrências públicas que já chegam (sem mudar a API). Um item por lugar: selo da situação, "Bairro (Folha)" em negrito, **"Há X min · N avisos"** e "Ver" com chevron. Regras do agrupamento: chave = bairro + folha; **"Há X min" conta a partir do aviso mais recente do grupo**; **N** = quantos avisos o grupo tem; **a situação do grupo é a mais grave** (Sem energia > Oscilando > Normal), a mesma regra do status do bairro (RN-007). Um aviso resolvido conta como Normal. "Ver" centraliza o mapa no bairro (o centro vem de `/bairros/status`, que o app já busca). **Se faltar algum campo na resposta e for preciso mudar a API, a implementação para e pergunta** |
 | R-05 | Busca com o rótulo **"Procurar bairro ou folha"**: a API (`q`) só procura bairro e folha; **a API não muda** |
 | R-06 | Chip **"Normal (n)"** continua sendo o filtro `RESTABELECIDO` da API (resolvidas nas últimas 24 h, S-21). Muda só o nome |
@@ -272,7 +272,7 @@ Cabeçalho em todos os passos: **"Voltar"** (no passo 1 fecha a tela), "Passo X 
 
 ### R8 · Mapa, parte 2: marcadores (G)
 
-`MapaOcorrencias`: marcadores de 40 dp com **borda branca de 3 e contorno externo de 2 na cor da situação** (R-14) e o ícone da situação (o de "Normal" é **quadrado**), com `tracksViewChanges={false}`; ponto azul de "você está aqui" (`showsUserLocation`); botão flutuante **"Onde estou"** (ícone + texto, a única sombra do app); círculos de zona saem (R-02); "Ver" na lista centraliza o mapa no bairro do grupo.
+`MapaOcorrencias`: marcadores de 40 dp com **borda branca de 3 e contorno externo de 2 na cor da situação** (R-14) e o ícone da situação (o de "Normal" é **quadrado**), com `tracksViewChanges={false}`; ponto azul de "você está aqui" (`showsUserLocation`); botão flutuante **"Onde estou"** (ícone + texto, a única sombra do app); a **zona** de cada bairro afetado vira uma linha tracejada de 2 dp, sem preenchimento, na cor de texto da situação (R-02 ajustada; sem `rgba`); legenda com os 3 marcadores e texto; "Ver" na lista centraliza o mapa no bairro do grupo.
 
 **Risco:** marcadores com `View` dentro do `react-native-maps` precisam ser vistos no Expo Go (Android e iOS). Se falharem, o plano B (a combinar com Bruno) é um ícone em imagem para o marcador; a lista mantém ícone e texto de qualquer forma.
 
@@ -301,7 +301,7 @@ Apagar os apelidos `@deprecated`, `ReportFab`, `ScreenPlaceholder`, `OpcoesSegme
 |---|---|---|
 | `theme/theme.test.ts` (10) | Regras de D-01 (verde `#006E2C`, âmbar `#855300`, `primary` < 4,5) deixam de existir | Reescrever: tabela de pares (7.2), escala de fonte (nenhum token < 14, sem letterSpacing negativo), alvos 48/56 |
 | `components/componentes.test.tsx` (21) | Variantes do `Button`, olho da senha, `TopAuthBar` | Atualizar variantes e rótulos; somar os componentes novos |
-| `__tests__/home-ocorrencias.test.tsx` (39) | Textos da Início ("Registre sua denúncia", "Ver mapa ampliado", "REDE ESTÁVEL/INSTÁVEL", "Meu perfil", mini-mapa) e do Mapa ("Sem luz (1)", "Oscilação (1)", "Restabelecidos (1)", "Localização atual", "SEM LUZ") | Reescrever a parte da Início; no Mapa, trocar textos e remover os testes de círculo (R-02) |
+| `__tests__/home-ocorrencias.test.tsx` (39) | Textos da Início ("Registre sua denúncia", "Ver mapa ampliado", "REDE ESTÁVEL/INSTÁVEL", "Meu perfil", mini-mapa) e do Mapa ("Sem luz (1)", "Oscilação (1)", "Restabelecidos (1)", "Localização atual", "SEM LUZ") | Reescrever a parte da Início; no Mapa, trocar textos e adaptar os testes de círculo à zona de apoio (R-02 ajustada) |
 | `__tests__/denunciar.test.tsx` (28) | Formulário vira 3 passos; "ENVIAR DENÚNCIA", "GPS ATIVO", "Onde faltou luz?", "Antes de enviar" somem | Auxiliares `escolherTipo`, `confirmarEndereco`, `irAtePasso3`; os mesmos cenários de corpo enviado, 409, rascunho, offline, GPS negado e erros do servidor |
 | `__tests__/sucesso.test.tsx` (5) | "Acompanhar denúncia", "PROTOCOLO" | Textos novos + local |
 | `__tests__/guarda-de-rotas.test.tsx` (20) | Mock de `plus-jakarta-sans`; abas ("Ocorrências", "Denunciar falta de luz"); "Olá, Maria!"; "Onde faltou luz?" | Mock da Atkinson; nomes novos das abas e dos títulos |
