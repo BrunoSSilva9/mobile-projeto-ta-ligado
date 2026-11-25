@@ -63,3 +63,8 @@ export function listarMinhasDenuncias(): Promise<MinhasDenuncias> {
 export function obterDenuncia(id: string): Promise<DenunciaDetalhe> {
   return http.get<DenunciaDetalhe>(`/denuncias/${encodeURIComponent(id)}`);
 }
+
+/** RF-015, RN-005: o autor cancela a denúncia enquanto ela está `RECEBIDA`. Devolve o detalhe atualizado. */
+export function cancelarDenuncia(id: string): Promise<DenunciaDetalhe> {
+  return http.post<DenunciaDetalhe>(`/denuncias/${encodeURIComponent(id)}/cancelar`);
+}

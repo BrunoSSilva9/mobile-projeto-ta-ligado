@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/Aviso';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
+import { CancelarDenuncia } from '@/components/CancelarDenuncia';
 import { Cartao } from '@/components/Cartao';
 import { CabecalhoDeTela } from '@/components/CabecalhoDeTela';
 import { CarregandoOuOffline, EmptyState, ErrorState } from '@/components/Estados';
@@ -18,9 +19,9 @@ import { ErroDeApi } from '@/services/http';
 import { colors, space, type } from '@/theme';
 
 /**
- * T-07: detalhe da denúncia (RF-014, RF-024, RF-036). Só o autor vê. O status e o histórico mudam
- * sozinhos quando o evento do painel chega (o cache é atualizado pelo SocketProvider).
- * O botão "Cancelar" entra na Fase 2 (B-036).
+ * T-07: detalhe da denúncia (RF-014, RF-015, RF-024, RF-036). Só o autor vê. O status e o
+ * histórico mudam sozinhos quando o evento do painel chega (o cache é atualizado pelo
+ * SocketProvider). Enquanto a denúncia está `RECEBIDA`, o autor pode cancelá-la (decisão S-55).
  */
 export default function DetalheDaDenunciaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -73,6 +74,14 @@ function Conteudo({ d }: { d: DenunciaDetalhe }) {
         <Text style={[type.title2, styles.titulo]}>{rotuloDoTipo(d.tipo)}</Text>
         <Text style={[type.caption, styles.muted]}>Enviada em {formatarDataHora(d.criadoEm)}</Text>
       </Cartao>
+
+      {d.status === 'RECEBIDA' ? <CancelarDenuncia id={d.id} /> : null}
+
+      {d.status === 'CANCELADA' ? (
+        <Aviso tom="info" icone="close-circle-outline" anunciar={false}>
+          Denúncia cancelada. A operadora não vai mais atender este aviso.
+        </Aviso>
+      ) : null}
 
       {d.status === 'IMPROCEDENTE' && d.justificativa ? (
         <Cartao>

@@ -253,11 +253,9 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     expect(await screen.findByRole('header', { name: 'TL-2026-000002' })).toBeTruthy();
   });
 
-  it('não oferece cancelar (entra na Fase 2, B-036)', async () => {
+  it('oferece cancelar só enquanto RECEBIDA (F2-1; o fluxo completo está em cancelar-denuncia.test.tsx)', async () => {
     await renderizarTela(<DetalheScreen />);
-    await screen.findByText('Rua das Flores, 10');
-
-    expect(screen.queryByText(/Cancelar/i)).toBeNull();
+    expect(await screen.findByRole('button', { name: 'Cancelar denúncia' })).toBeTruthy();
   });
 
   it('mostra a previsão de reparo enquanto a denúncia está em aberto', async () => {

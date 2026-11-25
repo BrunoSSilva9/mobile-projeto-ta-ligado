@@ -166,7 +166,9 @@ Efeitos: grava denúncia e histórico inicial (transação); emite `denuncia:cri
 ```
 Erros: 404/403 se a denúncia não for do autor.
 
-**`POST /denuncias/{id}/cancelar`** → `200` com a denúncia (`status: CANCELADA`). Erros: 403, 404, 422 `TRANSICAO_INVALIDA` (já em atendimento). Emite `denuncia:status-atualizado` (operadores) e `ocorrencia:atualizada`.
+**`POST /denuncias/{id}/cancelar`** (RF-015, RN-005; **implementada na F2-1**), sem corpo → `200` com o detalhe completo (mesma forma de `GET /denuncias/{id}`), já com `status: CANCELADA` e a entrada `{ statusAnterior: RECEBIDA, statusNovo: CANCELADA, por: "Você" }` no histórico. Só o autor cancela, e só em `RECEBIDA`. A gravação é condicional ao status lido: se a operadora iniciar o atendimento ao mesmo tempo, só uma das duas vence e a outra recebe `422`.
+Erros: `401` (sem token), `403 SEM_PERMISSAO` (operador: ele usa as rotas do painel), `404 NAO_ENCONTRADO` (não existe, id inválido ou é de outro cidadão, RN-014), `422 TRANSICAO_INVALIDA` (já em atendimento ou encerrada).
+Efeitos: status, `finalizadaEm` e histórico na mesma transação (RN-011); emite `denuncia:status-atualizado` (autor e operadores, com `por: "Você"`), `ocorrencia:atualizada` e `bairro:status-atualizado`. **Não gera push** (RN-019).
 
 ### Ocorrências públicas
 

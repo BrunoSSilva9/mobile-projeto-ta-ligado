@@ -5,11 +5,13 @@ import {
   podeCriarDenuncia,
   podeVerDenuncia,
   STATUS_EM_ABERTO,
+  validarTransicao,
   type UsuarioAutenticado,
 } from '../../domain';
 import { publicadorNulo, type Publicador } from '../../realtime/publicador';
 import { erros } from '../../shared/errors';
 import type { ConsultaMinhasDenuncias, DadosDeDenuncia } from './schemas';
+import { paraSnapshot } from './snapshot';
 
 export type DenunciasDeps = {
   prisma: PrismaClient;
@@ -31,6 +33,10 @@ async function proximaSequencia(tx: Prisma.TransactionClient, ano: number): Prom
     RETURNING "ultimo"`;
   return linhas[0]!.ultimo;
 }
+
+/** Por que o cancelamento foi recusado: a operadora já começou (ou a denúncia já terminou). */
+const MENSAGEM_NAO_CANCELA =
+  'Esta denúncia não pode mais ser cancelada: a operadora já começou o atendimento ou ela já foi encerrada.';
 
 export function criarServicoDenuncias({
   prisma,
@@ -219,7 +225,71 @@ export function criarServicoDenuncias({
     };
   }
 
-  return { criar, minhas, detalhe };
+  /**
+   * RF-015, RN-005: o autor cancela a própria denúncia enquanto ela está `RECEBIDA`. A gravação é
+   * condicional ao status lido (como no painel): se a operadora começou o atendimento no meio
+   * tempo, só uma das duas vence e a outra recebe 422. Status e histórico na mesma transação
+   * (RN-011); o evento sai depois do commit e **não** gera push (RN-019).
+   * Denúncia de outro usuário responde 404, igual a uma que não existe (RN-014).
+   */
+  async function cancelar(usuario: UsuarioAutenticado, id: string) {
+    const agora = relogio();
+
+    const resultado = await prisma.$transaction(async (tx) => {
+      const atual = await tx.denuncia.findUnique({ where: { id } });
+      if (!atual || !podeVerDenuncia(usuario, atual)) {
+        throw erros.naoEncontrado('Denúncia não encontrada.');
+      }
+
+      const validacao = validarTransicao({
+        de: atual.status,
+        para: 'CANCELADA',
+        ator: { papel: usuario.papel, ehAutor: atual.autorId === usuario.id },
+      });
+      if (!validacao.ok) {
+        if (validacao.codigo === 'SEM_PERMISSAO') throw erros.semPermissao(validacao.mensagem);
+        throw erros.transicaoInvalida(MENSAGEM_NAO_CANCELA);
+      }
+
+      const alterada = await tx.denuncia.updateMany({
+        where: { id, status: atual.status }, // só cancela se ainda estiver como o autor viu
+        data: { status: 'CANCELADA', finalizadaEm: agora },
+      });
+      if (alterada.count === 0) throw erros.transicaoInvalida(MENSAGEM_NAO_CANCELA);
+
+      const historico = await tx.historicoStatus.create({
+        data: {
+          denunciaId: id,
+          statusAnterior: atual.status,
+          statusNovo: 'CANCELADA',
+          alteradoPorId: usuario.id,
+          papelAutor: 'CIDADAO',
+        },
+      });
+
+      const completa = await tx.denuncia.findUniqueOrThrow({
+        where: { id },
+        include: { bairro: true },
+      });
+      return { completa, statusAnterior: atual.status, alteradoEm: historico.criadoEm };
+    });
+
+    // Depois do commit: uma falha ao emitir o evento não desfaz nem falha o cancelamento.
+    try {
+      await publicador.statusAtualizado({
+        denuncia: paraSnapshot(resultado.completa),
+        statusAnterior: resultado.statusAnterior,
+        alteradoEm: resultado.alteradoEm,
+        por: 'Você', // o evento privado vai ao próprio autor; o painel mostra o nome pelo detalhe
+      });
+    } catch (erro) {
+      console.error('Falha ao publicar o evento denuncia:status-atualizado', erro);
+    }
+
+    return detalhe(usuario, id);
+  }
+
+  return { criar, minhas, detalhe, cancelar };
 }
 
 export type ServicoDenuncias = ReturnType<typeof criarServicoDenuncias>;

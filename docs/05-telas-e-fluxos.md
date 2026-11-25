@@ -239,6 +239,7 @@ RF-014, RF-015, RF-024, RF-036 · UC-05
 - Botão "Cancelar denúncia" (somente `RECEBIDA`), com confirmação.
 - Estados: carregando, offline (cache), não encontrada.
 - **Redesign v2 (R9):** cartões brancos; rótulos em caixa normal ("Local", "Descrição", "Previsão de reparo", "Histórico"); a **justificativa** (improcedente) aparece num `Aviso` de atenção com ícone; o histórico usa o **ícone do andamento** em cada passo (Recebida, Em atendimento, Resolvida, Improcedente, Cancelada).
+- **Fase 2 (F2-1) – Cancelar denúncia (RF-015, S-55):** só em `RECEBIDA`, logo abaixo do cartão do status, o botão secundário **"Cancelar denúncia"** (ícone e texto). O toque abre uma confirmação na própria tela: "Cancelar esta denúncia? A operadora deixa de receber o seu aviso, e isso não pode ser desfeito.", com **"Sim, cancelar"** (primário) e **"Não, voltar"**. Depois de cancelar, o selo vira "Cancelada", o histórico ganha "Cancelada, por Você" e aparece o aviso "Denúncia cancelada. A operadora não vai mais atender este aviso.". Se a operadora já começou (422), a tela explica e busca o status real. A lista (T-09) não tem o botão.
 
 ### T-08 – Perfil
 RF-004, RF-005, RF-006

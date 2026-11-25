@@ -208,6 +208,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 
 ### F2-3 · Fotos (G, 14 h) · B-031, RF-009, RN-013, RNF-015
 
+**Aprovado (2026-11-25):** `jpeg-js` **só como `devDependency` da API**, com a versão fixada por `npm view` e registrada no `docs/08`, na parte de ferramentas de teste.
+
 | Camada | Tarefas | Arquivos |
 |---|---|---|
 | API | `POST /denuncias` em `multipart` (S-58) com `multer` em memória (limites: 3 arquivos, 5 MB cada → `413 ARQUIVO_INVALIDO` e `422 LIMITE_FOTOS`). **Só JPEG**, conferido pela assinatura do conteúdo (`FF D8 FF`), nunca pela extensão nem pelo `Content-Type`; outro formato → `415 ARQUIVO_INVALIDO`. Remove os segmentos APP1 (S-57). Grava em `UPLOADS_DIR/{denunciaId}/{uuid}.jpg` **depois** de validar tudo; se a transação falhar, apaga os arquivos. `GET /denuncias/{id}/fotos/{fotoId}` para autor e operador (`podeVerDenuncia`), com `Content-Type: image/jpeg`, `Cache-Control: private, no-store` e `X-Content-Type-Options: nosniff`. O detalhe (cidadão e painel) passa a listar `fotos: [{ id, url }]`. `UPLOADS_DIR` no `.gitignore`; a pasta nunca é servida por `express.static`. Dependências: `multer` (e `@types/multer`) e `jpeg-js` (só nos testes), versões fixadas com `npm view` | `modules/fotos/{metadados,armazenamento,routes}.ts`, `modules/denuncias/{routes,service}.ts`, `domain/fotos.ts`, `config/env.ts`, `package.json` |
@@ -233,6 +235,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 **Pronto quando:** excluir a conta no celular deixa a denúncia aberta no painel como "Conta excluída" e o login antigo deixa de funcionar.
 
 ### F2-5 · Previsão de reparo editável (P, 4 h) · B-034, RF-033, RN-009
+
+**Condições aprovadas (2026-11-25):** a migration dá `evento = STATUS` a todos os registros de histórico que já existem, sem perder nada; os payloads dos eventos WebSocket e as respostas de `docs/10` continuam compatíveis (só **somam** campos); se algum precisar mudar, o `docs/10` e os testes do painel e do app mudam na mesma etapa; o **painel** também mostra as mudanças de previsão no histórico do detalhe, não só o app.
 
 | Camada | Tarefas | Arquivos |
 |---|---|---|

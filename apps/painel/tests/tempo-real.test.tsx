@@ -392,6 +392,29 @@ describe('Mudança de status em tempo real', () => {
     spy.mockRestore();
   });
 
+  it('cancelada pelo cidadão (RF-015): sai da lista "Em aberto" e o detalhe é buscado de novo', async () => {
+    const f = await abrirPainel();
+    const chamadas = urlsDeDenuncias(f).length;
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await emitir('denuncia:status-atualizado', {
+      id: DENUNCIA_A.id,
+      protocolo: 'TL-2026-000002',
+      statusAnterior: 'RECEBIDA',
+      status: 'CANCELADA',
+      previsaoReparo: null,
+      justificativa: null,
+      alteradoEm: '2026-11-19T17:05:00.000Z',
+      por: 'Você',
+    });
+
+    await waitFor(() => expect(screen.queryByText('TL-2026-000002')).toBeNull());
+    expect(await screen.findByText('1 denúncia')).toBeInTheDocument();
+    expect(urlsDeDenuncias(f).length).toBe(chamadas);
+    expect(spy).toHaveBeenCalledWith({ queryKey: ['painel-denuncia', DENUNCIA_A.id] });
+    spy.mockRestore();
+  });
+
   it('evento de status malformado é ignorado', async () => {
     await abrirPainel();
 

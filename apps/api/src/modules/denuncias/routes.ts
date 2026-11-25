@@ -38,5 +38,12 @@ export function criarRotasDenuncias({ servico, autenticacao }: Deps): Router {
     res.json(await servico.detalhe(req.usuario!, id));
   });
 
+  // RF-015, RN-005: o autor cancela enquanto a denúncia está RECEBIDA.
+  router.post('/denuncias/:id/cancelar', ...soCidadao, async (req, res) => {
+    const id = String(req.params.id);
+    if (!idValido(id)) throw erros.naoEncontrado('Denúncia não encontrada.');
+    res.json(await servico.cancelar(req.usuario!, id));
+  });
+
   return router;
 }

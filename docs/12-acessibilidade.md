@@ -35,6 +35,7 @@ Meta: **WCAG 2.2 nível AA** no app (adaptado ao mobile) e no painel web (RNF-02
 - **Mapa (marcadores):** cada marcador tem ícone, formato (redondo; Normal quadrado) e contorno; o pino diz a situação em texto (`title`: "Sem energia") e o bairro (`description`). A **área tracejada** em volta de bairros afetados é só apoio visual, nunca a única pista. A legenda tem os 3 marcadores com texto e é lida como "Legenda do mapa: Sem energia, Oscilando, Normal". **"Onde estou"** é botão com ícone e texto (48 dp) e, sem localização, mostra uma mensagem clara com o que fazer.
 - **Login e cadastro:** o botão de enviar tem nome próprio para leitor de tela ("Entrar na conta", "Cadastrar e criar conta"), diferente dos botões "Entrar" e "Cadastrar" da barra (que ficam como `selected`); erro geral em `Aviso` (ícone + texto, anunciado como alerta); links dos termos em azul **e sublinhados**.
 - **Detalhe e histórico:** cada passo do histórico é lido como "Recebida, por …, em …" e tem o ícone do andamento (a cor nunca é a única pista); a justificativa de improcedente é um aviso com ícone.
+- **Cancelar denúncia:** o botão tem ícone e texto; a confirmação fica na própria tela (sem diálogo do sistema), e o leitor de tela anuncia a pergunta ao abrir e "Denúncia cancelada." ao concluir; "Sim, cancelar" fica ocupado (`busy`) enquanto envia.
 - Título de cada tela marcado como `header` para navegação por títulos.
 - No painel: HTML semântico, `aria-live` para novas denúncias (`role="status"`), tabela com `scope`, foco gerenciado ao abrir/fechar diálogos.
 

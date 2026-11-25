@@ -6,6 +6,17 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## [Não lançado]
 
+### Fase 2 (branch `feature/fase-2`, plano em `docs/18-plano-fase-2.md`)
+
+- **F2-1 – Cancelar denúncia (B-036, RF-015, RN-005):**
+  - **API:** `POST /denuncias/{id}/cancelar`, só para o autor e só em `RECEBIDA` (`validarTransicao`, que já existia). Gravação condicional ao status lido, como no painel: cancelar e "Iniciar atendimento" ao mesmo tempo resultam em um `200` e um `422 TRANSICAO_INVALIDA`. Status, `finalizadaEm` e histórico (`papelAutor: CIDADAO`) na mesma transação; depois do commit, emite `denuncia:status-atualizado` (autor e operadores, `por: "Você"`), `ocorrencia:atualizada` e `bairro:status-atualizado`, sem push (RN-019). Denúncia de outro cidadão responde `404` (RN-014).
+  - **App:** no detalhe (T-07), "Cancelar denúncia" só em `RECEBIDA` (S-55), com confirmação na própria tela ("Sim, cancelar" / "Não, voltar") e anúncios para o leitor de tela. No sucesso, o detalhe e "Minhas denúncias" mudam pelo que a API devolveu, e o Mapa e o bairro são buscados de novo; o evento do próprio cancelamento, chegando depois, não duplica o histórico. Com `422`, a tela explica e busca o status real; sem internet, mostra o erro e deixa tentar de novo.
+  - **Painel:** nada mudou no código; um teste novo confere que a denúncia cancelada sai da lista "Em aberto" e que o detalhe é buscado de novo.
+  - **Testes novos:** 13 de integração na API (cancelamento, banco, limite liberado, 422 em atendimento e encerradas, corrida com o painel, 404 a terceiros, 401/403, eventos, falha ao publicar) e 1 de tempo real com Socket.IO de verdade; 13 no app (`cancelar-denuncia.test.tsx`); 1 no painel.
+  - **Teste da Fase 1 atualizado:** "não oferece cancelar (entra na Fase 2)" passou a conferir o contrário, que o botão aparece em `RECEBIDA`. Era o único que verificava a ausência de propósito.
+  - Totais: API 488 testes (21 arquivos), painel 139 (6), app 699 (35).
+  - Documentação: `docs/10` (rota pronta), `docs/05` (T-07), `docs/12` e `docs/18` (aprovação do `jpeg-js` e condições da F2-5).
+
 ### Redesign do app (design system v2, branch `feature/redesign-v2`)
 - **R1 – tokens e fonte** ([plano](docs/17-plano-redesign.md), [ADR-0006](docs/adr/0006-redesign-design-system-v2.md), decisão S-44): paleta azul (`action` `#1D4ED8`), situação da energia (`situacao`: Sem energia, Oscilando, Normal, cada uma com texto, fundo, marcador e ícone) e andamento da denúncia (`andamento`), tipografia **Atkinson Hyperlegible** (Regular e Bold; corpo 18, mínimo 14, sem `letterSpacing` negativo), escala de espaço 4 a 48, cantos 8/12/16, botões e campos de 56 dp e quase nenhuma sombra. A Plus Jakarta Sans saiu do app. Fundo do splash e do ícone adaptativo em `#0B1F3A`.
   - **Migração sem quebrar:** os nomes antigos (`bgCard`, `brand900`, `status.*`, `complaintStatus`, `h1`, `subtitle` etc.) continuam como **apelidos `@deprecated`** apontando para os valores novos; o app inteiro já fica azul e com a fonte nova, e os apelidos somem na etapa R10.

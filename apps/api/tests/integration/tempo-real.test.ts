@@ -463,6 +463,36 @@ describe('denuncia:status-atualizado (RF-024)', () => {
     });
   });
 
+  it('o autor cancela pelo app: o painel recebe a mudança e o bairro volta a NORMAL (RF-015)', async () => {
+    const { id, maria, painel, app1, app2 } = await cenario();
+
+    const res = await request(servidor.url)
+      .post(`/api/v1/denuncias/${id}/cancelar`)
+      .set('Authorization', `Bearer ${maria.token}`);
+    expect(res.status).toBe(200);
+
+    await aguardar(() => doTipo(painel, EVENTOS.statusAtualizado).length > 0);
+    await aguardar(() => doTipo(app2, EVENTOS.bairroStatusAtualizado).length > 0);
+    await aguardar(() => doTipo(app1, EVENTOS.statusAtualizado).length > 0);
+
+    expect(doTipo(painel, EVENTOS.statusAtualizado)[0]).toMatchObject({
+      id,
+      statusAnterior: 'RECEBIDA',
+      status: 'CANCELADA',
+    });
+    expect(doTipo(app2, EVENTOS.bairroStatusAtualizado)[0]).toMatchObject({
+      status: 'NORMAL',
+      emAberto: 0,
+    });
+    // Cancelada sai da lista pública: o evento público avisa os cidadãos para atualizar.
+    expect(doTipo(app2, EVENTOS.ocorrenciaAtualizada)[0]).toMatchObject({
+      id,
+      status: 'CANCELADA',
+    });
+    // O evento privado só vai ao autor: outro cidadão não recebe.
+    expect(doTipo(app2, EVENTOS.statusAtualizado)).toHaveLength(0);
+  });
+
   it('se a conta do autor foi excluída, o painel ainda recebe e nada quebra', async () => {
     const { id, maria, painel } = await cenario();
     await prisma.usuario.delete({ where: { id: maria.id } }); // a denúncia fica anonimizada (autorId nulo)

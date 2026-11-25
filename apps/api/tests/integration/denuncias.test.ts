@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { DenunciaCriadaEvento } from '../../src/realtime/publicador';
+import type { DenunciaCriadaEvento, StatusAtualizadoEvento } from '../../src/realtime/publicador';
 import {
   criarAppDeTeste,
   criarBairro,
@@ -694,5 +694,200 @@ describe('GET /api/v1/denuncias/:id (RF-014, RF-036)', () => {
     expect((await request(app).get(`/api/v1/denuncias/${criada.body.id}`)).status).toBe(401);
     const operador = await entrarComoOperador(app);
     expect((await abrir(operador.token, criada.body.id)).status).toBe(403);
+  });
+});
+
+describe('POST /api/v1/denuncias/:id/cancelar (RF-015, RN-005)', () => {
+  function cancelar(token: string, id: string, alvo = app) {
+    return request(alvo)
+      .post(`/api/v1/denuncias/${id}/cancelar`)
+      .set('Authorization', `Bearer ${token}`);
+  }
+
+  async function iniciarAtendimento(id: string, alvo = app) {
+    const operador = await entrarComoOperador(alvo);
+    return request(alvo)
+      .patch(`/api/v1/painel/denuncias/${id}/status`)
+      .set('Authorization', `Bearer ${operador.token}`)
+      .send({ status: 'EM_ATENDIMENTO' });
+  }
+
+  it('o autor cancela a denúncia RECEBIDA: 200 com o detalhe já como CANCELADA', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+
+    const res = await cancelar(maria.token, criada.body.id);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ id: criada.body.id, status: 'CANCELADA' });
+    expect(res.body.historico.map((h: { statusNovo: string }) => h.statusNovo)).toEqual([
+      'RECEBIDA',
+      'CANCELADA',
+    ]);
+    expect(res.body.historico[1]).toMatchObject({ statusAnterior: 'RECEBIDA', por: 'Você' });
+  });
+
+  it('grava status, data de encerramento e histórico (com o autor e o papel) no banco', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+
+    await cancelar(maria.token, criada.body.id);
+
+    const denuncia = await prisma.denuncia.findUniqueOrThrow({
+      where: { id: criada.body.id },
+      include: { historico: { orderBy: { criadoEm: 'asc' } } },
+    });
+    expect(denuncia.status).toBe('CANCELADA');
+    expect(denuncia.finalizadaEm).toBeInstanceOf(Date);
+    expect(denuncia.historico.at(-1)).toMatchObject({
+      statusAnterior: 'RECEBIDA',
+      statusNovo: 'CANCELADA',
+      alteradoPorId: maria.id,
+      papelAutor: 'CIDADAO',
+    });
+  });
+
+  it('depois de cancelar, o limite de uma em aberto é liberado e o cidadão registra outra (RN-006)', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+    expect((await criar(maria.token)).status).toBe(409);
+
+    await cancelar(maria.token, criada.body.id);
+
+    expect((await criar(maria.token)).status).toBe(201);
+  });
+
+  it('com a denúncia EM_ATENDIMENTO, recusa com 422 TRANSICAO_INVALIDA e nada muda', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+    expect((await iniciarAtendimento(criada.body.id)).status).toBe(200);
+
+    const res = await cancelar(maria.token, criada.body.id);
+
+    expect(res.status).toBe(422);
+    expect(res.body.erro.codigo).toBe('TRANSICAO_INVALIDA');
+    expect(res.body.erro.mensagem).toMatch(/não pode mais ser cancelada/);
+    const denuncia = await prisma.denuncia.findUniqueOrThrow({
+      where: { id: criada.body.id },
+      include: { historico: true },
+    });
+    expect(denuncia.status).toBe('EM_ATENDIMENTO');
+    expect(denuncia.historico).toHaveLength(2);
+  });
+
+  it.each(['RESOLVIDA', 'IMPROCEDENTE', 'CANCELADA'] as const)(
+    'denúncia já encerrada (%s) não é cancelada: 422',
+    async (status) => {
+      const maria = await registrarCidadao(app);
+      const criada = await criar(maria.token);
+      await finalizar(criada.body.id, status);
+
+      expect((await cancelar(maria.token, criada.body.id)).status).toBe(422);
+    },
+  );
+
+  it('cancelar e iniciar o atendimento ao mesmo tempo: só um vence e o outro recebe 422', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+    const operador = await entrarComoOperador(app);
+
+    const [doCidadao, doPainel] = await Promise.all([
+      cancelar(maria.token, criada.body.id),
+      request(app)
+        .patch(`/api/v1/painel/denuncias/${criada.body.id}/status`)
+        .set('Authorization', `Bearer ${operador.token}`)
+        .send({ status: 'EM_ATENDIMENTO' }),
+    ]);
+
+    expect([doCidadao.status, doPainel.status].sort()).toEqual([200, 422]);
+    const historico = await prisma.historicoStatus.count({
+      where: { denunciaId: criada.body.id },
+    });
+    expect(historico).toBe(2); // a criação e a única mudança que venceu
+  });
+
+  it('outro cidadão recebe 404, igual a uma denúncia que não existe (RN-014)', async () => {
+    const maria = await registrarCidadao(app);
+    const joao = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+
+    expect((await cancelar(joao.token, criada.body.id)).status).toBe(404);
+    expect((await cancelar(joao.token, '00000000-0000-4000-8000-000000000000')).status).toBe(404);
+    expect((await cancelar(joao.token, 'nao-e-uuid')).status).toBe(404);
+    expect(
+      (await prisma.denuncia.findUniqueOrThrow({ where: { id: criada.body.id } })).status,
+    ).toBe('RECEBIDA');
+  });
+
+  it('sem token: 401; operador: 403 (ele usa as rotas do painel)', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await criar(maria.token);
+    const operador = await entrarComoOperador(app);
+
+    expect((await request(app).post(`/api/v1/denuncias/${criada.body.id}/cancelar`)).status).toBe(
+      401,
+    );
+    expect((await cancelar(operador.token, criada.body.id)).status).toBe(403);
+  });
+
+  describe('evento em tempo real depois do commit', () => {
+    function appComEspiao(falhar = false) {
+      const statusAtualizado = vi.fn(async (_evento: StatusAtualizadoEvento) => {
+        if (falhar) throw new Error('socket indisponível');
+      });
+      return {
+        statusAtualizado,
+        app: criarAppDeTeste({}, { publicador: { denunciaCriada: vi.fn(), statusAtualizado } }),
+      };
+    }
+
+    it('publica a mudança com o status anterior, a data do histórico e "Você"', async () => {
+      const { statusAtualizado, app: appEspiao } = appComEspiao();
+      const maria = await registrarCidadao(appEspiao);
+      const criada = await criar(maria.token, {}, appEspiao);
+
+      await cancelar(maria.token, criada.body.id, appEspiao);
+
+      expect(statusAtualizado).toHaveBeenCalledTimes(1);
+      const evento = statusAtualizado.mock.calls[0]![0];
+      expect(evento).toMatchObject({
+        statusAnterior: 'RECEBIDA',
+        por: 'Você',
+        denuncia: { id: criada.body.id, status: 'CANCELADA', autorId: maria.id },
+      });
+      const historico = await prisma.historicoStatus.findFirstOrThrow({
+        where: { denunciaId: criada.body.id, statusNovo: 'CANCELADA' },
+      });
+      expect(evento.alteradoEm).toEqual(historico.criadoEm);
+    });
+
+    it('não publica quando o cancelamento é recusado', async () => {
+      const { statusAtualizado, app: appEspiao } = appComEspiao();
+      const maria = await registrarCidadao(appEspiao);
+      const joao = await registrarCidadao(appEspiao);
+      const criada = await criar(maria.token, {}, appEspiao);
+
+      await cancelar(joao.token, criada.body.id, appEspiao); // 404
+      await finalizar(criada.body.id, 'RESOLVIDA');
+      await cancelar(maria.token, criada.body.id, appEspiao); // 422
+
+      expect(statusAtualizado).not.toHaveBeenCalled();
+    });
+
+    it('se a publicação falhar, o cancelamento continua valendo (200)', async () => {
+      const { app: appEspiao } = appComEspiao(true);
+      const maria = await registrarCidadao(appEspiao);
+      const criada = await criar(maria.token, {}, appEspiao);
+      const erroNoConsole = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      const res = await cancelar(maria.token, criada.body.id, appEspiao);
+
+      expect(res.status).toBe(200);
+      expect(
+        (await prisma.denuncia.findUniqueOrThrow({ where: { id: criada.body.id } })).status,
+      ).toBe('CANCELADA');
+      expect(erroNoConsole).toHaveBeenCalled();
+      erroNoConsole.mockRestore();
+    });
   });
 });
