@@ -1,29 +1,43 @@
 /**
- * Tipografia: Plus Jakarta Sans (docs/06-design-system.md).
- * Os nomes das fontes são os registrados por @expo-google-fonts/plus-jakarta-sans.
+ * Tipografia: Atkinson Hyperlegible (design system v2, ADR-0006), feita para baixa visão.
+ * Os nomes das fontes são os registrados por @expo-google-fonts/atkinson-hyperlegible.
+ * Só dois pesos: Regular 400 e Bold 700.
+ *
  * Tamanhos em dp/sp: respeitam a escala de fonte do sistema (até 200%, RNF-018).
+ * Regras: **mínimo de 14** (`caption`), sem letterSpacing negativo e sem texto todo em maiúsculas.
  */
 export const fontFamily = {
-  regular: 'PlusJakartaSans_400Regular',
-  italic: 'PlusJakartaSans_400Regular_Italic',
-  semibold: 'PlusJakartaSans_600SemiBold',
-  bold: 'PlusJakartaSans_700Bold',
-  extrabold: 'PlusJakartaSans_800ExtraBold',
+  regular: 'AtkinsonHyperlegible_400Regular',
+  bold: 'AtkinsonHyperlegible_700Bold',
 } as const;
 
 export const type = {
-  display: { fontFamily: fontFamily.extrabold, fontSize: 36, lineHeight: 36, letterSpacing: -0.9 },
-  h1Large: { fontFamily: fontFamily.bold, fontSize: 28, lineHeight: 36, letterSpacing: -0.42 },
-  h1: { fontFamily: fontFamily.bold, fontSize: 22, lineHeight: 27.5, letterSpacing: -0.22 },
-  title: { fontFamily: fontFamily.semibold, fontSize: 18, lineHeight: 26 },
-  subtitle: { fontFamily: fontFamily.semibold, fontSize: 16, lineHeight: 24 },
-  body: { fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 20 },
-  button: { fontFamily: fontFamily.semibold, fontSize: 14, lineHeight: 20, letterSpacing: 0.14 },
-  caption: { fontFamily: fontFamily.regular, fontSize: 12, lineHeight: 16 },
-  /** Selos e rótulos. O Figma usa 11, mas o mínimo no app é 12 (docs/12). */
-  label: { fontFamily: fontFamily.bold, fontSize: 12, lineHeight: 16, letterSpacing: 0.44 },
-  logo: { fontFamily: fontFamily.extrabold, fontSize: 19, lineHeight: 19, letterSpacing: -0.475 },
-  tagline: { fontFamily: fontFamily.bold, fontSize: 8.5, lineHeight: 8.5, letterSpacing: 1.36 },
+  title1: { fontFamily: fontFamily.bold, fontSize: 28, lineHeight: 34 },
+  title2: { fontFamily: fontFamily.bold, fontSize: 22, lineHeight: 28 },
+  title3: { fontFamily: fontFamily.bold, fontSize: 20, lineHeight: 26 },
+  button: { fontFamily: fontFamily.bold, fontSize: 18, lineHeight: 24 },
+  /** Texto base. */
+  body: { fontFamily: fontFamily.regular, fontSize: 18, lineHeight: 28 },
+  bodySmall: { fontFamily: fontFamily.regular, fontSize: 16, lineHeight: 24 },
+  label: { fontFamily: fontFamily.bold, fontSize: 16, lineHeight: 22 },
+  /** Menor texto do app. */
+  caption: { fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 20 },
+
+  // ------------------------------------------------------------------------------------------
+  // APELIDOS TEMPORÁRIOS da migração (docs/17, seção 4). Somem na etapa R10.
+  // ------------------------------------------------------------------------------------------
+  /** @deprecated use `title1` */
+  h1Large: { fontFamily: fontFamily.bold, fontSize: 28, lineHeight: 34 },
+  /** @deprecated use `title2` */
+  h1: { fontFamily: fontFamily.bold, fontSize: 22, lineHeight: 28 },
+  /** @deprecated use `title3` */
+  title: { fontFamily: fontFamily.bold, fontSize: 20, lineHeight: 26 },
+  /** @deprecated use `label` */
+  subtitle: { fontFamily: fontFamily.bold, fontSize: 16, lineHeight: 22 },
+  /** @deprecated o logo é refeito na etapa R2 */
+  logo: { fontFamily: fontFamily.bold, fontSize: 20, lineHeight: 24 },
+  /** @deprecated o logo é refeito na etapa R2 */
+  tagline: { fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 20 },
 } as const;
 
 export type TypeToken = keyof typeof type;

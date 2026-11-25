@@ -17,13 +17,10 @@ import {
  * só existe o login, e com sessão, só existe o app (RF-003, RF-004).
  */
 
-jest.mock('@expo-google-fonts/plus-jakarta-sans', () => ({
+jest.mock('@expo-google-fonts/atkinson-hyperlegible', () => ({
   useFonts: () => [true, null],
-  PlusJakartaSans_400Regular: 1,
-  PlusJakartaSans_400Regular_Italic: 2,
-  PlusJakartaSans_600SemiBold: 3,
-  PlusJakartaSans_700Bold: 4,
-  PlusJakartaSans_800ExtraBold: 5,
+  AtkinsonHyperlegible_400Regular: 1,
+  AtkinsonHyperlegible_700Bold: 2,
 }));
 
 jest.mock('expo-location', () => ({

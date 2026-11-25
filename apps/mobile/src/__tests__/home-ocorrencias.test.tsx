@@ -7,6 +7,7 @@ import { LocalizacaoProvider } from '@/providers/LocalizacaoProvider';
 import { SocketProvider } from '@/providers/SocketProvider';
 import { queryClient } from '@/services/query-client';
 import { useSessao } from '@/store/session';
+import { colors } from '@/theme';
 import {
   armazenamentoEmMemoria,
   configurarCacheParaTestes,
@@ -523,7 +524,12 @@ describe('T-04 Ocorrências (RF-019 a RF-024, RN-014)', () => {
 
     const circulos = await screen.findAllByTestId('circulo');
     const cores = circulos.map((c) => JSON.parse(c.props.accessibilityLabel).strokeColor as string);
-    expect(cores).toEqual(expect.arrayContaining(['#BA1A1A', '#34A853']));
+    expect(cores).toEqual(
+      expect.arrayContaining([
+        colors.situacao.semEnergia.marcador,
+        colors.situacao.normal.marcador,
+      ]),
+    );
   });
 
   it('o banner de denunciar leva ao formulário', async () => {
@@ -576,7 +582,7 @@ describe('T-04 Ocorrências (RF-019 a RF-024, RN-014)', () => {
     const cores = screen
       .getAllByTestId('circulo')
       .map((c) => JSON.parse(c.props.accessibilityLabel).strokeColor as string);
-    expect(cores).toContain('#CE8300');
+    expect(cores).toContain(colors.situacao.oscilando.marcador);
   });
 
   it('tem o atendimento com contatos de exemplo', async () => {

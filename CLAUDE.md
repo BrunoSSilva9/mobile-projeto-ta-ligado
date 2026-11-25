@@ -58,7 +58,7 @@ Status atual: documentação pronta; Fase 0 concluída e mergeada na `develop`; 
 - **Rastreabilidade:** IDs `RF-xxx`, `RNF-xxx`, `RN-xxx`, `US-xxx`, `UC-xx`, `T-xx`/`P-xx` (telas), `B-xxx` (backlog), `S-xx`, `PEN-xx`. Ao mudar uma regra, atualize RF/RN/US/UC/backlog **e mantenha os IDs consistentes entre os documentos**.
 - **Decisões:** registre como `S-xx` em `docs/01-visao-e-escopo.md` (seção 8). Decisões aprovadas S-01 a S-21; S-22 a S-43 aguardam confirmação, exceto S-33, S-38, S-42 e S-43, já definidas. Não invente funcionalidades que não estejam no Figma ou nas decisões documentadas.
 - **Regras de negócio** vivem em `apps/api/src/domain` (funções puras, com testes unitários). Meta: ≥ 90% de cobertura nesse módulo.
-- **Design:** use os tokens de `docs/06-design-system.md`; nenhuma cor ou fonte solta. Respeite acessibilidade (contraste, alvos ≥ 44/48, fontes dinâmicas).
+- **Design (v2, em migração):** use os tokens de `docs/06-design-system.md` (`apps/mobile/src/theme`); nenhuma cor ou fonte solta. **Azul é para tocar; vermelho, laranja e verde só mostram a situação da energia, e sempre com ícone e texto.** Todo ícone tem texto visível, sem texto todo em maiúsculas, fonte Atkinson Hyperlegible (mínimo 14), alvos ≥ 48 dp e botões/campos de 56. Não use os apelidos `@deprecated` em código novo. O painel mantém o tema verde próprio.
 - **Privacidade:** **não coletar CPF nem data de nascimento.** Visibilidade de dados por papel conforme RN-014. Nada de dados pessoais em logs.
 - **Segredos:** nunca versionar `.env`; manter `.env.example`.
 - **TypeScript** `strict`, ESLint e Prettier; `.editorconfig` na raiz.

@@ -29,7 +29,7 @@ A stack preferida (React Native + Expo + TypeScript no app; Node.js + PostgreSQL
 | `expo-secure-store` | Compatível com o SDK | Guardar o token | Keychain/Keystore | AsyncStorage (inseguro para token) |
 | `@react-native-async-storage/async-storage` | Compatível com o SDK | Cache persistido e rascunho | Padrão da comunidade | MMKV |
 | `@react-native-community/netinfo` | Compatível com o SDK | Detecção de rede | Padrão | — |
-| `@expo-google-fonts/plus-jakarta-sans` | Última | Fonte do design | Fiel ao Figma | Fonte do sistema |
+| `@expo-google-fonts/atkinson-hyperlegible` | 0.4.1 | Fonte do design system v2 (Regular e Bold) | Feita para baixa visão (ADR-0006); substitui a Plus Jakarta Sans | Fonte do sistema |
 | Estilização | `StyleSheet` + tema próprio | Visual | Controle total do design do Figma | NativeWind, Tamagui, UI kits |
 
 ## Painel da operadora (`apps/painel`)
@@ -90,7 +90,7 @@ A stack preferida (React Native + Expo + TypeScript no app; Node.js + PostgreSQL
 
 ## Versões fixadas na Fase 0
 
-Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas versões foram **instaladas e validadas** em 2026-11-18 (`npm install`, lint, tipos, testes e build; ver `CHANGELOG.md`). Para o app, o `npx expo install` acrescentou `jest-expo ~58.0.15`, `jest ~30.5.2`, `@expo-google-fonts/plus-jakarta-sans ^0.4.2` e `@expo/vector-icons ^15.0.2`.
+Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas versões foram **instaladas e validadas** em 2026-11-18 (`npm install`, lint, tipos, testes e build; ver `CHANGELOG.md`). Para o app, o `npx expo install` acrescentou `jest-expo ~58.0.15`, `jest ~30.5.2`, `@expo-google-fonts/plus-jakarta-sans ^0.4.2` (trocada em 2026-11-23 pela Atkinson Hyperlegible) e `@expo/vector-icons ^15.0.2`.
 
 | Área | Pacote | Versão fixada | Observação |
 |---|---|---|---|
@@ -122,5 +122,6 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 - **Instalado no Passo 8 (app):** `socket.io-client 4.8.4`.
 - **Instalados no Passo 9 (painel):** `leaflet 1.9.4`, `react-leaflet 5.0.0`, `@types/leaflet 1.9.22`, `@tanstack/react-query 5.108.1` e `zustand 5.1.0`.
 - **Instalado no Passo 10 (painel):** `socket.io-client 4.8.4`.
+- **Redesign (R1, 2026-11-23):** `@expo-google-fonts/atkinson-hyperlegible 0.4.1` no lugar de `@expo-google-fonts/plus-jakarta-sans` (removida do app; o painel continua carregando a Plus Jakarta Sans pelo Google Fonts).
 - **Instalados no Passo 13 (app):** `@react-native-community/netinfo 12.0.1`, `@tanstack/react-query-persist-client 5.108.1` e `@tanstack/query-async-storage-persister 5.108.1`.
 - **Ainda não instalados** (entram quando a funcionalidade for implementada): `expo-image-picker` e `expo-notifications`.
