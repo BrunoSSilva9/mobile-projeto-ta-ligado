@@ -141,12 +141,12 @@ describe('sem internet, com dados salvos (ADR-0005)', () => {
       resposta(200, { ...LISTA, itens: [{ ...RESUMO, status: 'RESOLVIDA' }] }),
     );
     await renderizarTela(<MinhasDenunciasScreen />);
-    await screen.findByText('EM ATENDIMENTO');
+    await screen.findByLabelText('Status: Em atendimento');
 
     await mudarRede(COM_REDE);
 
     await waitFor(() => expect(screen.queryByText(/Sem conexão/)).toBeNull());
-    expect(await screen.findByText('RESOLVIDA')).toBeTruthy();
+    expect(await screen.findByLabelText('Status: Resolvida')).toBeTruthy();
     expect(mockFetch).toHaveBeenCalled();
   });
 

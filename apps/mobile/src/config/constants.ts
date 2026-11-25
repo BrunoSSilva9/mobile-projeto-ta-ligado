@@ -10,7 +10,12 @@ export const CONTATOS = {
   concessionariaTelefone: '0000 000 0000',
   /** Horário da Central (placeholder do Figma, T-03). */
   centralHorario: 'Segunda a Sexta, das 8h às 18h',
+  /** Corpo de Bombeiros: este é o número real (aviso de fio caído ou risco de choque). */
+  bombeirosTelefone: '193',
 } as const;
+
+/** `tel:` com só os dígitos do número ("0000 000 0000" vira "tel:00000000000"). */
+export const telefoneParaUrl = (numero: string): string => `tel:${numero.replace(/\D/g, '')}`;
 
 export const APP = {
   nome: 'Tá Ligado?',

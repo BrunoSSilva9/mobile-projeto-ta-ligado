@@ -1,137 +1,142 @@
-# 06 – Design system
+# 06 – Design system (v2)
 
-Extraído das telas do Figma. O arquivo **não define variáveis nem estilos** (`get_variable_defs` retornou vazio); os valores abaixo foram lidos do código de design de cada tela e **consolidados em tokens nomeados**. Os nomes dos tokens são proposta desta documentação. Contraste e acessibilidade estão em [12](12-acessibilidade.md).
+> **Versão 2, aprovada em 2026-11-23** ([ADR-0006](adr/0006-redesign-design-system-v2.md), decisão S-44). Ela **substitui** o design system extraído do Figma (paleta verde e Plus Jakarta Sans), que vigorou na Fase 1. O Figma deixa de ser a fonte visual do **app do cidadão**; a fonte é este documento. O **painel** continua com o tema verde próprio (`apps/painel/src/styles/tokens.css`) e fica fora do redesign (item B-045 do backlog).
+>
+> Contraste e acessibilidade: [12](12-acessibilidade.md). Plano de implementação: [17](17-plano-redesign.md).
+
+## Princípios
+
+1. **Uma ação principal por tela:** um único botão azul cheio, que é sempre o próximo passo.
+2. **Todo ícone tem texto visível**, inclusive na barra inferior. Nenhum botão é só ícone.
+3. **Azul é para tocar. Vermelho, laranja e verde só mostram a situação da energia.** A cor de situação nunca aparece sozinha: sempre vem com um **ícone de formato diferente** e um **texto** (WCAG 1.4.1).
+4. **Letra grande e frases curtas.** Linguagem do dia a dia, uma pergunta por tela.
 
 ## 1. Cores
 
-### Marca e ação
+Todos os valores vivem em `apps/mobile/src/theme/colors.ts`. **Nenhuma cor escrita fora do tema.**
+
+### Ação, texto e superfícies
 
 | Token | Hex | Uso |
 |---|---|---|
-| `color.brand.900` | `#16382B` | Verde escuro institucional: logo, cartões escuros, formulários, painel de indicadores |
-| `color.brand.700` | `#466556` | Cabeçalhos de faixa ("Lista dos lugares"), banner de ação, rótulos secundários |
-| `color.primary` | `#34A853` | Elementos **sem texto**: FAB, pontos de status, ícones, status "restabelecido" |
-| `color.action` (= `color.primary.dark`) | `#006E2C` | **Fundo de botões com texto branco** (todos os botões primários, inclusive "Cadastrar" e "Registre sua denúncia"), links, aba ativa. Substitui o `#34A853` do Figma nesses botões (D-01) |
-| `color.accent.lime` | `#A3E635` | Destaque oficial do "?" sobre fundo escuro (as telas do protótipo usam `#84CC16`; por decisão do projeto vale `#A3E635`, o valor oficial do frame de identidade) |
-| `color.accent.mint` | `#89FA9B` | Textos de destaque sobre verde escuro |
+| `action` | `#1D4ED8` | Botões, links, aba ativa (branco sobre ele: **6,7:1**) |
+| `actionPressed` | `#1E3A8A` | Estado pressionado e texto sobre fundo azul claro |
+| `actionSoft` | `#EFF4FF` | Fundo de ícones e de cartão selecionado (azul sobre ele: 6,1:1) |
+| `actionTabPill` | `#DBE6FE` | Pílula da aba ativa |
+| `onAction` | `#FFFFFF` | Texto e ícone sobre `action` |
+| `textPrimary` | `#0F172A` | Texto principal |
+| `textSecondary` | `#475569` | Texto de apoio (7,6:1 sobre branco) |
+| `bgPage` | `#F6F7F9` | Fundo das telas |
+| `surface` | `#FFFFFF` | Cartões (brancos sobre `bgPage`, **sem sombra**) |
+| `borderField` | `#64748B` | Borda de campos e de chips não selecionados (4,8:1) |
+| `borderSubtle` / `borderDivider` | `#CBD5E1` / `#E2E8F0` | Divisórias e bordas **decorativas** |
+| `disabledBg` / `disabledText` | `#E2E8F0` / `#475569` | Botão desativado (texto legível, nunca transparente) |
+| `danger` | `#B42318` | Erros de campo: texto, ícone `warning` e borda |
+| `brandNavy` / `lime` | `#0B1F3A` / `#A3E635` | **Só na marca** (logo, ícone, splash). Lima nunca sobre fundo claro |
 
-### Superfícies e texto
+### Situação da energia
 
-| Token | Hex | Uso |
-|---|---|---|
-| `color.bg.page` | `#F1FCF3` | Fundo das telas |
-| `color.bg.card` | `#EBF7ED` | Cartões e blocos suaves |
-| `color.bg.soft` | `#E5F1E7` | Botões secundários, selos, fundos de mapa |
-| `color.bg.muted` | `#DAE5DC` | Rodapés e mapa |
-| `color.surface.tint` | `#C3E5D2` | Ícones circulares, aviso de responsabilidade |
-| `color.surface.mint` | `#C8EAD7` | Selos sobre verde escuro |
-| `color.surface.white` | `#FFFFFF` | Campos, cartões de lista |
-| `color.text.primary` | `#141E18` | Títulos e texto principal |
-| `color.text.secondary` | `#3E4A3E` | Texto de apoio |
-| `color.text.muted` | `#6E7A6D` | Placeholders, notas |
-| `color.text.onDark` | `#FFFFFF` / `#E0EBE2` | Texto sobre verde escuro |
-| `color.text.tagline` | `#64748B` | Subtítulo do logo ("MARABÁ • EM TEMPO REAL") |
+Selo = fundo + texto + ícone. Marcador do mapa = preenchimento + ícone.
 
-### Semânticas (status)
+| Situação | Texto e ícone | Fundo do selo | Marcador | Ícone (Ionicons) |
+|---|---|---|---|---|
+| **Sem energia** | `#B42318` | `#FEE4E2` | `#D92D20`, ícone branco | `flash-off` |
+| **Oscilando** | `#93370D` | `#FEF0C7` | `#F79009`, ícone `#1F2937` | `pulse` |
+| **Normal** | `#067647` | `#DCFAE6` | `#067647`, ícone branco, **marcador quadrado** | `checkmark-circle` (selo) / `checkmark` (marcador) |
 
-| Token | Hex | Status |
-|---|---|---|
-| `status.noPower` | `#BA1A1A` | Sem luz / Sem energia (selo claro `#FFDAD6`, texto `#93000A`) |
-| `status.flicker` | `#CE8300` | Oscilação: **somente pontos, ícones e bordas** (fundo `#FFDDB8`) |
-| `status.flicker.text` | `#855300` | Oscilação: **todo texto âmbar** (D-01); substitui o `#CE8300` usado em texto no Figma |
-| `status.restored` | `#34A853` | Restabelecido / Normal |
-| `status.inService` | `#CE8300` (S-26) | Em atendimento (reuso do âmbar) |
-| `status.rejected` | `#6E7A6D` (S-26) | Improcedente e Cancelada (cinza neutro) |
+Em `colors.situacao.semEnergia | oscilando | normal`. O marcador de "Normal" é **quadrado** e os outros são circulares: o formato também diferencia a situação.
 
-> Não existe no protótipo um conjunto de cores para os status de **denúncia** (Recebida, Em atendimento, Resolvida, Improcedente, Cancelada). Proposta: Recebida = azul-petróleo `#466556`; Em atendimento = âmbar; Resolvida = verde; Improcedente/Cancelada = cinza (decisão S-26).
+**Contorno do marcador no mapa:** o marcador laranja sozinho dá só 2,35:1 contra a borda branca. Por isso cada marcador tem um **contorno externo de 2 dp** por fora da borda branca, na cor de texto da própria situação (`#B42318`, `#93370D`, `#067647`), que passa de 3:1 contra os fundos típicos de mapa (decisão R-14). **Zona do bairro (R-02, ajustada):** no mapa, o bairro afetado ganha só uma **linha de 2 dp, sem preenchimento (tracejada no iOS)**, na cor de texto da situação; bairro Normal não tem área. A zona é apoio e nunca a única pista: o que informa são os marcadores (ícone e formato), a legenda e a lista. O botão **"Onde estou"** é o único elemento com sombra (`shadow.flutuante`).
+
+### Andamento da denúncia
+
+| Status | Texto | Fundo | Ícone |
+|---|---|---|---|
+| Recebida | `#334155` | `#F1F5F9` | `time-outline` |
+| Em atendimento | `#1E3A8A` | `#EFF4FF` | `construct-outline` |
+| Resolvida | `#067647` | `#DCFAE6` | `checkmark` |
+| Improcedente | `#334155` | `#F1F5F9` | `close-circle-outline` |
+| Cancelada | `#334155` | `#F1F5F9` | `ban-outline` |
+
+Em `colors.andamento.*`. Os textos dos status são em **caixa normal** ("Recebida"), nunca em maiúsculas.
 
 ## 2. Tipografia
 
-**Família:** Plus Jakarta Sans (Regular, SemiBold, Bold, ExtraBold, Italic). Carregar via `expo-font` / `@expo-google-fonts/plus-jakarta-sans`. No painel, a mesma família via Google Fonts.
+**Família: Atkinson Hyperlegible** (Regular 400 e Bold 700), desenhada para baixa visão (letras bem distintas entre si). Pacote `@expo-google-fonts/atkinson-hyperlegible` 0.4.1. **Substitui a Plus Jakarta Sans.**
 
-| Token | Tamanho / altura de linha | Peso | Uso |
+| Token | Tamanho / linha | Peso | Uso |
 |---|---|---|---|
-| `type.display` | 36 / 36 (−0,9 de espaçamento) | ExtraBold | Números dos indicadores |
-| `type.h1.large` | 28 / 36 (−0,42) | Bold | "Onde Faltou Luz?" |
-| `type.h1` | 22 / 27,5 (−0,22) | Bold | Títulos de herói |
-| `type.title` | 18 / 26 | SemiBold | Títulos de seção, botões grandes |
-| `type.subtitle` | 16 / 24 | SemiBold / Bold | Nomes de lista, título de header |
-| `type.body` | 14 / 20 | Regular | Texto, campos |
-| `type.button` | 14 / 20 (+0,14) | SemiBold | Botões |
-| `type.caption` | 12 / 16 | Regular / SemiBold | Texto de apoio, chips |
-| `type.label` | 11 / 14 (+0,44) | Bold | Selos, rótulos, datas |
-| `type.logo` | 19 / 19 (−0,475) | ExtraBold | "Tá Ligado" |
-| `type.tagline` | 8,5 / 8,5 (+1,36, maiúsculas) | Bold | Subtítulo do logo |
+| `title1` | 28 / 34 | Bold | Título de tela ("Olá, Maria") |
+| `title2` | 22 / 28 | Bold | Situação da energia, títulos de seção |
+| `title3` | 20 / 26 | Bold | Endereço, títulos de cartão |
+| `button` | 18 / 24 | Bold | Botões |
+| `body` | 18 / 28 | Regular | **Texto base** |
+| `bodySmall` | 16 / 24 | Regular | Texto de apoio quando o espaço é curto |
+| `label` | 16 / 22 | Bold | Rótulos de campo, nomes em lista |
+| `caption` | 14 / 20 | Regular | **Menor texto do app** |
 
-Respeitar **fontes dinâmicas** do sistema ([12](12-acessibilidade.md)): tamanhos em `sp`/`allowFontScaling` ativo.
+Regras: os tamanhos são `sp` e **escalam com a fonte do sistema até 200%** (RNF-018); **nenhum tamanho abaixo de 14**; **sem `letterSpacing` negativo**; **sem texto todo em maiúsculas**. Use `minHeight`, nunca `height` fixa, em tudo que contém texto.
 
-## 3. Espaçamento, raios e elevação
+## 3. Espaço, cantos, toque e sombra
 
 | Token | Valores |
 |---|---|
-| `space` (base 4) | 2, 4, 6, 8, 10, 12, 14, 16, 24, 32 (o protótipo usa gutter de **16** e respiro entre seções de **24**) |
-| `radius` | 8 (itens), 10 (ícone do logo), 12 (cartões, campos, botões), 16 (cartões grandes), 9999 (pílulas e círculos) |
-| `size.touch` | **alvo mínimo 48 dp** (D-02), com `hitSlop`/*padding* quando o visual for menor; botões 48 a 56; FAB 56; ícones circulares visuais de 32 a 48 |
-| `size.header` | 64 (header), 64 (barra inferior), 56 (barra do cadastro) |
-| `layout.width` | base 390 dp; conteúdo com padding horizontal 16 |
-| `shadow.sm` | `0 1 2 rgba(0,0,0,.05)` (cartões, campos) |
-| `shadow.md` | `0 4 6 -1 rgba(0,0,0,.10)` + `0 2 4 -2 rgba(0,0,0,.10)` (botões, banners) |
-| `shadow.lg` | `0 10 15 -3 rgba(0,0,0,.10)` + `0 4 6 -4 rgba(0,0,0,.10)` (botão grande, pinos) |
-| `shadow.fab` | `0 6 16 -4 rgba(26,56,43,.25)` |
-| Efeitos | Header e barra inferior com fundo translúcido (`rgba(241,252,243,.9)` / `rgba(255,255,255,.95)`) e *blur* de 12 |
+| `space` | 4, 8, 12, 16, 24, 32, 48 (`xs` … `xxxl`) |
+| `radius` | campo **8**, botão **12**, cartão **16**, selo em **pílula** |
+| Alvos de toque | **mínimo 48 dp**, com **8 dp de espaço** entre alvos (D-02) |
+| Botões e campos | **56 dp** de altura (`size.button`, `size.field`) |
+| Sombras | **Quase nenhuma.** Cartões brancos sobre `bgPage`, sem sombra. A sombra (`shadow.flutuante`) fica só em botões que flutuam sobre o mapa ("Onde estou") |
 
 ## 4. Ícones e imagens
 
-- Ícones em traço simples, de 12 a 24 dp, nas cores do texto ou do estado. O Figma os exporta como SVG; no app usar **`@expo/vector-icons`** (Feather/Ionicons) ou SVG do projeto, mantendo o mesmo significado: raio/alerta (queda), pin/local, mapa, casa, usuário, sino com cruz (denunciar), câmera, lixeira, lápis, check, relógio, telefone, olho (senha), seta/voltar, camadas, mira (GPS).
-- **Logo:** lupa com raio em *squircle* verde escuro + "Tá Ligado" + "?" lima, em versão fundo claro e fundo escuro (altura 36 a 44). **Ícone do app:** 64 e 96 px (PEN-09).
-- Ilustração do cadastro (celular, cadeado e folha) em vetores; exportar do Figma.
-- O mapa do protótipo é uma imagem estática; no app será um mapa real (React Native Maps) e no painel Leaflet.
+- Ícones **Ionicons** (`@expo/vector-icons`), sempre acompanhados de texto visível.
+- **Logo:** quadrado azul-noite (`brandNavy`) com o raio lima e o nome "Tá Ligado?". Ícone do app e splash com fundo `#0B1F3A` (imagens finais: PEN-09).
+- Mapa real (`react-native-maps`) no app e Leaflet no painel.
 
-## 5. Componentes reutilizáveis
+## 5. Componentes
 
-| Componente | Variações e observações | Telas |
-|---|---|---|
-| `AppHeader` | Logo + botão de perfil (64 dp); variante com voltar + título | T-03, T-04, T-05, T-07, T-09 |
-| `TopAuthBar` | Logo + "Entrar"/"Cadastrar" (alternância) | T-01, T-02 |
-| `BottomTabBar` | 4 itens + FAB central de 56 dp ([C-01](05-telas-e-fluxos.md)) | T-03, T-04, T-08 |
-| `Button` | Primário `#34A853`, escuro `#006E2C`, secundário claro, branco (sobre verde), com ícone; estados normal/pressionado/desabilitado/carregando | todas |
-| `TextField` | Rótulo + campo branco de 48 a 52 dp, raio 12, ícone à esquerda, ajuda e erro; variante senha com olho; variante textarea | T-01, T-02, T-05 |
-| `Checkbox` | Na cor da marca (corrigir o azul do protótipo) | T-01 |
-| `Chip` / `FilterChip` | Pílula com ponto de cor; selecionado `#006E2C` com texto branco; contagem entre parênteses | T-04, P-02 |
-| `SegmentedOption` | Faixa de pessoas e Sim/Não da necessidade especial; selecionado branco com texto verde sobre fundo verde | T-05 |
-| `StatusBadge` | Pílula: Rede Estável/Instável, status da denúncia, status do bairro | T-03, T-04, T-07, T-09 |
-| `StatusDot` | Ponto de 8 a 12 dp nas cores de status | listas, legenda |
-| `Card` | Fundo `#EBF7ED`/branco, raio 12 a 16, sombra `sm`; variante escura `#16382B` | todas |
-| `HeroBanner` | Cartão escuro com selo, título, texto e CTA | T-03 |
-| `StatCard` | Cartão escuro com ícone, selo opcional, valor 36 px e legenda | T-03 |
-| `StepCard` | Círculo numerado + título + descrição | T-03 |
-| `LocationStatusCard` | Cartão com localização, selo e previsão | T-03, T-04 |
-| `MapView` + `MapZone` + `MapPin` + `MapLegend` | Círculo por bairro com cor do status; pino; legenda em pílula; botões flutuantes (centralizar/expandir) | T-03, T-04, T-05 |
-| `OccurrenceListItem` | Cartão com borda esquerda de 4 dp na cor do status, bairro, descrição, data e botão circular de detalhe | T-04 |
-| `ComplaintListItem` | Item de "Minhas denúncias" (a criar) | T-09 |
-| `AttachmentCard` | Miniatura 56 dp, nome, tamanho, excluir e substituir | T-05 |
-| `CollapsibleNotice` | Aviso recolhível ("Aviso de Responsabilidade") | T-05 |
-| `StatusTimeline` | Linha do tempo do histórico (a criar) | T-07, P-03 |
-| `InfoFooterCard` | Contatos institucionais | T-03, T-04 |
-| `EmptyState`, `ErrorState`, `Skeleton`, `OfflineBanner` | **Não existem no Figma**; criar seguindo as cores e o espaçamento | todas |
-| `Toast` / `Banner` de alerta (painel) | Alerta de nova denúncia (a criar) | P-02 |
+Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `Button`, `TextField`, `Checkbox`, `StatusBadge`, `SeloDeSituacao`, `FilterChip`, `Logo`, `Cartao`, `Aviso`, `CartaoDeEscolha`, `CabecalhoDePasso`, `CabecalhoDeTela`, `Estados` e `AvisoDeConexao`. A barra inferior (R3, sem FAB) e o mapa (R8: `MarcadorDeSituacao`, área tracejada de apoio e botão "Onde estou") já estão prontos ([plano](17-plano-redesign.md)). Login e cadastro (R9) usam `AuthLayout` (cartão branco sobre `bgPage`) e `TopAuthBar` (botões de 48 dp); `TextField` e `Checkbox` perderam a variante `escura`; o histórico (`StatusTimeline`) usa os ícones de andamento. O formulário de denúncia (R6) usa `CabecalhoDePasso`, `CartaoDeEscolha`, `Aviso`, `Cartao` e `SeloDeSituacao`, com rodapé fixo de botões de 56 dp; `SeletorDeBairro` e `MiniMapa` já estão no estilo v2. A apresentação da situação e do andamento (textos e ícones) fica em `features/situacao.ts`.
 
-## 6. Desvios deliberados do Figma (os tokens do código têm prioridade)
+| Componente | Regras |
+|---|---|
+| `Button` | Prop `nomeDoIcone` (ícone na cor certa do botão); a variante antiga `claro` saiu na R9 (login e cadastro agora são cartões brancos). **Primário** (azul cheio, 56, largura total), **secundário** (borda azul de 2, fundo branco, 56) e **texto** (azul, negrito, **sublinhado**). Desativado: `disabledBg` + `disabledText`, **sem opacidade** |
+| `TextField` | 56 de altura, borda de 2 em `borderField`, canto 8, **rótulo sempre visível acima** (nunca só placeholder). Erro: borda `danger`, ícone `warning` e uma frase dizendo como resolver |
+| `SeloDeSituacao` | Pílula com ícone + texto da situação da energia (Sem energia, Oscilando, Normal) |
+| `StatusBadge` | Pílula com ícone + texto do andamento da denúncia |
+| `FilterChip` | 48 de altura, ícone, "Todos (n)"; selecionado **azul cheio** com texto branco; não selecionado branco com borda `borderField` |
+| `CartaoDeEscolha` | Rádio grande (≥ 104 de altura) com ícone, título e descrição; selecionado: borda azul de 3, fundo `actionSoft` e rádio marcado |
+| `Cartao` | Branco, canto 16, sem sombra; `destaque` = borda azul de 2 |
+| `Aviso` | Faixa com **ícone e texto** (erro, atenção, informação); o papel de alerta fica no `Text`, não no `View` |
+| `CabecalhoDePasso` | "Voltar" (ícone + texto), "Passo X de 3" e barra de 3 segmentos |
+| Barra inferior (`BarraInferior.tsx`, **pronta na R3**) | 4 itens com ícone e texto (14 negrito): **Início, Mapa, Denunciar, Perfil**; aba ativa com pílula `actionTabPill` e texto `actionPressed`; fundo branco com borda superior `borderSubtle`; "Denunciar" com o ícone dentro de uma pílula azul cheia (56×32) |
+| `CartaoEnergiaDoBairro` (**R4**) | Cartão "Energia no seu bairro agora": ícone grande e nome da situação na cor dela, frase de apoio, endereço com pino, "Trocar" e "Usar minha localização"; cuida dos estados de GPS, fora de Marabá, erro e sem conexão |
+| `LugarComAviso` (**R5**) | Item da lista "Lugares com aviso": cartão inteiro clicável com `SeloDeSituacao`, nome em negrito, "Há X min · N avisos" e "Ver" com seta (`features/ocorrencias/agrupar.ts` faz o agrupamento por bairro) |
+| `ListaDeBairrosModal` (**R4**) | Lista de bairros em tela cheia com busca por bairro ou folha e "Fechar" com texto; usada pelo seletor do formulário e pelo "Trocar" |
+| `BotaoLigar` (**R4**) | Botão "Ligar para a Equatorial" (`tel:`); se o aparelho não puder ligar, mostra um `Aviso` com o número |
+| `ComoFunciona` (**R4**) | Os 3 passos numerados, em frases curtas (Início e Ajuda) |
+| Marcador do mapa | Círculo de 40 com borda branca de 3, contorno externo de 2 e ícone da situação; **"Normal" é quadrado** |
 
-Nos casos abaixo, **vale o token do código, não o Figma** (decisões D-01 e D-02 em [01](01-visao-e-escopo.md#811-decisões-de-contraste-toque-e-prioridade-de-tokens-2026-11-18)). Motivos em [12](12-acessibilidade.md).
+## 6. Mudanças de linguagem
 
-| Item | No Figma | No código |
-|---|---|---|
-| Fundo de botão com texto branco | `#34A853` (≈ 3,1:1 com branco) | `#006E2C` (≈ 6,4:1) |
-| Texto âmbar (legenda "Oscilação", selo de oscilação) | `#CE8300` (≈ 3,1:1 sobre branco) | `#855300` (≈ 6,5:1) |
-| Alvos de toque (barra inferior, chips, botões circulares, perfil) | 32 a 44 px | **≥ 48 dp** com `hitSlop`/*padding* |
-| Cor do "?" do logo | `#84CC16` nas telas | `#A3E635` (frame de identidade) |
-| Checkbox | `#0075FF` (padrão do navegador) | cor da marca `#006E2C` |
-
-Os tokens vivem em `apps/mobile/src/theme/` e `apps/painel/src/styles/tokens.css`.
+| Antes | Depois |
+|---|---|
+| Registre sua denúncia / Registrar ocorrência | Fazer denúncia |
+| Sem luz | Sem energia |
+| Oscilação | Oscilando |
+| Restabelecidos | Normal |
+| Rede estável / instável | Normal / Sem energia / Oscilando |
+| Ver mapa ampliado | Ver onde falta energia |
+| GPS ATIVO | Achamos pela localização do celular |
+| Ocorrências (aba) | Mapa |
 
 ## 7. Notas para a implementação
 
-- Centralizar tokens em `apps/mobile/src/theme/` (`colors.ts`, `typography.ts`, `spacing.ts`) e em CSS variables no painel (`apps/painel/src/styles/tokens.css`). Nenhuma cor "solta" nos componentes.
-- Estilo: **`StyleSheet` do React Native + tema próprio** (sem biblioteca de UI), para manter o controle do visual do Figma e a escala de fontes (decisão S-27).
-- Pontos do protótipo a corrigir ao implementar: checkbox azul (`#0075FF`), lima `#84CC16` → `#A3E635`, aba "Mapa" → "Ocorrências", textos citados em [05](05-telas-e-fluxos.md).
+- Tokens em `apps/mobile/src/theme/` (`colors.ts`, `typography.ts`, `spacing.ts`). **Nenhuma cor ou fonte solta** nos componentes (verificado pelo teste `regras-do-tema.test.ts`, que falha com `#RRGGBB`, `rgba(`, `fontSize`, `fontWeight`, `letterSpacing`, `toUpperCase()` ou nome de fonte fora de `src/theme`).
+- Os apelidos da migração (`bgCard`, `brand900`, `status.*`, `h1`, `subtitle`, `radius.card`, `space.half`…) **foram removidos na R10**: só existem os tokens deste documento.
+- Estilo: **`StyleSheet` do React Native + tema próprio**, sem biblioteca de UI (decisão S-27).
+- Título de cada tela marcado como `header`.
+- No painel: HTML semântico, `aria-live` para novas denúncias, tabela com `scope` (tema verde próprio; alinhamento em B-045).
+
+## 8. Histórico
+
+A versão 1 (paleta verde `#006E2C`/`#34A853`, Plus Jakarta Sans, tokens extraídos do Figma e as decisões D-01 e D-02 sobre contraste do protótipo) vigorou na Fase 1 e está no histórico do Git (`git log -- docs/06-design-system.md`). A **D-02** (alvo de toque de 48 dp) continua valendo; a **D-01** (`#006E2C` e `#855300`) foi **substituída** pela paleta nova.

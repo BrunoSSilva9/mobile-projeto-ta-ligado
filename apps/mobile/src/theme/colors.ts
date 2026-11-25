@@ -1,59 +1,84 @@
 /**
- * Tokens de cor do Tá Ligado? (docs/06-design-system.md).
+ * Tokens de cor do Tá Ligado? (design system v2, docs/06-design-system.md e ADR-0006).
  *
- * Os tokens do código têm PRIORIDADE sobre o Figma (decisão D-01):
- * - botões com texto branco usam `action` (#006E2C), não #34A853;
- * - texto âmbar usa `status.flickerText` (#855300), não #CE8300.
+ * Princípios:
+ * - **Azul é para tocar.** Vermelho, laranja e verde só mostram a situação da energia.
+ * - **A cor de situação nunca aparece sozinha:** sempre com um ícone de formato diferente e um texto
+ *   (WCAG 1.4.1).
+ * - `brandNavy` e `lime` são **só da marca** (logo, ícone, splash). Lima nunca vai sobre fundo claro.
+ *
+ * Todos os pares de texto passam em 4,5:1 e os de ícone/borda em 3:1 (`theme.test.ts`).
  */
-export const colors = {
-  // Marca e ação
-  brand900: '#16382B',
-  brand700: '#466556',
-  /** Somente elementos SEM texto (FAB, pontos de status, ícones). Branco sobre ele dá ~3,1:1. */
-  primary: '#34A853',
-  /** Fundo de botões com texto branco, links e aba ativa (~6,4:1 com branco). */
-  action: '#006E2C',
-  /** Destaque oficial do "?" do logo sobre fundo escuro. */
-  lime: '#A3E635',
-  mint: '#89FA9B',
 
-  // Superfícies
-  bgPage: '#F1FCF3',
-  bgCard: '#EBF7ED',
-  bgSoft: '#E5F1E7',
-  bgMuted: '#DAE5DC',
-  surfaceTint: '#C3E5D2',
-  surfaceMint: '#C8EAD7',
-  white: '#FFFFFF',
-
-  // Texto
-  textPrimary: '#141E18',
-  textSecondary: '#3E4A3E',
-  textMuted: '#6E7A6D',
-  textOnDark: '#E0EBE2',
-  tagline: '#64748B',
-
-  // Status do bairro e da ocorrência (RN-007)
-  status: {
-    noPower: '#BA1A1A',
-    noPowerBg: '#FFDAD6',
-    noPowerText: '#93000A',
-    /** Só pontos, ícones e bordas. Para texto use `flickerText`. */
-    flicker: '#CE8300',
-    flickerBg: '#FFDDB8',
-    flickerText: '#855300',
-    restored: '#34A853',
-    restoredText: '#006E2C',
+/** Situação da energia: selo (fundo + texto + ícone) e marcador do mapa (preenchimento + ícone). */
+const situacao = {
+  semEnergia: {
+    texto: '#B42318',
+    fundo: '#FEE4E2',
+    marcador: '#D92D20',
+    iconeNoMarcador: '#FFFFFF',
+    icone: 'flash-off',
   },
-
-  // Status da denúncia (decisão S-26)
-  complaintStatus: {
-    RECEBIDA: '#466556',
-    EM_ATENDIMENTO: '#CE8300',
-    RESOLVIDA: '#34A853',
-    IMPROCEDENTE: '#6E7A6D',
-    CANCELADA: '#6E7A6D',
+  oscilando: {
+    texto: '#93370D',
+    fundo: '#FEF0C7',
+    marcador: '#F79009',
+    iconeNoMarcador: '#1F2937',
+    icone: 'pulse',
+  },
+  normal: {
+    texto: '#067647',
+    fundo: '#DCFAE6',
+    marcador: '#067647',
+    iconeNoMarcador: '#FFFFFF',
+    /** O marcador de "Normal" é QUADRADO (formato diferente, não só cor). */
+    icone: 'checkmark-circle',
   },
 } as const;
 
+/** Andamento da denúncia (selo: fundo + texto + ícone). */
+const andamento = {
+  RECEBIDA: { texto: '#334155', fundo: '#F1F5F9', icone: 'time-outline' },
+  EM_ATENDIMENTO: { texto: '#1E3A8A', fundo: '#EFF4FF', icone: 'construct-outline' },
+  RESOLVIDA: { texto: '#067647', fundo: '#DCFAE6', icone: 'checkmark' },
+  IMPROCEDENTE: { texto: '#334155', fundo: '#F1F5F9', icone: 'close-circle-outline' },
+  CANCELADA: { texto: '#334155', fundo: '#F1F5F9', icone: 'ban-outline' },
+} as const;
+
+export const colors = {
+  // Ação (azul: tudo o que se toca)
+  action: '#1D4ED8',
+  actionPressed: '#1E3A8A',
+  actionSoft: '#EFF4FF',
+  actionTabPill: '#DBE6FE',
+  /** Texto e ícone sobre `action` (6,7:1). */
+  onAction: '#FFFFFF',
+
+  // Texto
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
+
+  // Superfícies e bordas
+  bgPage: '#F6F7F9',
+  surface: '#FFFFFF',
+  /** Borda de campos e de chips não selecionados (4,8:1 sobre branco). */
+  borderField: '#64748B',
+  borderSubtle: '#CBD5E1',
+  borderDivider: '#E2E8F0',
+  disabledBg: '#E2E8F0',
+  /** Texto legível no botão desativado (nunca transparente). */
+  disabledText: '#475569',
+  /** Erros de campo (texto, ícone e borda). */
+  danger: '#B42318',
+
+  // Marca (só logo, ícone e splash)
+  brandNavy: '#0B1F3A',
+  lime: '#A3E635',
+
+  situacao,
+  andamento,
+} as const;
+
 export type ColorToken = keyof typeof colors;
+export type SituacaoDaEnergia = keyof typeof situacao;
+export type StatusDeAndamento = keyof typeof andamento;

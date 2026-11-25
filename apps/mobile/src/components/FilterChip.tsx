@@ -1,12 +1,25 @@
+import { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, radius, size, space, type } from '@/theme';
 
-type Props = { rotulo: string; total?: number; selecionado: boolean; onPress: () => void };
+type Props = {
+  rotulo: string;
+  total?: number;
+  selecionado: boolean;
+  onPress: () => void;
+  /** Ícone Ionicons ao lado do texto (todo ícone tem texto). */
+  icone?: ComponentProps<typeof Ionicons>['name'];
+};
 
-/** Chip de filtro com a contagem ("Sem luz (9)"). Alvo de 48 dp, estado lido pelo leitor de tela. */
-export function FilterChip({ rotulo, total, selecionado, onPress }: Props) {
+/**
+ * Chip de filtro com a contagem ("Sem energia (9)"). 48 dp de altura. Selecionado: azul cheio com
+ * texto branco; não selecionado: branco com borda `borderField`. O estado é lido pelo leitor de tela.
+ */
+export function FilterChip({ rotulo, total, selecionado, onPress, icone }: Props) {
   const texto = total === undefined ? rotulo : `${rotulo} (${total})`;
+  const cor = selecionado ? colors.onAction : colors.textPrimary;
   return (
     <Pressable
       accessibilityRole="radio"
@@ -15,9 +28,8 @@ export function FilterChip({ rotulo, total, selecionado, onPress }: Props) {
       onPress={onPress}
       style={[styles.chip, selecionado && styles.chipSelecionado]}
     >
-      <Text style={[type.button, { color: selecionado ? colors.white : colors.textPrimary }]}>
-        {texto}
-      </Text>
+      {icone ? <Ionicons name={icone} size={20} color={cor} /> : null}
+      <Text style={[type.label, { color: cor }]}>{texto}</Text>
     </Pressable>
   );
 }
@@ -25,11 +37,14 @@ export function FilterChip({ rotulo, total, selecionado, onPress }: Props) {
 const styles = StyleSheet.create({
   chip: {
     minHeight: size.touchMin,
-    paddingHorizontal: space.l,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bgSoft,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: space.xs,
+    paddingHorizontal: space.l,
+    borderRadius: radius.pilula,
+    borderWidth: 2,
+    borderColor: colors.borderField,
+    backgroundColor: colors.surface,
   },
-  chipSelecionado: { backgroundColor: colors.action },
+  chipSelecionado: { backgroundColor: colors.action, borderColor: colors.action },
 });

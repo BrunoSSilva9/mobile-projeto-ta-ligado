@@ -14,7 +14,7 @@ type Props = {
 
 /**
  * Se o módulo nativo do mapa falhar (ex.: Expo Go sem suporte, chave ausente), o formulário
- * continua funcionando: mostramos só as coordenadas em texto.
+ * continua funcionando: avisamos em texto que o ponto foi marcado pela localização do celular.
  */
 class LimiteDeErro extends Component<
   { fallback: ReactNode; children: ReactNode },
@@ -33,16 +33,19 @@ const aoSoltar: (onMover: Props['onMover']) => NonNullable<MapMarkerProps['onDra
   (onMover) => (evento) =>
     onMover(evento.nativeEvent.coordinate);
 
-/** Mini-mapa da T-05: pino arrastável sobre a posição do GPS. */
+/**
+ * Mini-mapa do passo "Onde está faltando energia?": pino arrastável sobre a posição do celular.
+ * Mover o pino é opcional (quem não consegue pode corrigir o endereço pelos campos de texto).
+ */
 export function MiniMapa({ coordenadas, onMover }: Props) {
-  const texto = `Local: ${coordenadas.latitude.toFixed(5)}, ${coordenadas.longitude.toFixed(5)}`;
-
   return (
     <View style={styles.quadro}>
       <LimiteDeErro
         fallback={
-          <View style={styles.alternativa}>
-            <Text style={[type.body, styles.alternativaTexto]}>{texto}</Text>
+          <View style={[styles.mapa, styles.alternativa]}>
+            <Text style={[type.body, styles.alternativaTexto]}>
+              Não foi possível mostrar o mapa. O local foi marcado pela localização do celular.
+            </Text>
           </View>
         }
       >
@@ -59,7 +62,7 @@ export function MiniMapa({ coordenadas, onMover }: Props) {
         </MapView>
       </LimiteDeErro>
       <Text style={[type.caption, styles.legenda]}>
-        {texto}. Segure e arraste o pino para ajustar o ponto.
+        Se o pino não estiver no lugar certo, segure e arraste.
       </Text>
     </View>
   );
@@ -67,14 +70,13 @@ export function MiniMapa({ coordenadas, onMover }: Props) {
 
 const styles = StyleSheet.create({
   quadro: { gap: space.xs },
-  mapa: { height: 160, borderRadius: radius.card },
+  mapa: { height: 160, borderRadius: radius.botao, overflow: 'hidden' },
   alternativa: {
-    height: 80,
-    borderRadius: radius.card,
-    backgroundColor: colors.bgSoft,
+    backgroundColor: colors.actionSoft,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: space.l,
   },
-  alternativaTexto: { color: colors.textSecondary },
+  alternativaTexto: { color: colors.textSecondary, textAlign: 'center' },
   legenda: { color: colors.textSecondary },
 });

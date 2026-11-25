@@ -10,7 +10,7 @@ import {
 } from './cache';
 import { formatarData, formatarDataHora } from './formatacao';
 import { contarEmAberto } from './hooks';
-import { corDoStatus, rotuloDoStatus, statusEmAberto } from './status';
+import { rotuloDoStatus, statusEmAberto } from './status';
 import { colors } from '@/theme';
 
 const detalhe: DenunciaDetalhe = {
@@ -224,10 +224,17 @@ describe('status', () => {
     expect(rotuloDoStatus('XYZ')).toBe('XYZ');
   });
 
-  it('cores seguem a decisão S-26', () => {
-    expect(corDoStatus('RECEBIDA')).toBe(colors.complaintStatus.RECEBIDA);
-    expect(corDoStatus('RESOLVIDA')).toBe(colors.complaintStatus.RESOLVIDA);
-    expect(corDoStatus('XYZ')).toBe(colors.textMuted);
+  it('cada status tem ícone e texto próprios no design system (a cor não é a única pista)', () => {
+    const chaves = [
+      'RECEBIDA',
+      'EM_ATENDIMENTO',
+      'RESOLVIDA',
+      'IMPROCEDENTE',
+      'CANCELADA',
+    ] as const;
+    const icones = chaves.map((c) => colors.andamento[c].icone);
+    expect(new Set(icones).size).toBe(chaves.length);
+    expect(new Set(chaves.map(rotuloDoStatus)).size).toBe(chaves.length);
   });
 
   it('em aberto = recebida ou em atendimento', () => {

@@ -1,56 +1,100 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Aviso } from '@/components/Aviso';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
-import { BannerDenunciar } from '@/components/BannerDenunciar';
-import { ContatosDeAtendimento } from '@/components/ContatosDeAtendimento';
 import { EmptyState, ErrorState, MENSAGEM_SEM_DADOS_OFFLINE } from '@/components/Estados';
 import { FilterChip } from '@/components/FilterChip';
-import { LocationStatusCard } from '@/components/LocationStatusCard';
-import { Logo } from '@/components/Logo';
+import { LugarComAviso } from '@/components/LugarComAviso';
 import { MapaOcorrencias } from '@/components/MapaOcorrencias';
-import { OccurrenceListItem } from '@/components/OccurrenceListItem';
 import { TextField } from '@/components/TextField';
+import { tempoDesde } from '@/features/acompanhamento/formatacao';
+import { agruparPorBairro, type LugarComAviso as Lugar } from '@/features/ocorrencias/agrupar';
 import {
-  useOcorrencias,
   useAgora,
+  useOcorrencias,
   useStatusDosBairros,
   useValorComAtraso,
 } from '@/features/ocorrencias/hooks';
 import { CHIPS, type FiltroPublico } from '@/features/ocorrencias/tipos';
+import { useLocalizacaoAtual } from '@/providers/LocalizacaoProvider';
 import { colors, space, type } from '@/theme';
 
+/** "Marabá · atualizado agora" / "… há 5 min": o horário vem da própria resposta da lista. */
+export function textoDeAtualizacao(atualizadoEm: string | undefined, agoraMs: number): string {
+  const quando = atualizadoEm ? tempoDesde(atualizadoEm, agoraMs) : '';
+  if (!quando) return 'Marabá';
+  return `Marabá · atualizado ${quando.charAt(0).toLowerCase()}${quando.slice(1)}`;
+}
+
 /**
- * T-04: ocorrências. Situação do seu bairro, chips com contagem, mapa e lista pública anonimizada
- * (RF-019 a RF-023, RN-014). Muda sozinha quando o painel atualiza um status (RF-024).
+ * Aba **Mapa** (rota `/ocorrencias`, T-04): "Onde falta energia". Busca por bairro ou folha, chips
+ * com ícone e contagem, o mapa e a lista **"Lugares com aviso"** agrupada por bairro (RF-019 a
+ * RF-023, RN-014). Muda sozinha quando o painel atualiza um status (RF-024).
  */
 export default function OcorrenciasScreen() {
   const [filtro, setFiltro] = useState<FiltroPublico>(undefined);
   const [busca, setBusca] = useState('');
+  const [foco, setFoco] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
+  const localizacao = useLocalizacaoAtual();
   const buscaAtrasada = useValorComAtraso(busca);
+  const rolagem = useRef<ScrollViewInstance>(null);
+  const alturaDoMapa = useRef(0);
 
   const bairros = useStatusDosBairros();
   const lista = useOcorrencias({ status: filtro, q: buscaAtrasada });
   const agora = useAgora();
 
+  const lugares = useMemo(
+    () => agruparPorBairro(lista.data?.itens ?? [], bairros.data?.bairros ?? []),
+    [lista.data, bairros.data],
+  );
+
+  /** "Ver": centraliza o mapa no bairro e leva a tela até ele. */
+  const ver = (lugar: Lugar) => {
+    if (!lugar.centro) return;
+    setFoco({ ...lugar.centro }); // objeto novo: repete o movimento mesmo no mesmo bairro
+    rolagem.current?.scrollTo({ y: alturaDoMapa.current, animated: true });
+  };
+
+  /** "Onde estou": centraliza o mapa no celular; sem localização, tenta de novo e explica. */
+  const ondeEstou = () => {
+    setPediuLocalizacao(true);
+    if (localizacao.coordenadas) {
+      setFoco({ ...localizacao.coordenadas }); // objeto novo: repete o movimento
+    } else {
+      localizacao.tentarDeNovo();
+    }
+  };
+  const semLocalizacao =
+    pediuLocalizacao && !localizacao.coordenadas && localizacao.estado !== 'buscando';
+
   return (
     <SafeAreaView style={styles.tela} edges={['top']}>
       <View style={styles.cabecalho}>
-        <Logo />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
-        <AvisoDeConexao />
-        <LocationStatusCard titulo="Localização atual" selo="status" />
-
+        <Text accessibilityRole="header" style={[type.title1, styles.titulo]}>
+          Onde falta energia
+        </Text>
+        <Text style={[type.bodySmall, styles.apoio]}>
+          {textoDeAtualizacao(lista.data?.atualizadoEm, agora)}
+        </Text>
         <TextField
-          rotulo="Buscar bairro ou folha"
+          rotulo="Procurar bairro ou folha"
           placeholder="Ex.: Folha 28"
           autoCorrect={false}
           value={busca}
           onChangeText={setBusca}
         />
+      </View>
+
+      <ScrollView
+        ref={rolagem}
+        contentContainerStyle={styles.conteudo}
+        keyboardShouldPersistTaps="handled"
+      >
+        <AvisoDeConexao />
 
         <View
           accessibilityRole="radiogroup"
@@ -61,6 +105,7 @@ export default function OcorrenciasScreen() {
             <FilterChip
               key={c.rotulo}
               rotulo={c.rotulo}
+              icone={c.icone}
               total={lista.data?.totais[c.total]}
               selecionado={filtro === c.valor}
               onPress={() => setFiltro(c.valor)}
@@ -69,47 +114,66 @@ export default function OcorrenciasScreen() {
         </View>
 
         {bairros.data ? (
-          <MapaOcorrencias bairros={bairros.data.bairros} ocorrencias={lista.data?.itens ?? []} />
+          <View
+            onLayout={(e) => {
+              alturaDoMapa.current = e.nativeEvent.layout.y;
+            }}
+          >
+            <MapaOcorrencias
+              bairros={bairros.data.bairros}
+              ocorrencias={lista.data?.itens ?? []}
+              foco={foco}
+              mostrarMinhaLocalizacao={localizacao.coordenadas !== null}
+              onOndeEstou={ondeEstou}
+            />
+          </View>
         ) : null}
 
-        <Text accessibilityRole="header" style={[type.title, styles.tituloDaSecao]}>
-          Lista dos lugares
+        {semLocalizacao ? (
+          <Aviso tom="atencao" icone="locate-outline">
+            {
+              'Não foi possível achar a sua localização. Ligue o GPS e permita a localização para este aplicativo, depois toque em "Onde estou" de novo.'
+            }
+          </Aviso>
+        ) : null}
+
+        <Text accessibilityRole="header" style={[type.title2, styles.tituloDaSecao]}>
+          {lista.data ? `Lugares com aviso (${lugares.length})` : 'Lugares com aviso'}
         </Text>
         {lista.isPending ? (
           <Text accessibilityRole="progressbar" style={[type.body, styles.texto]}>
             {lista.fetchStatus === 'paused'
               ? MENSAGEM_SEM_DADOS_OFFLINE
-              : 'Carregando ocorrências…'}
+              : 'Carregando os lugares com aviso…'}
           </Text>
         ) : lista.isError ? (
           <ErrorState mensagem={lista.error.message} onTentarDeNovo={() => void lista.refetch()} />
-        ) : lista.data.itens.length === 0 ? (
+        ) : lugares.length === 0 ? (
           <EmptyState
-            titulo="Nenhuma ocorrência no momento"
+            titulo="Nenhum lugar com aviso"
             descricao={
               buscaAtrasada.trim() !== ''
                 ? 'Nenhum resultado para essa busca.'
-                : 'Quando houver, elas aparecem aqui.'
+                : 'Quando houver, eles aparecem aqui.'
             }
           />
         ) : (
           <View style={styles.lista}>
-            {lista.data.itens.map((o) => (
-              <OccurrenceListItem key={o.id} ocorrencia={o} agoraMs={agora} />
+            {lugares.map((l) => (
+              <LugarComAviso
+                key={l.chave}
+                lugar={l}
+                agoraMs={agora}
+                onVer={l.centro ? () => ver(l) : undefined}
+              />
             ))}
-            {lista.data.total > lista.data.itens.length ? (
+            {lista.data && lista.data.total > lista.data.itens.length ? (
               <Text style={[type.caption, styles.texto]}>
-                Mostrando as {lista.data.itens.length} mais recentes de {lista.data.total}.
+                Mostrando os {lista.data.itens.length} avisos mais recentes de {lista.data.total}.
               </Text>
             ) : null}
           </View>
         )}
-
-        <BannerDenunciar
-          titulo="Deu falta de energia? Avise seus vizinhos e a concessionária"
-          botao="Denunciar"
-        />
-        <ContatosDeAtendimento />
       </ScrollView>
     </SafeAreaView>
   );
@@ -117,7 +181,15 @@ export default function OcorrenciasScreen() {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: colors.bgPage },
-  cabecalho: { height: 64, justifyContent: 'center', paddingHorizontal: space.l },
+  cabecalho: {
+    gap: space.xs,
+    padding: space.l,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderDivider,
+  },
+  titulo: { color: colors.textPrimary },
+  apoio: { color: colors.textSecondary, marginBottom: space.s },
   conteudo: { padding: space.l, gap: space.l, paddingBottom: space.xxl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   tituloDaSecao: { color: colors.textPrimary },

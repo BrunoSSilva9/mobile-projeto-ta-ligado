@@ -1,11 +1,8 @@
 import {
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_400Regular_Italic,
-  PlusJakartaSans_600SemiBold,
-  PlusJakartaSans_700Bold,
-  PlusJakartaSans_800ExtraBold,
+  AtkinsonHyperlegible_400Regular,
+  AtkinsonHyperlegible_700Bold,
   useFonts,
-} from '@expo-google-fonts/plus-jakarta-sans';
+} from '@expo-google-fonts/atkinson-hyperlegible';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -23,16 +20,13 @@ const CABECALHO_LEGAL = {
   headerBackTitle: 'Voltar',
   headerTintColor: colors.action,
   headerStyle: { backgroundColor: colors.bgPage },
-  headerTitleStyle: { ...type.subtitle, color: colors.textPrimary },
+  headerTitleStyle: { ...type.label, color: colors.textPrimary },
 } as const;
 
 export default function RootLayout() {
   const [fontesProntas, erroNasFontes] = useFonts({
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_400Regular_Italic,
-    PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold,
-    PlusJakartaSans_800ExtraBold,
+    AtkinsonHyperlegible_400Regular,
+    AtkinsonHyperlegible_700Bold,
   });
   const sessaoPronta = useSessao((s) => s.hidratada);
   const logado = useSessao((s) => s.token !== null);

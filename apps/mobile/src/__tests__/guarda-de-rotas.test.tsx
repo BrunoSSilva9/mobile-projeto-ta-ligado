@@ -17,13 +17,10 @@ import {
  * só existe o login, e com sessão, só existe o app (RF-003, RF-004).
  */
 
-jest.mock('@expo-google-fonts/plus-jakarta-sans', () => ({
+jest.mock('@expo-google-fonts/atkinson-hyperlegible', () => ({
   useFonts: () => [true, null],
-  PlusJakartaSans_400Regular: 1,
-  PlusJakartaSans_400Regular_Italic: 2,
-  PlusJakartaSans_600SemiBold: 3,
-  PlusJakartaSans_700Bold: 4,
-  PlusJakartaSans_800ExtraBold: 5,
+  AtkinsonHyperlegible_400Regular: 1,
+  AtkinsonHyperlegible_700Bold: 2,
 }));
 
 jest.mock('expo-location', () => ({
@@ -102,8 +99,8 @@ describe('sem sessão', () => {
       expect(await screen.findByText('Entre na sua conta')).toBeTruthy();
       expect(screen).toHavePathname('/login');
       expect(screen.queryByText(/EM CONSTRUÇÃO/)).toBeNull();
-      expect(screen.queryByText('Olá, Maria!')).toBeNull();
-      expect(screen.queryByText('Onde faltou luz?')).toBeNull();
+      expect(screen.queryByText('Olá, Maria')).toBeNull();
+      expect(screen.queryByText('O que está acontecendo?')).toBeNull();
       expect(screen.queryByRole('button', { name: 'Sair' })).toBeNull();
     },
   );
@@ -147,7 +144,7 @@ describe('com sessão salva no aparelho', () => {
   it('ao abrir o app, vai direto às abas (sem passar pelo login)', async () => {
     await abrirApp();
 
-    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria')).toBeTruthy();
     expect(screen).toHavePathname('/');
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
   });
@@ -155,33 +152,61 @@ describe('com sessão salva no aparelho', () => {
   it('abrir o login leva às abas', async () => {
     await abrirApp('/login');
 
-    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria')).toBeTruthy();
     expect(screen).not.toHavePathname('/login');
   });
 
   it('abrir o cadastro leva às abas', async () => {
     await abrirApp('/cadastro');
 
-    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria')).toBeTruthy();
     expect(screen).not.toHavePathname('/cadastro');
   });
 
-  it('tem as abas Início, Ocorrências e Perfil e o botão central Denunciar', async () => {
+  it('a barra inferior tem 4 itens, cada um com texto visível: Início, Mapa, Denunciar e Perfil', async () => {
     await abrirApp();
-    await screen.findByText('Olá, Maria!');
+    await screen.findByText('Olá, Maria');
 
-    for (const nome of ['Início', 'Ocorrências', 'Perfil', 'Denunciar falta de luz']) {
+    for (const nome of ['Início', 'Mapa', 'Denunciar', 'Perfil']) {
       expect(screen.getByRole('button', { name: nome })).toBeTruthy();
+      expect(screen.getByText(nome)).toBeTruthy(); // o texto aparece na tela, não só no leitor
     }
   });
 
-  it('o botão central abre o formulário de denúncia (T-05)', async () => {
+  it('"Ocorrências" virou "Mapa" só no texto, e o botão flutuante não existe mais', async () => {
     await abrirApp();
-    await screen.findByText('Olá, Maria!');
+    await screen.findByText('Olá, Maria');
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Denunciar falta de luz' }));
+    expect(screen.queryByRole('button', { name: 'Ocorrências' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Denunciar falta de luz' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Mapa' }));
+    expect(await screen.findByText('Onde falta energia')).toBeTruthy();
+    expect(screen).toHavePathname('/ocorrencias'); // a rota continua a mesma
+  });
 
-    expect(await screen.findByText('Onde faltou luz?')).toBeTruthy();
+  it('a aba ativa é marcada como selecionada e muda ao navegar', async () => {
+    await abrirApp();
+    await screen.findByText('Olá, Maria');
+    const selecionada = (nome: string) =>
+      screen.getByRole('button', { name: nome }).props.accessibilityState?.selected;
+
+    expect(selecionada('Início')).toBe(true);
+    expect(selecionada('Mapa')).toBe(false);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Mapa' }));
+    await screen.findByText('Onde falta energia');
+
+    expect(selecionada('Mapa')).toBe(true);
+    expect(selecionada('Início')).toBe(false);
+  });
+
+  it('"Denunciar" abre o formulário de denúncia (T-05) e não vira uma aba selecionada', async () => {
+    await abrirApp();
+    await screen.findByText('Olá, Maria');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Denunciar' }));
+
+    expect(await screen.findByText('O que está acontecendo?')).toBeTruthy();
     expect(screen).toHavePathname('/denunciar');
   });
 
@@ -210,7 +235,7 @@ describe('mudanças de sessão com o app aberto', () => {
       await useSessao.getState().entrar(SESSAO_DE_CIDADAO);
     });
 
-    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria')).toBeTruthy();
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
   });
 
@@ -244,7 +269,7 @@ describe('mudanças de sessão com o app aberto', () => {
   it('sessão expirada: um 401 do servidor derruba a sessão e leva ao login', async () => {
     salvarSessaoNoAparelho();
     await abrirApp();
-    await screen.findByText('Olá, Maria!');
+    await screen.findByText('Olá, Maria');
     mockFetch.mockResolvedValue(
       resposta(401, erroDaApi('NAO_AUTENTICADO', 'Sessão inválida ou expirada. Entre novamente.')),
     );
@@ -261,7 +286,7 @@ describe('mudanças de sessão com o app aberto', () => {
   it('o 401 envia o token da sessão no cabeçalho antes de derrubá-la', async () => {
     salvarSessaoNoAparelho();
     await abrirApp();
-    await screen.findByText('Olá, Maria!');
+    await screen.findByText('Olá, Maria');
     mockFetch.mockResolvedValue(resposta(401, erroDaApi('NAO_AUTENTICADO', 'Expirada.')));
 
     await act(async () => {
@@ -290,10 +315,10 @@ describe('abertura do app', () => {
 
     // Enquanto lê o aparelho, nem o login "pisca" na tela.
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
-    expect(screen.queryByText('Olá, Maria!')).toBeNull();
+    expect(screen.queryByText('Olá, Maria')).toBeNull();
 
     await act(async () => liberar(JSON.stringify(SESSAO_DE_CIDADAO)));
-    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
+    expect(await screen.findByText('Olá, Maria')).toBeTruthy();
     expect(screen.queryByText('Entre na sua conta')).toBeNull();
     jest.restoreAllMocks();
   });

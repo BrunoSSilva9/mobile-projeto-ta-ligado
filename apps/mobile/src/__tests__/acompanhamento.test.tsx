@@ -142,10 +142,10 @@ describe('T-09 Minhas denúncias (RF-013)', () => {
 
     expect(await screen.findByText('TL-2026-000002')).toBeTruthy();
     expect(screen.getByText('Sem energia · Nova Marabá (Folha 28)')).toBeTruthy();
-    expect(screen.getByText('RECEBIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Recebida')).toBeTruthy();
     expect(screen.getByText('TL-2026-000001')).toBeTruthy();
     expect(screen.getByText('Oscilação · Cidade Nova')).toBeTruthy();
-    expect(screen.getByText('RESOLVIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Resolvida')).toBeTruthy();
     expect(screen.getByText('Enviada em 19/11/2026')).toBeTruthy();
   });
 
@@ -159,6 +159,14 @@ describe('T-09 Minhas denúncias (RF-013)', () => {
       ? Object.assign({}, ...cartao.props.style.flat())
       : cartao.props.style;
     expect(estilo.minHeight).toBeGreaterThanOrEqual(48);
+  });
+
+  it('o cartão mostra o selo do andamento (ícone e texto) e "Ver"', async () => {
+    await renderizarTela(<MinhasDenunciasScreen />);
+
+    expect((await screen.findAllByLabelText('Status: Recebida')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Ver').length).toBeGreaterThan(0);
+    expect(screen.queryByText('RECEBIDA')).toBeNull();
   });
 
   it('tocar em um cartão abre o detalhe daquela denúncia (T-07)', async () => {
@@ -205,8 +213,8 @@ describe('T-09 Minhas denúncias (RF-013)', () => {
 
     await act(async () => ultimoSocket()!.__emitir('denuncia:status-atualizado', evento()));
 
-    expect(await screen.findByText('EM ATENDIMENTO')).toBeTruthy();
-    expect(screen.queryByText('RECEBIDA')).toBeNull();
+    expect(await screen.findByLabelText('Status: Em atendimento')).toBeTruthy();
+    expect(screen.queryByLabelText('Status: Recebida')).toBeNull();
     expect(mockFetch.mock.calls.length).toBe(chamadas);
   });
 
@@ -230,7 +238,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     await renderizarTela(<DetalheScreen />);
 
     expect(await screen.findByText('Rua das Flores, 10')).toBeTruthy();
-    expect(screen.getByText('RECEBIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Recebida')).toBeTruthy();
     expect(screen.getByText('Sem energia')).toBeTruthy();
     expect(screen.getByText('Nova Marabá (Folha 28)')).toBeTruthy();
     expect(screen.getByText('CEP 68500-000')).toBeTruthy();
@@ -264,7 +272,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     await renderizarTela(<DetalheScreen />);
 
     expect(await screen.findByText('19/11/2026 às 17:00')).toBeTruthy();
-    expect(screen.getByText('PREVISÃO DE REPARO')).toBeTruthy();
+    expect(screen.getByText('Previsão de reparo')).toBeTruthy();
   });
 
   it('com a denúncia encerrada, esconde a previsão antiga', async () => {
@@ -279,7 +287,29 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     await renderizarTela(<DetalheScreen />);
     await screen.findByText('Rua das Flores, 10');
 
-    expect(screen.queryByText('PREVISÃO DE REPARO')).toBeNull();
+    expect(screen.queryByText('Previsão de reparo')).toBeNull();
+  });
+
+  it('os rótulos do detalhe estão em caixa normal (nada em maiúsculas)', async () => {
+    simularApi({
+      detalhe: () => resposta(200, { ...DETALHE, descricao: 'Sem luz desde as 14h' }),
+    });
+    await renderizarTela(<DetalheScreen />);
+
+    expect(await screen.findByText('Local')).toBeTruthy();
+    expect(screen.getByText('Descrição')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Histórico' })).toBeTruthy();
+    for (const antigo of ['LOCAL', 'DESCRIÇÃO', 'HISTÓRICO', 'PREVISÃO DE REPARO']) {
+      expect(screen.queryByText(antigo)).toBeNull();
+    }
+  });
+
+  it('cada passo do histórico é lido como uma frase, com o texto do andamento', async () => {
+    await renderizarTela(<DetalheScreen />);
+
+    expect(
+      await screen.findByLabelText(/^Recebida, por .*, em \d{2}\/\d{2}\/\d{4} às/),
+    ).toBeTruthy();
   });
 
   it('improcedente mostra a justificativa da operadora', async () => {
@@ -293,7 +323,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     });
     await renderizarTela(<DetalheScreen />);
 
-    expect(await screen.findByText('JUSTIFICATIVA DA OPERADORA')).toBeTruthy();
+    expect(await screen.findByText('Justificativa da operadora')).toBeTruthy();
     expect(screen.getByText('Não há falta de energia no local.')).toBeTruthy();
   });
 
@@ -324,9 +354,9 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
 
     await act(async () => ultimoSocket()!.__emitir('denuncia:status-atualizado', evento()));
 
-    expect(await screen.findByText('EM ATENDIMENTO')).toBeTruthy();
-    expect(screen.queryByText('RECEBIDA')).toBeNull();
-    expect(screen.getByText('PREVISÃO DE REPARO')).toBeTruthy();
+    expect(await screen.findByLabelText('Status: Em atendimento')).toBeTruthy();
+    expect(screen.queryByLabelText('Status: Recebida')).toBeNull();
+    expect(screen.getByText('Previsão de reparo')).toBeTruthy();
     expect(screen.getByText('Equatorial Pará · 19/11/2026 às 14:10')).toBeTruthy();
     expect(mockFetch.mock.calls.length).toBe(chamadas);
   });
@@ -346,7 +376,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
       ),
     );
 
-    expect(await screen.findByText('IMPROCEDENTE')).toBeTruthy();
+    expect(await screen.findByLabelText('Status: Improcedente')).toBeTruthy();
     expect(screen.getAllByText('Falha no padrão do imóvel.').length).toBeGreaterThan(0);
   });
 
@@ -358,7 +388,7 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
       ultimoSocket()!.__emitir('denuncia:status-atualizado', evento({ id: 'outra' })),
     );
 
-    expect(screen.getByText('RECEBIDA')).toBeTruthy();
+    expect(screen.getByLabelText('Status: Recebida')).toBeTruthy();
   });
 });
 
@@ -367,7 +397,7 @@ describe('T-08 Perfil: Minhas denúncias', () => {
     await renderizarTela(<PerfilScreen />);
 
     const item = await screen.findByRole('button', { name: 'Minhas denúncias, 1 em aberto' });
-    expect(screen.getByText('1 EM ABERTO')).toBeTruthy();
+    expect(screen.getByText('1 em aberto')).toBeTruthy();
 
     await fireEvent.press(item);
     expect(mockPush).toHaveBeenCalledWith('/minhas-denuncias');
@@ -379,7 +409,7 @@ describe('T-08 Perfil: Minhas denúncias', () => {
 
     await screen.findByRole('button', { name: 'Minhas denúncias' });
     await waitFor(() => expect(mockFetch).toHaveBeenCalled());
-    expect(screen.queryByText(/EM ABERTO/)).toBeNull();
+    expect(screen.queryByText(/em aberto/)).toBeNull();
   });
 
   it('se a lista falhar, o item continua funcionando (sem contador)', async () => {
@@ -387,6 +417,6 @@ describe('T-08 Perfil: Minhas denúncias', () => {
     await renderizarTela(<PerfilScreen />);
 
     expect(await screen.findByRole('button', { name: 'Minhas denúncias' })).toBeTruthy();
-    expect(screen.queryByText(/EM ABERTO/)).toBeNull();
+    expect(screen.queryByText(/em aberto/)).toBeNull();
   });
 });

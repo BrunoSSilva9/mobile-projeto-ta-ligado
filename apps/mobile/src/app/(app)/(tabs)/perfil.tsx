@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
+import { Cartao } from '@/components/Cartao';
 import { Logo } from '@/components/Logo';
 import { contarEmAberto, useMinhasDenuncias } from '@/features/acompanhamento/hooks';
 import { encerrarSessao } from '@/services/api';
@@ -25,15 +26,15 @@ export default function PerfilScreen() {
         <Logo />
       </View>
       <View style={styles.corpo}>
-        <Text accessibilityRole="header" style={[type.h1, styles.titulo]}>
+        <Text accessibilityRole="header" style={[type.title1, styles.titulo]}>
           Perfil
         </Text>
 
-        <View style={styles.cartao}>
+        <Cartao style={styles.cartao}>
           <Linha rotulo="Nome" valor={usuario?.nome} />
           <Linha rotulo="E-mail" valor={usuario?.email} />
           <Linha rotulo="Telefone" valor={usuario?.telefone ?? 'Não informado'} />
-        </View>
+        </Cartao>
 
         <Pressable
           accessibilityRole="button"
@@ -44,8 +45,8 @@ export default function PerfilScreen() {
           style={styles.item}
         >
           <Ionicons name="document-text-outline" size={22} color={colors.action} />
-          <Text style={[type.subtitle, styles.itemTexto]}>Minhas denúncias</Text>
-          {abertas ? <Text style={[type.label, styles.contador]}>{abertas} EM ABERTO</Text> : null}
+          <Text style={[type.title3, styles.itemTexto]}>Minhas denúncias</Text>
+          {abertas ? <Text style={[type.label, styles.contador]}>{abertas} em aberto</Text> : null}
           <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
         </Pressable>
 
@@ -74,13 +75,8 @@ const styles = StyleSheet.create({
   cabecalho: { height: 64, justifyContent: 'center', paddingHorizontal: space.l },
   corpo: { flex: 1, padding: space.l, gap: space.l },
   titulo: { color: colors.textPrimary },
-  cartao: {
-    backgroundColor: colors.bgCard,
-    borderRadius: radius.cardLarge,
-    padding: space.l,
-    gap: space.m,
-  },
-  linha: { gap: space.half },
+  cartao: { gap: space.m },
+  linha: { gap: space.xs },
   rotulo: { color: colors.textSecondary },
   valor: { color: colors.textPrimary },
   item: {
@@ -88,9 +84,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.m,
-    backgroundColor: colors.bgCard,
-    borderRadius: radius.card,
+    backgroundColor: colors.surface,
+    borderRadius: radius.cartao,
+    borderWidth: 1,
+    borderColor: colors.borderDivider,
     paddingHorizontal: space.l,
+    paddingVertical: space.s,
   },
   itemTexto: { flex: 1, color: colors.textPrimary },
   contador: { color: colors.action },

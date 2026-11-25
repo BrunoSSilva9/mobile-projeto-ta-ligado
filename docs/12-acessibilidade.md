@@ -26,27 +26,44 @@ Meta: **WCAG 2.2 nível AA** no app (adaptado ao mobile) e no painel web (RNF-02
 - Campos: `label` ligado ao campo, `accessibilityHint` para formato (ex.: telefone) e erro anunciado ao aparecer (`accessibilityLiveRegion="polite"`; `AccessibilityInfo.announceForAccessibility`).
 - **Atualizações em tempo real** (status mudou) são anunciadas de forma educada, sem tirar o foco do usuário.
 - **Mapa:** é um elemento visual difícil para leitores de tela. Toda informação do mapa tem **equivalente em lista** (lista de ocorrências e status do bairro em texto), e o mapa tem rótulo "Mapa de ocorrências. A lista abaixo tem as mesmas informações".
-- Botão central "Denunciar" com rótulo explícito, e ordem de foco: Início → Ocorrências → Denunciar → Perfil.
+- Barra inferior com texto em todos os itens; ordem de foco: Início → Mapa → Denunciar → Perfil.
+- **Componentes do design system v2:** `CartaoDeEscolha` é `radio` com `checked`, e seus cartões ficam num `radiogroup` rotulado; `FilterChip` é `radio` com `selected`; `CabecalhoDePasso` tem uma `progressbar` com `accessibilityValue` (mín. 1, máx. 3, agora, texto "Passo X de 3"); `SeloDeSituacao` é lido como "Situação da energia: Sem energia" e `StatusBadge` como "Status: Recebida" (ícone e texto, nunca só cor); `Aviso` anuncia como alerta (`accessibilityRole="alert"` no texto, região `polite`) e pode ser silencioso (`anunciar={false}`); o botão de mostrar senha tem o texto "Mostrar"/"Ocultar" visível e o rótulo "Mostrar senha"/"Ocultar senha"; "Voltar" tem ícone **e** texto.
+- **Mapa:** o título "Onde falta energia" é `header`; a busca tem rótulo visível "Procurar bairro ou folha"; os chips são `radio` com `selected` e ícone, lidos como "Sem energia (1)"; cada lugar com aviso é um botão lido como "Nova Marabá (Folha 28), Sem energia, Há 5 min · 1 aviso" com a dica "Mostra o bairro no mapa" (o mapa em si tem equivalente em lista).
+- **Início:** o cartão da energia é lido como "Situação da energia: Sem energia. 2 denúncias em aberto"; "Trocar", "Usar minha localização", "Ajuda" e "Ligar para a Equatorial" são botões com texto; os 3 passos de "Como funciona" são lidos como "Passo 1: …". O aviso do 193 na Ajuda é leitura normal (não é anunciado como alerta ao abrir a tela).
+- **Denunciar (3 passos):** cada passo tem o título como `header` e, ao trocar de passo, o leitor de tela anuncia "Passo X de 3: título"; os cartões do passo 1 são `radio` num `radiogroup`; "Continuar" desativado explica o motivo no próprio texto ("Escolha uma opção para continuar"); o rodapé com o botão principal fica fixo, fora da rolagem; o botão voltar do Android volta um passo; erro de campo vira texto com ícone (nunca só cor) e leva ao passo do campo; o botão ocupado ao enviar tem `busy`.
+- **Denúncia enviada:** o título é `header`; o número da denúncia é lido como "Protocolo TL-…" e o selo como "Status: Recebida" (ícone e texto); o visto verde é decorativo, pois a confirmação está no título e no texto.
+- **Mapa (marcadores):** cada marcador tem ícone, formato (redondo; Normal quadrado) e contorno; o pino diz a situação em texto (`title`: "Sem energia") e o bairro (`description`). A **área tracejada** em volta de bairros afetados é só apoio visual, nunca a única pista. A legenda tem os 3 marcadores com texto e é lida como "Legenda do mapa: Sem energia, Oscilando, Normal". **"Onde estou"** é botão com ícone e texto (48 dp) e, sem localização, mostra uma mensagem clara com o que fazer.
+- **Login e cadastro:** o botão de enviar tem nome próprio para leitor de tela ("Entrar na conta", "Cadastrar e criar conta"), diferente dos botões "Entrar" e "Cadastrar" da barra (que ficam como `selected`); erro geral em `Aviso` (ícone + texto, anunciado como alerta); links dos termos em azul **e sublinhados**.
+- **Detalhe e histórico:** cada passo do histórico é lido como "Recebida, por …, em …" e tem o ícone do andamento (a cor nunca é a única pista); a justificativa de improcedente é um aviso com ícone.
 - Título de cada tela marcado como `header` para navegação por títulos.
 - No painel: HTML semântico, `aria-live` para novas denúncias (`role="status"`), tabela com `scope`, foco gerenciado ao abrir/fechar diálogos.
 
-## 3. Contraste: análise do protótipo
+## 3. Contraste (design system v2)
 
-> **Os tokens do código têm prioridade sobre o Figma** nos dois casos reprovados abaixo ([06](06-design-system.md#6-desvios-deliberados-do-figma-os-tokens-do-código-têm-prioridade)).
+> **Substitui a análise do protótipo verde** (decisão D-01, que deixou de valer com a S-44). Os valores estão em [06](06-design-system.md) e **cada par abaixo é testado** em `apps/mobile/src/theme/theme.test.ts`. A meta é **4,5:1 para texto** (WCAG 1.4.3) e **3:1 para ícones, bordas e marcadores** (WCAG 1.4.11).
 
-Razões calculadas com base nas cores do Figma ([06](06-design-system.md)). **Pontos a corrigir ao implementar:**
+| Par | Razão | Mínimo |
+|---|---|---|
+| Branco sobre `action` `#1D4ED8` (botão) | 6,70 | 4,5 |
+| `action` sobre `actionSoft` · sobre branco · sobre `bgPage` | 6,08 · 6,70 · 6,25 | 4,5 |
+| `actionPressed` sobre `actionSoft` · sobre a pílula da aba | 9,40 · 8,27 | 4,5 |
+| `textPrimary` sobre `bgPage` | 16,65 | 4,5 |
+| `textSecondary` sobre branco · sobre `bgPage` | 7,58 · 7,07 | 4,5 |
+| `disabledText` sobre `disabledBg` | 6,15 | 4,5 |
+| Sem energia: texto sobre o selo · sobre branco | 5,45 · 6,57 | 4,5 |
+| Oscilando: texto sobre o selo · sobre branco | 6,62 · 7,52 | 4,5 |
+| Normal: texto sobre o selo · sobre branco | 5,11 · 5,69 | 4,5 |
+| Recebida · Em atendimento · Resolvida (texto sobre o selo) | 9,45 · 9,40 · 5,11 | 4,5 |
+| Erro `danger` sobre branco | 6,57 | 4,5 |
+| Ícone sobre o marcador: Sem energia · Oscilando · Normal | 4,83 · 6,25 · 5,69 | 3 |
+| `borderField` sobre branco · sobre `bgPage` | 4,76 · 4,44 | 3 |
+| Raio lima sobre `brandNavy` | 10,96 | 3 |
 
-| Combinação | Razão aprox. | Resultado | Ação |
-|---|---|---|---|
-| Branco sobre `#34A853` (botões primários, texto de 12 a 14 px) | **~3,1:1** | **Reprova** para texto normal (AA exige 4,5:1) | **Decidido (D-01):** botões com texto branco usam `#006E2C` (≈ 6,4:1). `#34A853` fica só em elementos sem texto (FAB, pontos de status) |
-| Texto âmbar `#CE8300` sobre branco (legenda "Oscilação", 11 px) | **~3,1:1** | Reprova | **Decidido (D-01):** texto âmbar usa `#855300` (≈ 6,5:1); `#CE8300` só em ícones, pontos e bordas |
-| Branco sobre `#BA1A1A` | ~6,5:1 | Passa | — |
-| `#6E7A6D` (placeholder) sobre branco | ~4,5:1 | No limite | Manter só em placeholders e, no formulário, **sempre ter rótulo visível** |
-| Lima `#A3E635` sobre `#16382B` | ~8,5:1 | Passa | — |
-| Texto `#3E4A3E` sobre `#F1FCF3` | > 9:1 | Passa | — |
-| Texto de 11 px (selos e rótulos) | — | Tamanho muito pequeno | Mínimo de 12 sp no app e permitir escala |
+**Cor nunca sozinha (WCAG 1.4.1):** toda situação da energia e todo andamento tem **ícone de formato diferente e texto**. O marcador de "Normal" é **quadrado**; os outros são circulares.
 
-> As razões foram estimadas pela fórmula de luminância relativa da WCAG; a validação final deve ser feita com ferramenta (ex.: contraste do Figma, Accessibility Scanner).
+**Marcador "Oscilando" no mapa:** o laranja `#F79009` contra a borda branca dá só 2,35:1. O sentido é carregado pelo ícone escuro (6,25:1) e pelo formato; para o marcador também se destacar do mapa, ele tem um **contorno externo de 2 dp** na cor de texto da situação (`#93370D`), com 3:1 ou mais contra terreno, ruas, parque, água e a borda branca (decisão R-14, testada).
+
+> As razões usam a fórmula de luminância relativa da WCAG (a mesma de `theme/contrast.ts`). A validação final em aparelho deve usar o Accessibility Scanner (Android) e o Inspetor de Acessibilidade (iOS).
 
 ## 4. Alvos de toque no protótipo
 
@@ -65,7 +82,8 @@ Razões calculadas com base nas cores do Figma ([06](06-design-system.md)). **Po
 
 ## 5. Fontes dinâmicas
 
-- Usar tamanhos escaláveis do sistema (`allowFontScaling` padrão) com `maxFontSizeMultiplier` ≈ 2 nos textos de interface densos.
+- Usar tamanhos escaláveis do sistema (`allowFontScaling` padrão), **sem** `maxFontSizeMultiplier` nas telas (decisão R-15). **Exceção possível só nos rótulos da barra inferior**, limitados a 1,5× se quebrarem a barra no teste em aparelho; qualquer exceção é registrada aqui.
+- A fonte é a **Atkinson Hyperlegible**, com corpo em 18 e **mínimo de 14** em qualquer texto (`caption`); sem `letterSpacing` negativo e sem texto todo em maiúsculas (testado em `theme.test.ts`).
 - Os layouts não podem usar altura fixa para texto (cartões, chips, botões crescem com a fonte). Os campos usam `minHeight`.
 - Testar com **200%** em Android ("Tamanho da fonte") e iOS ("Texto maior"). Incluir esse teste no roteiro de verificação da seção 7.
 - A barra inferior com rótulos pode quebrar linha; os rótulos ficam abaixo do ícone e o componente cresce em altura.

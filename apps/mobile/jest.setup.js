@@ -13,7 +13,11 @@ jest.mock('@react-native-community/netinfo', () =>
 jest.mock('react-native-maps', () => {
   const React = require('react');
   const { View } = require('react-native');
-  const MapView = (props) => React.createElement(View, { testID: 'mapa', ...props });
+  const animarParaRegiao = jest.fn();
+  const MapView = ({ ref, ...props }) => {
+    React.useImperativeHandle(ref, () => ({ animateToRegion: animarParaRegiao }));
+    return React.createElement(View, { testID: 'mapa', ...props });
+  };
   const Marker = (props) =>
     React.createElement(View, {
       testID: 'pino',
@@ -26,7 +30,13 @@ jest.mock('react-native-maps', () => {
       accessibilityLabel: JSON.stringify({ center: props.center, strokeColor: props.strokeColor }),
       ...props,
     });
-  return { __esModule: true, default: MapView, Marker, Circle };
+  return {
+    __esModule: true,
+    default: MapView,
+    Marker,
+    Circle,
+    __animarParaRegiao: animarParaRegiao,
+  };
 });
 
 // Socket.IO: cliente falso e controlável. Os testes pegam os sockets criados com

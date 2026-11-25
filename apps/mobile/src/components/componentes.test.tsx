@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/Checkbox';
 import { EmptyState, ErrorState, LoadingState } from '@/components/Estados';
 import { TextField } from '@/components/TextField';
 import { TopAuthBar } from '@/components/TopAuthBar';
-import { size } from '@/theme';
+import { colors, size } from '@/theme';
 
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
@@ -216,13 +216,17 @@ describe('TopAuthBar', () => {
     });
   });
 
-  it('os botões têm 36 dp visíveis e área de toque de pelo menos 48 dp (hitSlop)', async () => {
+  it('os botões têm 48 dp de altura, o ativo é azul cheio e está selecionado', async () => {
     await render(<TopAuthBar ativo="entrar" />);
-    const botao = screen.getByRole('button', { name: 'Entrar' });
-    const altura = estiloDe(botao).height as number;
-    const hitSlop = botao.props.hitSlop as { top: number; bottom: number };
+    const entrar = screen.getByRole('button', { name: 'Entrar' });
+    const cadastrar = screen.getByRole('button', { name: 'Cadastrar' });
 
-    expect(altura + hitSlop.top + hitSlop.bottom).toBeGreaterThanOrEqual(size.touchMin);
+    expect(estiloDe(entrar).minHeight).toBeGreaterThanOrEqual(size.touchMin);
+    expect(estiloDe(cadastrar).minHeight).toBeGreaterThanOrEqual(size.touchMin);
+    expect(entrar.props.accessibilityState).toMatchObject({ selected: true });
+    expect(estiloDe(entrar).backgroundColor).toBe(colors.action);
+    expect(estiloDe(cadastrar).backgroundColor).toBe(colors.surface);
+    expect(estiloDe(cadastrar).borderColor).toBe(colors.action);
   });
 });
 

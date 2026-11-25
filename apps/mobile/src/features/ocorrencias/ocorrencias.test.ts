@@ -1,7 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 
 import { tempoDesde } from '@/features/acompanhamento/formatacao';
-import { colors } from '@/theme';
 import { listarOcorrencias, listarStatusDosBairros, LIMITE_DA_LISTA } from './api';
 import {
   aplicarStatusDoBairro,
@@ -11,14 +10,7 @@ import {
   eventoDoBairroValido,
   refazerConsultasPublicas,
 } from './cache';
-import {
-  CHIPS,
-  corDaOcorrencia,
-  CORES_DO_STATUS_DO_BAIRRO,
-  redeEstavel,
-  rotuloDaOcorrencia,
-  type StatusDosBairros,
-} from './tipos';
+import { CHIPS, redeEstavel, type StatusDosBairros } from './tipos';
 
 const mockGet = jest.fn();
 jest.mock('@/services/api', () => ({ http: { get: (...a: unknown[]) => mockGet(...a) } }));
@@ -51,42 +43,17 @@ const status = (): StatusDosBairros => ({
   ],
 });
 
-describe('tipos e cores (RN-007, RN-008)', () => {
+describe('tipos (RN-008, chips)', () => {
   it('rede estável só quando o bairro está normal (S-02)', () => {
     expect(redeEstavel('NORMAL')).toBe(true);
     expect(redeEstavel('OSCILACAO')).toBe(false);
     expect(redeEstavel('SEM_LUZ')).toBe(false);
   });
 
-  it('cores: vermelho sem luz, âmbar oscilação, verde normal', () => {
-    expect(CORES_DO_STATUS_DO_BAIRRO.SEM_LUZ.destaque).toBe(colors.status.noPower);
-    expect(CORES_DO_STATUS_DO_BAIRRO.OSCILACAO.destaque).toBe(colors.status.flicker);
-    expect(CORES_DO_STATUS_DO_BAIRRO.NORMAL.destaque).toBe(colors.status.restored);
-  });
-
-  it('texto do selo usa as cores de texto com contraste (D-01), não o âmbar do ponto', () => {
-    expect(CORES_DO_STATUS_DO_BAIRRO.OSCILACAO.texto).toBe(colors.status.flickerText);
-    expect(CORES_DO_STATUS_DO_BAIRRO.OSCILACAO.texto).not.toBe(colors.status.flicker);
-  });
-
-  it('ocorrência: cor e rótulo pelo tipo; resolvida é "Restabelecida" em verde', () => {
-    expect(corDaOcorrencia({ tipo: 'SEM_ENERGIA', status: 'RECEBIDA' })).toBe(
-      colors.status.noPower,
-    );
-    expect(corDaOcorrencia({ tipo: 'OSCILACAO', status: 'EM_ATENDIMENTO' })).toBe(
-      colors.status.flicker,
-    );
-    expect(corDaOcorrencia({ tipo: 'SEM_ENERGIA', status: 'RESOLVIDA' })).toBe(
-      colors.status.restored,
-    );
-    expect(rotuloDaOcorrencia({ tipo: 'SEM_ENERGIA', status: 'RECEBIDA' })).toBe('Sem luz');
-    expect(rotuloDaOcorrencia({ tipo: 'OSCILACAO', status: 'RECEBIDA' })).toBe('Oscilação');
-    expect(rotuloDaOcorrencia({ tipo: 'OSCILACAO', status: 'RESOLVIDA' })).toBe('Restabelecida');
-  });
-
-  it('os quatro chips, na ordem da T-04', () => {
-    expect(CHIPS.map((c) => c.rotulo)).toEqual(['Todos', 'Sem luz', 'Oscilação', 'Restabelecidos']);
+  it('os quatro chips da aba Mapa, na ordem, cada um com ícone', () => {
+    expect(CHIPS.map((c) => c.rotulo)).toEqual(['Todos', 'Sem energia', 'Oscilando', 'Normal']);
     expect(CHIPS.map((c) => c.valor)).toEqual([undefined, 'SEM_LUZ', 'OSCILACAO', 'RESTABELECIDO']);
+    expect(CHIPS.map((c) => c.icone)).toEqual(['list', 'flash-off', 'pulse', 'checkmark-circle']);
   });
 });
 

@@ -135,15 +135,16 @@ Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 fora
 | S-41 | Rotas do app reorganizadas em `(auth)` e `(app)/(tabs)` com `Stack.Protected` (API a conferir no SDK 58). *(a confirmar)* |
 | S-42 | A Fase 1 inteira é feita em **uma branch (`feature/fase-1`) e um PR**, por Bruno, sem prazos fixos ([16](16-plano-fase-1.md)). *(definida em 2026-11-19)* |
 | S-43 | Banco de desenvolvimento e de testes em PostgreSQL local (Docker); um PostgreSQL hospedado gratuito é opcional e só para demonstração. *(definida em 2026-11-19)* |
+| S-44 | **Redesign do app do cidadão (design system v2), aprovado em 2026-11-23:** paleta azul (azul para tocar; vermelho, laranja e verde só para a situação da energia, sempre com ícone e texto), fonte **Atkinson Hyperlegible** no lugar da Plus Jakarta Sans, letra grande (mínimo de 14), a aba "Ocorrências" passa a se chamar **"Mapa"** só no texto (a rota continua `/ocorrencias`) e o fluxo de denunciar vira um passo a passo de **3 passos**. Só `apps/mobile`: painel, API, contratos e regras de negócio não mudam. A Fase 2 vem depois ([06](06-design-system.md), [17](17-plano-redesign.md), [ADR-0006](adr/0006-redesign-design-system-v2.md)). *(definida em 2026-11-23)* |
 
 ### 8.1.1 Decisões de contraste, toque e prioridade de tokens (2026-11-18)
 
 | ID | Decisão |
 |---|---|
-| D-01 | Botões com texto branco usam `#006E2C`; texto âmbar usa `#855300`. **Os tokens do código têm prioridade sobre o Figma** nesses casos ([06](06-design-system.md), [12](12-acessibilidade.md)). |
+| D-01 | ~~Botões com texto branco usam `#006E2C`; texto âmbar usa `#855300`.~~ **Substituída pela S-44 (2026-11-23):** a paleta nova (`action` `#1D4ED8`, textos de situação) tem os contrastes verificados por teste ([06](06-design-system.md), [12](12-acessibilidade.md)). A regra "os tokens do código têm prioridade sobre o Figma" continua, e agora o app segue o documento 06, não o Figma. |
 | D-02 | Alvos de toque com no mínimo **48 dp**, com `hitSlop` ou *padding* quando o elemento visual for menor ([12](12-acessibilidade.md)). |
 | D-03 | Desenvolvimento com **Expo Go** (Must, tempo real por WebSocket). Push e *development build* ficam por último ([14](14-roadmap-e-backlog.md)). |
-| D-04 | Telas e estados que faltam no Figma são implementados a partir do design system e de [05](05-telas-e-fluxos.md); nada é criado no Figma por enquanto. |
+| D-04 | Telas e estados que faltam no Figma são implementados a partir do design system e de [05](05-telas-e-fluxos.md); nada é criado no Figma por enquanto. (Desde a S-44, o app do cidadão segue o design system v2.) |
 
 ### 8.2 Pendências (dependem da equipe e não bloqueiam o desenvolvimento)
 

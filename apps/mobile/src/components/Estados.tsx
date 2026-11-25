@@ -37,8 +37,9 @@ export function CarregandoOuOffline({
   mensagem?: string;
   onTentarDeNovo?: () => void;
 }) {
-  if (pausada)
+  if (pausada) {
     return <ErrorState mensagem={MENSAGEM_SEM_DADOS_OFFLINE} onTentarDeNovo={onTentarDeNovo} />;
+  }
   return <LoadingState mensagem={mensagem} />;
 }
 
@@ -55,8 +56,8 @@ export function EmptyState({
 }) {
   return (
     <View style={styles.centro}>
-      <Ionicons name="file-tray-outline" size={40} color={colors.textMuted} />
-      <Text accessibilityRole="header" style={[type.subtitle, styles.titulo]}>
+      <Ionicons name="file-tray-outline" size={48} color={colors.textSecondary} />
+      <Text accessibilityRole="header" style={[type.title3, styles.titulo]}>
         {titulo}
       </Text>
       {descricao ? <Text style={[type.body, styles.texto]}>{descricao}</Text> : null}
@@ -74,7 +75,7 @@ export function ErrorState({
 }) {
   return (
     <View style={styles.centro}>
-      <Ionicons name="alert-circle-outline" size={40} color={colors.status.noPower} />
+      <Ionicons name="alert-circle-outline" size={48} color={colors.danger} />
       {/* O papel de alerta fica no texto: assim o botão abaixo continua sendo um elemento à parte. */}
       <Text
         accessibilityRole="alert"

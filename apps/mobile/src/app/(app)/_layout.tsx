@@ -17,6 +17,7 @@ export default function AppLayout() {
           <Stack.Screen name="denuncia/sucesso" options={{ gestureEnabled: false }} />
           <Stack.Screen name="denuncia/[id]" />
           <Stack.Screen name="minhas-denuncias" />
+          <Stack.Screen name="ajuda" />
         </Stack>
       </LocalizacaoProvider>
     </SocketProvider>
