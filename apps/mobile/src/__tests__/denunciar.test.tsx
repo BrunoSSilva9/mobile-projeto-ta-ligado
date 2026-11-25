@@ -585,7 +585,12 @@ describe('Envio (RF-007, RF-012)', () => {
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith({
         pathname: '/denuncia/sucesso',
-        params: { id: 'd1', protocolo: 'TL-2026-000001' },
+        params: {
+          id: 'd1',
+          protocolo: 'TL-2026-000001',
+          logradouro: 'Rua das Flores, 10',
+          bairro: 'Nova Marabá (Folha 28)',
+        },
       }),
     );
     expect(await AsyncStorage.getItem(chaveDoRascunho('u1'))).toBeNull();

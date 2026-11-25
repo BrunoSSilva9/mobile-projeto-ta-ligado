@@ -169,7 +169,12 @@ export default function DenunciarScreen() {
             if (usuarioId) await limparRascunho(usuarioId);
             router.replace({
               pathname: '/denuncia/sucesso',
-              params: { id: denuncia.id, protocolo: denuncia.protocolo },
+              params: {
+                id: denuncia.id,
+                protocolo: denuncia.protocolo,
+                logradouro: dados.logradouro,
+                ...(bairroNome ? { bairro: bairroNome } : {}),
+              },
             });
           },
           onError: (erro) => {

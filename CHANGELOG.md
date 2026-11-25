@@ -33,6 +33,9 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
   - Novos: `features/denuncia/passos.ts` (passos, campos por passo, anúncio) e `components/denuncia/{PassoTipo,PassoLocal,PassoDetalhes}`.
   - **18 testes novos** (665 no app, 33 suítes): `denunciar.test.tsx` reescrito (41 testes: os 28 cenários anteriores portados mais navegação entre passos, "Continuar" desativado, anúncios, botão voltar do Android e "Não, quero corrigir") e `passos.test.ts`. Nos testes de rota só mudou o texto procurado ("O que está acontecendo?"). Documentação: `docs/05` (T-05), `docs/06` e `docs/12`.
 
+- **R7 – Denúncia enviada** (design system v2): `denuncia/sucesso.tsx` refeita: círculo verde-claro com visto, "Denúncia enviada!", "A Equatorial já recebeu seu aviso. Vamos te avisar aqui quando a equipe estiver a caminho.", cartão com **"Número da denúncia"**, selo **"Recebida"**, local e "Copiar protocolo", e os botões **"Acompanhar minha denúncia"** e **"Voltar ao início"** no rodapé. O formulário agora passa `logradouro` e `bairro` na rota (dados que o app já tinha; **sem mudar a API**); sem eles, a tela mostra só número e selo. O texto "PROTOCOLO" em maiúsculas saiu.
+  - **3 testes novos** (668 no app): selo e local, ausência do local e ausência de maiúsculas/texto antigo; os demais testes de `sucesso.test.tsx` mantidos, só com os textos novos. Documentação: `docs/05` (T-06) e `docs/12`.
+
 ### Adicionado (Fase 1, branch `feature/fase-1`)
 - **Passo 1 – domínio da API** (`apps/api/src/domain`): status do bairro, transições de status (inclui cancelamento, justificativa e resolução em lote), limite de uma denúncia em aberto, permissões e projeção pública anonimizada, previsão de reparo, protocolo, prioridade, bairro mais próximo (Haversine) e taxa de resolução. 190 testes unitários novos, com cobertura de 100% do domínio e limiar de 90% exigido no `vitest.config.ts`.
 
