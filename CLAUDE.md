@@ -26,7 +26,7 @@ docs/         # toda a documentação
 .github/      # templates de issue/PR e CI
 ```
 
-Status atual: Fases 0 e 1 e o **redesign do app (design system v2, `docs/17-plano-redesign.md`)** concluídos e mergeados na `develop`. **Fase 2: plano em `docs/18-plano-fase-2.md`, aguardando aprovação** (decisões S-45 a S-60); será feita por camada (API, painel e app) na branch `feature/fase-2`, uma etapa por vez, com o push como última etapa condicional. Rotas do app em `apps/mobile/src/app/`. Não faça merge na `develop` sem aprovação do usuário.
+Status atual: Fases 0 e 1 e o **redesign do app (design system v2, `docs/17-plano-redesign.md`)** concluídos e mergeados na `develop`. **Fase 2: plano aprovado em `docs/18-plano-fase-2.md`** (decisões S-45 a S-60), em execução por camada (API, painel e app) na branch `feature/fase-2`, uma etapa por vez (F2-0 concluída), com o push como última etapa condicional. Rotas do app em `apps/mobile/src/app/`. Não faça merge na `develop` sem aprovação do usuário.
 
 ## Onde fica cada documento
 
@@ -58,7 +58,7 @@ Status atual: Fases 0 e 1 e o **redesign do app (design system v2, `docs/17-plan
 ## Convenções
 
 - **Rastreabilidade:** IDs `RF-xxx`, `RNF-xxx`, `RN-xxx`, `US-xxx`, `UC-xx`, `T-xx`/`P-xx` (telas), `B-xxx` (backlog), `S-xx`, `PEN-xx`. Ao mudar uma regra, atualize RF/RN/US/UC/backlog **e mantenha os IDs consistentes entre os documentos**.
-- **Decisões:** registre como `S-xx` em `docs/01-visao-e-escopo.md` (seção 8). Decisões aprovadas S-01 a S-21; S-22 a S-43 aguardam confirmação, exceto S-33, S-38, S-42 e S-43, já definidas. S-44 (redesign) e S-45 a S-50, S-52 a S-54 (Fase 2) estão definidas; S-51 e S-55 a S-60 aguardam confirmação. Não invente funcionalidades que não estejam no Figma ou nas decisões documentadas.
+- **Decisões:** registre como `S-xx` em `docs/01-visao-e-escopo.md` (seção 8). Decisões aprovadas S-01 a S-21; S-22 a S-43 aguardam confirmação, exceto S-33, S-38, S-42 e S-43, já definidas. S-44 (redesign) e S-45 a S-60 (Fase 2) estão definidas. Não invente funcionalidades que não estejam no Figma ou nas decisões documentadas.
 - **Regras de negócio** vivem em `apps/api/src/domain` (funções puras, com testes unitários). Meta: ≥ 90% de cobertura nesse módulo.
 - **Design (v2):** use os tokens de `docs/06-design-system.md` (`apps/mobile/src/theme`); nenhuma cor ou fonte solta. **Azul é para tocar; vermelho, laranja e verde só mostram a situação da energia, e sempre com ícone e texto.** Todo ícone tem texto visível, sem texto todo em maiúsculas, fonte Atkinson Hyperlegible (mínimo 14), alvos ≥ 48 dp e botões/campos de 56. Um teste (`apps/mobile/src/theme/regras-do-tema.test.ts`) falha se achar cor `#RRGGBB`/`rgba(`, `fontSize`, `fontWeight`, `letterSpacing`, `toUpperCase()` ou nome de fonte fora de `src/theme`. O painel mantém o tema verde próprio.
 - **Privacidade:** **não coletar CPF nem data de nascimento.** Visibilidade de dados por papel conforme RN-014. Nada de dados pessoais em logs.

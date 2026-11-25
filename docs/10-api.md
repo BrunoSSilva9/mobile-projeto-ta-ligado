@@ -25,6 +25,7 @@ Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastr
 | 400 | `VALIDACAO_ERRO` | Campos inválidos ou ausentes (`detalhes` por campo) |
 | 401 | `NAO_AUTENTICADO` / `CREDENCIAIS_INVALIDAS` | Token ausente/expirado; e-mail ou senha incorretos |
 | 403 | `SEM_PERMISSAO` | Papel insuficiente ou recurso de outro usuário (RN-014) |
+| 403 | `SENHA_INCORRETA` | Senha atual errada ao excluir a conta (`DELETE /me`, S-59). É `403`, e não `401`, para o app não tratar como sessão expirada |
 | 404 | `NAO_ENCONTRADO` | Recurso inexistente |
 | 409 | `EMAIL_JA_CADASTRADO` | E-mail repetido (RN-022) |
 | 409 | `DENUNCIA_EM_ABERTO` | Já existe denúncia em aberto do autor (RN-006). O corpo traz `erro.dados.denunciaEmAbertoId` para o app abrir essa denúncia |
@@ -75,7 +76,14 @@ Erros: 401 `CREDENCIAIS_INVALIDAS`, 429. O cliente recusa o papel que não for o
 | PUT | `/me/push-token` | Cidadão | Registra o token de push `{ "token", "plataforma" }` | RF-025 |
 | DELETE | `/me/push-token` | Cidadão | Remove o token (logout) | RF-004 |
 
-`DELETE /me` → `204`. Cancela denúncias em aberto, remove dados pessoais e anonimiza as denúncias.
+**`DELETE /me`** (RN-024, decisões S-50 e S-59)
+```json
+// requisição
+{ "senha": "minhasenha1" }
+// 204, sem corpo
+```
+A API confere a senha atual antes de apagar. Numa transação: remove nome, e-mail, telefone, hash da senha, tokens de push, fotos (registros; os arquivos são apagados logo depois) e a resposta de necessidade especial; mantém as denúncias e o histórico **sem vínculo** com a conta. **Uma denúncia em aberto continua aberta** (o painel mostra "Conta excluída"). Depois, desconecta os sockets da conta; o token antigo passa a receber `401`.
+Erros: `400 VALIDACAO_ERRO` (sem senha), `403 SENHA_INCORRETA` ("Senha incorreta.", sem mais detalhes; nada é apagado), `403 SEM_PERMISSAO` (operador), `429 MUITAS_REQUISICOES` (mesmo limite do login: 5 falhas por minuto, por IP e por conta, S-18).
 
 ### Bairros e indicadores
 

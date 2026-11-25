@@ -62,7 +62,7 @@ Para ambiente de demonstração, os dados são fictícios e podem ser apagados a
 |---|---|
 | Confirmação e acesso | Tela Perfil mostra os dados; "Minhas denúncias" lista o que foi enviado |
 | Correção | Edição de nome e telefone no Perfil (RF-005) |
-| Eliminação | "Excluir conta" (RF-006, RN-024) |
+| Eliminação | "Excluir minha conta" no Perfil (RF-006, RN-024): tela própria que explica o que é apagado e o que fica, pede a **senha atual** e uma confirmação explícita (S-51, S-59) |
 | Portabilidade | Fora do MVP; sob solicitação, exportação em JSON feita pela equipe (S-31) |
 | Informação sobre compartilhamento | Termos e Política descrevem o compartilhamento com a Equatorial Pará |
 | Revogação do consentimento | Exclusão da conta e permissões do sistema |
@@ -78,6 +78,7 @@ Para ambiente de demonstração, os dados são fictícios e podem ser apagados a
 - **Fotos** com nome aleatório, servidas apenas por rota autenticada ao autor e ao operador (RNF-015); tipos e tamanhos validados no servidor.
 - **Auditoria:** cada mudança de status registra quem, o quê e quando (RN-011). O operador não consegue apagar histórico.
 - **Mensagens de erro genéricas** no login; *rate limit* (S-18).
+- **Exclusão de conta** exige a **senha atual** (`DELETE /me`, S-59): senha errada responde `403 SENHA_INCORRETA` sem mais detalhes e não apaga nada; a rota tem o mesmo limite de tentativas do login. Isso impede que um token roubado ou um celular desbloqueado apague a conta.
 
 ## 7. Proteção contra denúncias falsas, duplicadas e spam
 

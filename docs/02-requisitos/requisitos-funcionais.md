@@ -109,7 +109,7 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
   - Editar o endereço mantém as coordenadas originais do GPS, salvo se o usuário mover o pino (decisão S-23).
 
 ### RF-009 – Anexar fotos
-- **Descrição:** anexo **opcional** de até 3 fotos (JPEG/PNG) de até 5 MB cada, da câmera ou da galeria, com opção de remover. Vídeo não é aceito. Texto de apoio: "Se puder, anexe fotos". O app reduz a imagem e remove os metadados (EXIF) antes de enviar; a API remove de novo (decisão S-49). Regra: RN-013.
+- **Descrição:** anexo **opcional** de até 3 fotos de até 5 MB cada (enviadas sempre em JPEG), da câmera ou da galeria, com opção de remover. Vídeo não é aceito. Texto de apoio: "Se puder, anexe fotos". O app reduz a imagem e remove os metadados (EXIF) antes de enviar; a API remove de novo (decisão S-49). Regra: RN-013.
 - **Prioridade:** Should · **Tela:** T-05.
 - **Critérios de aceitação:**
   - Foto acima de 5 MB ou o 4º anexo é recusado com mensagem.
@@ -242,7 +242,7 @@ Telas: `T-xx` = app do cidadão, `P-xx` = painel da operadora. Detalhes e links 
 - **Critérios de aceitação:** sem justificativa, a API retorna 422 e o formulário bloqueia o envio.
 
 ### RF-033 – Informar previsão de reparo
-- **Descrição:** campo opcional com data/hora prevista, editável a qualquer momento enquanto a denúncia estiver em aberto. Regra: RN-009.
+- **Descrição:** campo opcional com data/hora prevista, que o operador pode definir, trocar ou remover a qualquer momento enquanto a denúncia estiver em aberto; cada mudança vai para o histórico (decisão S-60). Regras: RN-009, RN-011.
 - **Prioridade:** Should · **Tela:** P-03.
 - **Critérios de aceitação:** a previsão aparece em T-07 e no card de bairro (T-04) em tempo real; datas passadas são recusadas.
 

@@ -100,7 +100,7 @@ Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 fora
 | S-06 | Protocolo no formato `TL-AAAA-NNNNNN` (ex.: `TL-2026-000123`) (RN-023). |
 | S-07 | A descrição da denúncia é opcional, com até 500 caracteres. |
 | S-08 | Validade do JWT: 7 dias no app e 8 horas no painel. |
-| S-09 | Fotos aceitas: JPEG e PNG, até 3 por denúncia e 5 MB cada (RN-013). |
+| S-09 | Fotos aceitas: até 3 por denúncia e 5 MB cada (RN-013). ~~JPEG e PNG~~: **desde a S-49, a API aceita só JPEG** (o app converte qualquer foto para JPEG antes de enviar). |
 | S-10 | Versões mínimas: Android 8.0 (API 26) e iOS 15.1 (RNF-016). Confirmar contra o Expo SDK escolhido na criação do app. |
 | S-11 | Exclusão de conta remove os dados pessoais e **anonimiza** as denúncias, que permanecem para estatística (RN-024). |
 | S-12 | Senha com no mínimo 8 caracteres (RN-022). |
@@ -140,18 +140,18 @@ Nos documentos, cada decisão aparece como "(decisão S-xx)". **S-01 a S-21 fora
 | S-46 | **Necessidade especial só Sim/Não, sem texto livre** (minimização de dado de saúde). Pergunta: "Alguém no local depende de aparelho elétrico, como respirador ou geladeira de remédios, ou tem necessidade especial?". Com "Sim", aparece um **consentimento específico e destacado**, separado dos Termos (LGPD, art. 11): a informação vai para a Equatorial só para priorizar o atendimento. Sem o aceite, o campo não é enviado (RN-015). *(definida em 2026-11-25)* |
 | S-47 | **Retenção da necessidade especial:** a resposta e o registro do consentimento são apagados quando a denúncia fica Resolvida, Improcedente ou Cancelada (RN-026). *(definida em 2026-11-25)* |
 | S-48 | Pessoas no local: faixas do protótipo (1 a 3, 4 a 8, 9 a 20, Rua toda), opcionais. Pessoas e necessidade especial entram no passo 3 do Denunciar. *(definida em 2026-11-25)* |
-| S-49 | **Fotos:** `expo-image-picker` (câmera e galeria, permissões em linguagem simples); o app reduz a imagem (lado maior ≈ 1600 px, JPEG) e remove o EXIF antes de enviar; a API valida o tipo pelo conteúdo, remove o EXIF de novo, grava com nome aleatório fora de qualquer rota pública e serve só por rota autenticada ao autor e ao operador. Miniaturas com "Remover" (com texto). As fotos são apagadas na exclusão da conta. *(definida em 2026-11-25)* |
+| S-49 | **Fotos:** `expo-image-picker` (câmera e galeria, permissões em linguagem simples); o app **sempre converte para JPEG** e reduz a imagem (lado maior ≈ 1600 px), o que remove o EXIF, inclusive nas fotos da galeria. A API aceita **somente JPEG**, conferido pelo conteúdo do arquivo (assinatura), nunca pela extensão nem pelo `Content-Type`; remove o EXIF de novo; grava com nome aleatório fora de qualquer rota pública e serve só por rota autenticada ao autor e ao operador. Miniaturas com "Remover" (com texto). As fotos são apagadas na exclusão da conta. *(definida em 2026-11-25)* |
 | S-50 | **Exclusão de conta** (RN-024, segue a S-11), numa transação: apaga nome, e-mail, telefone, hash da senha, tokens de push, fotos (arquivos e registros) e a resposta de necessidade especial; mantém as denúncias e o histórico, sem vínculo. **Denúncia em aberto continua aberta e anonimizada** (o operador só perde o contato). O painel mostra "Conta excluída". O app pede confirmação clara e volta ao login. *(definida em 2026-11-25)* |
-| S-51 | Confirmação da exclusão no app: tela com o que é apagado e o que fica, caixa "Entendi que meus dados serão apagados e que isso não pode ser desfeito" e botão "Excluir minha conta", desativado até marcar (sem digitar uma palavra) ([18](18-plano-fase-2.md)). *(a confirmar)* |
+| S-51 | Confirmação da exclusão no app numa **tela própria** (nunca direto no Perfil): o que é apagado e o que fica, `Aviso` no padrão de erro (ícone, texto e borda), o campo "Sua senha atual" (S-59), a caixa "Entendi que meus dados serão apagados e que isso não pode ser desfeito" e o botão azul "Excluir minha conta", desativado até marcar e preencher. Sem digitar uma palavra ([18](18-plano-fase-2.md)). *(definida em 2026-11-25)* |
 | S-52 | **Indicadores dos últimos 30 dias só no painel da operadora** (RF-018, RN-017); o app não exibe indicadores. *(definida em 2026-11-25)* |
 | S-53 | As telas novas do painel na Fase 2 seguem o **tema atual do painel**; alinhar as cores de situação com o app é o Could B-045. *(definida em 2026-11-25)* |
 | S-54 | A Fase 2 é feita na branch **`feature/fase-2`** (a partir da `develop`), uma etapa por vez, com lint, typecheck e testes de todos os workspaces afetados e verificação no celular e no painel. *(definida em 2026-11-25)* |
-| S-55 | "Cancelar denúncia" fica só no detalhe (T-07), não em cada item da lista (T-09) (RF-015). *(a confirmar)* |
-| S-56 | O rascunho do Denunciar guarda pessoas no local, mas não guarda a necessidade especial, o consentimento nem as fotos. *(a confirmar)* |
-| S-57 | API: `multer` (memória, limites de 5 MB e 3 arquivos) para o `multipart`; remoção de EXIF por função própria, sem dependência nativa (JPEG: segmentos APP1 a APP15 e COM; PNG: blocos `eXIf`, `tEXt`, `iTXt`, `zTXt` e `tIME`). *(a confirmar: dependência nova)* |
-| S-58 | `POST /denuncias` aceita JSON (sem fotos) e `multipart` (com fotos); o app usa `multipart` só quando houver foto. *(a confirmar)* |
-| S-59 | `DELETE /me` exige o corpo `{ "confirmacao": true }`. *(a confirmar)* |
-| S-60 | O operador pode remover a previsão de reparo (`previsaoReparo: null`) enquanto a denúncia estiver aberta (RF-033). *(a confirmar)* |
+| S-55 | "Cancelar denúncia" fica só no detalhe (T-07), não em cada item da lista (T-09) (RF-015). *(definida em 2026-11-25)* |
+| S-56 | O rascunho do Denunciar guarda pessoas no local, mas **nunca** a necessidade especial, o consentimento nem as fotos. *(definida em 2026-11-25)* |
+| S-57 | API: `multer` (memória, limites de 5 MB e 3 arquivos), com versão fixada e registrada no [08](08-tecnologias.md). A remoção de EXIF é uma função própria, **só para JPEG**: remove os segmentos APP1 (EXIF e XMP) e mantém a imagem válida, com testes sobre uma foto de exemplo com GPS no EXIF (`jpeg-js` só nos testes, para conferir que a imagem abre). *(definida em 2026-11-25)* |
+| S-58 | `POST /denuncias` aceita JSON (sem fotos) e `multipart` (com fotos); o app usa `multipart` só quando houver foto. Os testes do JSON continuam e os do `multipart` são somados. *(definida em 2026-11-25)* |
+| S-59 | `DELETE /me` exige `{ "senha": "<senha atual>" }`. A API confere a senha antes de apagar; errada, responde `403 SENHA_INCORRETA` ("Senha incorreta."), sem mais detalhes (é `403`, e não `401`, porque o app trata `401` numa rota com sessão como sessão expirada). A rota tem o mesmo limite de tentativas do login (S-18). *(definida em 2026-11-25)* |
+| S-60 | O operador pode definir, trocar e **remover** a previsão de reparo (`previsaoReparo: null`) enquanto a denúncia estiver aberta (RF-033), e **cada mudança da previsão é registrada no histórico** (RN-011). *(definida em 2026-11-25)* |
 
 ### 8.1.1 Decisões de contraste, toque e prioridade de tokens (2026-11-18)
 

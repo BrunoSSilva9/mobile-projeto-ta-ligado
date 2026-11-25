@@ -96,7 +96,7 @@ O status é **calculado**, não armazenado.
 Marcar como `IMPROCEDENTE` exige justificativa (texto de 10 a 500 caracteres), exibida ao autor no detalhe.
 
 ### RN-011 – Histórico de status (auditoria)
-Toda mudança de status (inclusive a criação, com `statusAnterior` nulo) gera um registro com: denúncia, status anterior, status novo, quem alterou (usuário e papel), justificativa (se houver) e data/hora. O registro é imutável e gravado na mesma transação da mudança (RNF-010).
+Toda mudança de status (inclusive a criação, com `statusAnterior` nulo) gera um registro com: denúncia, status anterior, status novo, quem alterou (usuário e papel), justificativa (se houver) e data/hora. O registro é imutável e gravado na mesma transação da mudança (RNF-010). Desde a Fase 2, a definição, a troca e a **remoção da previsão de reparo** pelo operador também geram uma entrada no histórico (decisão S-60).
 
 ### RN-012 – Localização e bairro (decisão S-04)
 - O GPS preenche logradouro e coordenadas; o usuário pode editar.
@@ -106,7 +106,7 @@ Toda mudança de status (inclusive a criação, com `statusAnterior` nulo) gera 
 - Denúncia sem coordenadas aparece na lista, mas não no mapa por pino (o círculo do bairro continua refletindo-a).
 
 ### RN-013 – Anexos
-Opcional; até **3 fotos** por denúncia, **5 MB** cada, tipos JPEG e PNG (decisão S-09). Vídeo não é aceito no MVP.
+Opcional; até **3 fotos** por denúncia, **5 MB** cada (decisão S-09). A API aceita **só JPEG**, conferido pelo conteúdo do arquivo; o app converte qualquer foto (da câmera ou da galeria) para JPEG e remove os metadados antes de enviar, e a API remove os metadados de novo (decisões S-49 e S-57). Vídeo não é aceito no MVP.
 
 ### RN-014 – Visibilidade dos dados
 

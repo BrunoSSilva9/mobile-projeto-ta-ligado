@@ -237,11 +237,18 @@ Cenário: Sair
   Então volto ao login e a sessão é encerrada
 
 Cenário: Excluir conta
-  Quando toco em "Excluir minha conta", leio o que será apagado e confirmo
+  Quando toco em "Excluir minha conta", leio o que será apagado e o que fica
+  E informo minha senha atual e marco "Entendi que meus dados serão apagados"
+  E toco em "Excluir minha conta"
   Então meus dados pessoais, minhas fotos e a resposta de necessidade especial são removidos
   E minhas denúncias passam a ser anônimas
   E uma denúncia em aberto continua aberta para a operadora
   E volto à tela de login
+
+Cenário: Senha errada ao excluir
+  Quando informo uma senha errada e toco em "Excluir minha conta"
+  Então vejo "Senha incorreta."
+  E nada é apagado e continuo conectada
 ```
 
 ### US-011 – Consultar outro endereço
