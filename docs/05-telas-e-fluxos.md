@@ -132,27 +132,26 @@ De cima para baixo:
 
 **Ficou de fora de propósito:** o mini-mapa (o mapa fica só na aba Mapa), o painel comunitário (Fase 2) e os selos "Rede Estável / Instável" (agora é Normal / Sem energia / Oscilando).
 
-### T-04 – Ocorrências (Mapa e Bairros Afetados)
-[Figma `2033:403`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-403) · RF-019 a RF-024 · RN-007, RN-009, RN-014
+### T-04 – Mapa ("Onde falta energia")
+[Figma `2033:403`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-403) (referência antiga) · RF-019 a RF-024 · RN-007, RN-009, RN-014
 
-**Objetivo:** ver onde há falta de energia e consultar a lista pública.
+> **Design system v2 (S-44, etapas R3 e R5):** a aba "Ocorrências" passou a se chamar **"Mapa"** só no texto (a rota continua `/ocorrencias`). A tela foi refeita e **substitui o desenho do Figma**.
 
-| Elemento | Detalhe |
+**Objetivo:** ver onde falta energia e consultar a lista pública, sem dados de ninguém.
+
+| Bloco | Detalhe |
 |---|---|
-| Cartão "Localização atual" | Bairro/endereço, selo "Instável", contagem de denúncias em aberto no bairro, "Previsão de reparo técnico: ~ 1h 20min" |
-| Busca | "Buscar bairro ou folha (ex.: Folha 28)" (CEP retirado, S-15) |
-| Chips | Todos (n), Sem Luz (n), Oscilação (n), Restabelecidos (n) |
-| Mapa | Zonas por bairro, rótulos, legenda em pílula ("Sem energia", "Oscilação"), botões "centralizar" e "expandir" |
-| Banner de ação | "Deu falta de energia? Avise seus vizinhos e a concessionária" com botão "Denunciar" |
-| Lista dos lugares | Cabeçalho "LISTA DOS LUGARES • Atualizado agora"; itens com borda colorida por status, bairro, descrição, data e "Há X min" e botão de detalhe |
-| Rodapé | Telefone da concessionária/ouvidoria (PEN-02) |
+| Cabeçalho branco | Título **"Onde falta energia"**, o apoio **"Marabá · atualizado há X min"** (horário da própria resposta) e a busca com rótulo visível **"Procurar bairro ou folha"** (a API só procura bairro e folha) |
+| Chips | **Todos (n), Sem energia (n), Oscilando (n), Normal (n)**, 48 dp, cada um com ícone; o selecionado é azul cheio com texto branco e os outros brancos com borda. "Normal" é o filtro `RESTABELECIDO` da API (resolvidas nas últimas 24 h, S-21); "Todos" é a soma dos três |
+| Mapa | Círculo por bairro na cor da situação e pinos das ocorrências com coordenadas. **Os marcadores com ícone, o ponto "você está aqui" e o botão "Onde estou" vêm na etapa R8** |
+| **Lugares com aviso (n)** | **Um item por bairro**, agrupado no app a partir das ocorrências públicas (sem mudar a API): selo da situação (ícone + texto), "Bairro (Folha)" em negrito, **"Há X min · N avisos"** e "Ver" com seta. O cartão inteiro é clicável: **"Ver" centraliza o mapa no bairro** e leva a tela até ele |
 
-- **Dados:** servidor (ocorrências públicas anonimizadas, status por bairro, previsão); GPS (centralizar).
-- **Ações:** chips filtram; busca; "expandir" abre o mapa em tela cheia; "Denunciar" → T-05; botão de item → resumo anonimizado.
-- **Estados:** não desenhados. Previstos: vazio ("Nenhuma ocorrência no momento"), carregando, erro, offline.
-- **Ajustes ao protótipo:** "3 denúncias no raio de 500 m hoje" → "N denúncias em aberto no seu bairro" (S-04); rótulo "Atualizado agora" vira o horário real do último evento; rótulo de aba "Ocorrências".
+**Regras do agrupamento (decisão R-03):** o lugar é o bairro + a folha; **a situação do lugar é a mais grave entre os avisos** (Sem energia > Oscilando > Normal, a mesma regra do status do bairro, RN-007), e um aviso resolvido conta como Normal; **"Há X min" conta a partir do aviso mais recente** do lugar; **N** é quantos avisos o lugar tem. Ordem: o mais grave primeiro e, empatando, o aviso mais recente primeiro. O centro do bairro (para o "Ver") vem de `/bairros/status`.
 
-- **Implementação (Passo 12):** T-03 mostra "Olá, {nome}!", o selo Rede Estável/Instável (RN-008), o mini-mapa e o atendimento; **não** tem painel comunitário, "alterar endereço" nem indicadores (Fase 2). T-04: busca por bairro/folha, chips com contagem, mapa com círculo por bairro e pinos, lista pública anonimizada (50 mais recentes) e banner. O botão de detalhe de cada item (resumo anonimizado, S-24) não foi feito; a lista é só de leitura. O botão de perfil do cabeçalho da Home se chama "Meu perfil" para não repetir o nome da aba "Perfil".
+- **Dados:** servidor (`/ocorrencias` anonimizada, `/bairros/status`). **Nada pessoal:** sem protocolo, autor ou telefone (RN-014).
+- **Estados:** carregando, vazio ("Nenhum lugar com aviso"), busca sem resultado, erro com "Tentar novamente", offline (dados salvos e aviso de conexão). Mostra os 50 avisos mais recentes e diz quando há mais.
+- **Tempo real:** `ocorrencia:atualizada` busca a lista e os totais de novo; `bairro:status-atualizado` troca a cor do círculo na hora.
+- **Saíram desta tela:** o cartão "Localização atual" (a energia do bairro agora fica na Início), o banner de denunciar e o bloco de atendimento (agora na Início e na Ajuda).
 
 ### T-05 – Registrar Denúncia
 [Figma `2033:655`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-655) · RF-007 a RF-011 · RN-002, RN-006, RN-012, RN-013, RN-015

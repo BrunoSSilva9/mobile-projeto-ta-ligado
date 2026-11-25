@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react';
+import { Component, useEffect, useRef, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 
@@ -42,6 +42,8 @@ type Props = {
   ocorrencias?: readonly OcorrenciaPublica[];
   /** Mini-mapa da Home: menor, sem gestos. */
   compacto?: boolean;
+  /** Centraliza o mapa neste ponto (o "Ver" da lista "Lugares com aviso"). Um novo objeto repete o movimento. */
+  foco?: { latitude: number; longitude: number } | null;
 };
 
 /**
@@ -49,7 +51,19 @@ type Props = {
  * na tela de Ocorrências, um pino por ocorrência que tem coordenadas. Os bairros normais ficam
  * bem discretos para destacar os afetados.
  */
-export function MapaOcorrencias({ bairros, ocorrencias = [], compacto = false }: Props) {
+export function MapaOcorrencias({
+  bairros,
+  ocorrencias = [],
+  compacto = false,
+  foco = null,
+}: Props) {
+  const mapa = useRef<MapView>(null);
+  useEffect(() => {
+    if (foco) {
+      mapa.current?.animateToRegion?.({ ...foco, latitudeDelta: 0.02, longitudeDelta: 0.02 }, 400);
+    }
+  }, [foco]);
+
   const afetados = bairros.filter((b) => b.status !== 'NORMAL').length;
   const resumo =
     afetados === 0
@@ -66,6 +80,7 @@ export function MapaOcorrencias({ bairros, ocorrencias = [], compacto = false }:
         }
       >
         <MapView
+          ref={mapa}
           accessible
           accessibilityLabel={resumo}
           style={[styles.mapa, { height: compacto ? 180 : 280 }]}

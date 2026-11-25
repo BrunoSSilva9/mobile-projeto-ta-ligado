@@ -180,7 +180,7 @@ describe('com sessão salva no aparelho', () => {
     expect(screen.queryByRole('button', { name: 'Ocorrências' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Denunciar falta de luz' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Mapa' }));
-    expect(await screen.findByText('Localização atual')).toBeTruthy();
+    expect(await screen.findByText('Onde falta energia')).toBeTruthy();
     expect(screen).toHavePathname('/ocorrencias'); // a rota continua a mesma
   });
 
@@ -194,7 +194,7 @@ describe('com sessão salva no aparelho', () => {
     expect(selecionada('Mapa')).toBe(false);
 
     await fireEvent.press(screen.getByRole('button', { name: 'Mapa' }));
-    await screen.findByText('Localização atual');
+    await screen.findByText('Onde falta energia');
 
     expect(selecionada('Mapa')).toBe(true);
     expect(selecionada('Início')).toBe(false);

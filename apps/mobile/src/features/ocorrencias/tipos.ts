@@ -1,3 +1,6 @@
+import type { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
+
 import { colors } from '@/theme';
 
 /** Status calculado do bairro (RN-007). */
@@ -45,18 +48,23 @@ export type ListaDeOcorrencias = {
   atualizadoEm: string;
 };
 
-/** Os chips da T-04 (RF-020). `undefined` = "Todos". */
+/** Os chips da aba Mapa filtram por isso. `undefined` = "Todos". */
 export type FiltroPublico = 'SEM_LUZ' | 'OSCILACAO' | 'RESTABELECIDO' | undefined;
 
+/**
+ * Os chips da aba Mapa (RF-020), com ícone e texto (a cor nunca é a única pista). `undefined` =
+ * "Todos". "Normal" é o filtro `RESTABELECIDO` da API (resolvidas nas últimas 24 h, S-21).
+ */
 export const CHIPS: readonly {
   valor: FiltroPublico;
   rotulo: string;
   total: keyof TotaisDosChips;
+  icone: ComponentProps<typeof Ionicons>['name'];
 }[] = [
-  { valor: undefined, rotulo: 'Todos', total: 'todos' },
-  { valor: 'SEM_LUZ', rotulo: 'Sem luz', total: 'semLuz' },
-  { valor: 'OSCILACAO', rotulo: 'Oscilação', total: 'oscilacao' },
-  { valor: 'RESTABELECIDO', rotulo: 'Restabelecidos', total: 'restabelecidos' },
+  { valor: undefined, rotulo: 'Todos', total: 'todos', icone: 'list' },
+  { valor: 'SEM_LUZ', rotulo: 'Sem energia', total: 'semLuz', icone: 'flash-off' },
+  { valor: 'OSCILACAO', rotulo: 'Oscilando', total: 'oscilacao', icone: 'pulse' },
+  { valor: 'RESTABELECIDO', rotulo: 'Normal', total: 'restabelecidos', icone: 'checkmark-circle' },
 ];
 
 export const ROTULOS_DO_STATUS_DO_BAIRRO: Record<StatusDoBairro, string> = {

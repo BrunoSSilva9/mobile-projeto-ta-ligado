@@ -110,6 +110,7 @@ Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `B
 | `CabecalhoDePasso` | "Voltar" (ícone + texto), "Passo X de 3" e barra de 3 segmentos |
 | Barra inferior (`BarraInferior.tsx`, **pronta na R3**) | 4 itens com ícone e texto (14 negrito): **Início, Mapa, Denunciar, Perfil**; aba ativa com pílula `actionTabPill` e texto `actionPressed`; fundo branco com borda superior `borderSubtle`; "Denunciar" com o ícone dentro de uma pílula azul cheia (56×32) |
 | `CartaoEnergiaDoBairro` (**R4**) | Cartão "Energia no seu bairro agora": ícone grande e nome da situação na cor dela, frase de apoio, endereço com pino, "Trocar" e "Usar minha localização"; cuida dos estados de GPS, fora de Marabá, erro e sem conexão |
+| `LugarComAviso` (**R5**) | Item da lista "Lugares com aviso": cartão inteiro clicável com `SeloDeSituacao`, nome em negrito, "Há X min · N avisos" e "Ver" com seta (`features/ocorrencias/agrupar.ts` faz o agrupamento por bairro) |
 | `ListaDeBairrosModal` (**R4**) | Lista de bairros em tela cheia com busca por bairro ou folha e "Fechar" com texto; usada pelo seletor do formulário e pelo "Trocar" |
 | `BotaoLigar` (**R4**) | Botão "Ligar para a Equatorial" (`tel:`); se o aparelho não puder ligar, mostra um `Aviso` com o número |
 | `ComoFunciona` (**R4**) | Os 3 passos numerados, em frases curtas (Início e Ajuda) |

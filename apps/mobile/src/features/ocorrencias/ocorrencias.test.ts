@@ -84,9 +84,10 @@ describe('tipos e cores (RN-007, RN-008)', () => {
     expect(rotuloDaOcorrencia({ tipo: 'OSCILACAO', status: 'RESOLVIDA' })).toBe('Restabelecida');
   });
 
-  it('os quatro chips, na ordem da T-04', () => {
-    expect(CHIPS.map((c) => c.rotulo)).toEqual(['Todos', 'Sem luz', 'Oscilação', 'Restabelecidos']);
+  it('os quatro chips da aba Mapa, na ordem, cada um com ícone', () => {
+    expect(CHIPS.map((c) => c.rotulo)).toEqual(['Todos', 'Sem energia', 'Oscilando', 'Normal']);
     expect(CHIPS.map((c) => c.valor)).toEqual([undefined, 'SEM_LUZ', 'OSCILACAO', 'RESTABELECIDO']);
+    expect(CHIPS.map((c) => c.icone)).toEqual(['list', 'flash-off', 'pulse', 'checkmark-circle']);
   });
 });
 
