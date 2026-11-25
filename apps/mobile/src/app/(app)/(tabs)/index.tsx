@@ -1,142 +1,148 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
-import { BannerDenunciar } from '@/components/BannerDenunciar';
-import { ContatosDeAtendimento } from '@/components/ContatosDeAtendimento';
-import { LocationStatusCard } from '@/components/LocationStatusCard';
+import { BotaoLigar } from '@/components/BotaoLigar';
+import { Button } from '@/components/Button';
+import { Cartao } from '@/components/Cartao';
+import { CartaoEnergiaDoBairro } from '@/components/CartaoEnergiaDoBairro';
+import { ComoFunciona } from '@/components/ComoFunciona';
 import { Logo } from '@/components/Logo';
-import { MapaOcorrencias } from '@/components/MapaOcorrencias';
-import { useStatusDosBairros } from '@/features/ocorrencias/hooks';
+import { CONTATOS } from '@/config/constants';
 import { useSessao } from '@/store/session';
-import { colors, hitSlopFor, radius, size, space, type } from '@/theme';
+import { colors, radius, size, space, type } from '@/theme';
 
-const PASSOS = [
-  { titulo: 'Notifique a queda em 2 cliques', texto: 'Escolha o tipo e confirme o local.' },
-  { titulo: 'Mapeamos a área afetada', texto: 'Sua denúncia aparece no mapa, sem seus dados.' },
-  {
-    titulo: 'Cobramos a concessionária',
-    texto: 'O protocolo chega ao painel da operadora na hora.',
-  },
-] as const;
-
-/** T-03: início. Situação da rede do bairro, chamada para denunciar e mini-mapa (RF-016, RF-023). */
+/**
+ * T-03: início (design system v2). Uma ação principal ("Fazer denúncia"), a energia do bairro agora,
+ * dois atalhos, "Como funciona" e o contato por telefone. O mapa fica só na aba Mapa.
+ */
 export default function InicioScreen() {
   const nome = useSessao((s) => s.usuario?.nome ?? '');
   const primeiroNome = nome.trim().split(/\s+/)[0] ?? '';
-  const status = useStatusDosBairros();
 
   return (
     <SafeAreaView style={styles.tela} edges={['top']}>
       <View style={styles.cabecalho}>
         <Logo />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Meu perfil"
-          hitSlop={hitSlopFor(size.touchMin)}
-          onPress={() => router.push('/perfil')}
-          style={styles.perfil}
-        >
-          <Ionicons name="person" size={22} color={colors.brand900} />
-        </Pressable>
+        <Button
+          titulo="Ajuda"
+          variante="texto"
+          nomeDoIcone="help-circle-outline"
+          onPress={() => router.push('/ajuda')}
+        />
       </View>
 
       <ScrollView contentContainerStyle={styles.conteudo}>
         <AvisoDeConexao />
-        <LocationStatusCard titulo={`Olá, ${primeiroNome}!`} selo="rede" />
 
-        <BannerDenunciar
-          titulo="Faltou energia? Denuncie agora e ajude a resolver mais rápido!"
-          botao="Registre sua denúncia"
-        />
+        <Text accessibilityRole="header" style={[type.title1, styles.ola]}>
+          {`Olá, ${primeiroNome}`}
+        </Text>
 
-        <View style={styles.secao}>
-          <Text accessibilityRole="header" style={[type.title, styles.tituloDaSecao]}>
-            Descubra onde pode estar sem energia
+        <CartaoEnergiaDoBairro />
+
+        <Cartao destaque style={styles.acaoPrincipal}>
+          <Text accessibilityRole="header" style={[type.title2, styles.titulo]}>
+            Ficou sem energia?
           </Text>
-          {status.data ? (
-            <MapaOcorrencias bairros={status.data.bairros} compacto />
-          ) : status.isError ? (
-            <Text accessibilityRole="alert" style={[type.body, styles.texto]}>
-              {status.error.message}
-            </Text>
-          ) : (
-            <Text accessibilityRole="progressbar" style={[type.body, styles.texto]}>
-              {status.fetchStatus === 'paused'
-                ? 'Sem conexão e nenhum dado salvo do mapa.'
-                : 'Carregando o mapa…'}
-            </Text>
-          )}
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Ver mapa ampliado"
+          <Text style={[type.body, styles.texto]}>
+            Avise a Equatorial por aqui. Leva menos de 1 minuto.
+          </Text>
+          <Button
+            titulo="Fazer denúncia"
+            nomeDoIcone="flash-off"
+            onPress={() => router.push('/denunciar')}
+          />
+        </Cartao>
+
+        <View style={styles.atalhos}>
+          <Atalho
+            icone="map-outline"
+            titulo="Ver onde falta energia"
             onPress={() => router.push('/ocorrencias')}
-            style={styles.link}
-          >
-            <Text style={[type.button, { color: colors.action }]}>Ver mapa ampliado</Text>
-          </Pressable>
+          />
+          <Atalho
+            icone="document-text-outline"
+            titulo="Minhas denúncias"
+            onPress={() => router.push('/minhas-denuncias')}
+          />
         </View>
 
-        <View style={styles.secao}>
-          <Text accessibilityRole="header" style={[type.title, styles.tituloDaSecao]}>
-            Como funciona
+        <ComoFunciona />
+
+        <Cartao>
+          <Text accessibilityRole="header" style={[type.title3, styles.titulo]}>
+            Prefere falar com alguém?
           </Text>
-          {PASSOS.map((p, i) => (
-            <View
-              key={p.titulo}
-              accessible
-              accessibilityLabel={`Passo ${i + 1}: ${p.titulo}. ${p.texto}`}
-              style={styles.passo}
-            >
-              <View style={styles.numero}>
-                <Text style={[type.button, { color: colors.white }]}>{i + 1}</Text>
-              </View>
-              <View style={styles.passoTexto}>
-                <Text style={[type.subtitle, { color: colors.textPrimary }]}>{p.titulo}</Text>
-                <Text style={[type.body, styles.texto]}>{p.texto}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        <ContatosDeAtendimento />
+          <Text style={[type.body, styles.texto]}>Central: {CONTATOS.centralHorario}</Text>
+          <BotaoLigar />
+        </Cartao>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/** Atalho: cartão branco inteiro tocável, com o ícone num quadrado `actionSoft` e o texto em negrito. */
+function Atalho({
+  icone,
+  titulo,
+  onPress,
+}: {
+  icone: ComponentProps<typeof Ionicons>['name'];
+  titulo: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={titulo}
+      onPress={onPress}
+      style={({ pressed }) => [styles.atalho, pressed && styles.atalhoPressionado]}
+    >
+      <View style={styles.iconeDoAtalho}>
+        <Ionicons name={icone} size={28} color={colors.action} />
+      </View>
+      <Text style={[type.label, styles.textoDoAtalho]}>{titulo}</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: colors.bgPage },
   cabecalho: {
-    height: size.header,
+    minHeight: size.header,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: space.l,
   },
-  perfil: {
-    width: size.touchMin,
-    height: size.touchMin,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bgSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   conteudo: { padding: space.l, gap: space.l, paddingBottom: space.xxl },
-  secao: { gap: space.m },
-  tituloDaSecao: { color: colors.textPrimary },
+  ola: { color: colors.textPrimary },
+  titulo: { color: colors.textPrimary },
   texto: { color: colors.textSecondary },
-  link: { minHeight: size.touchMin, justifyContent: 'center', alignSelf: 'flex-start' },
-  passo: { flexDirection: 'row', gap: space.m, alignItems: 'flex-start' },
-  numero: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.pill,
-    backgroundColor: colors.action,
+  acaoPrincipal: { gap: space.m },
+  atalhos: { flexDirection: 'row', gap: space.m },
+  atalho: {
+    flex: 1,
+    minHeight: size.button + space.xl,
+    gap: space.s,
+    padding: space.l,
+    backgroundColor: colors.surface,
+    borderRadius: radius.cartao,
+    borderWidth: 1,
+    borderColor: colors.borderDivider,
+  },
+  atalhoPressionado: { backgroundColor: colors.actionSoft },
+  iconeDoAtalho: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.botao,
+    backgroundColor: colors.actionSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  passoTexto: { flex: 1, gap: space.half },
+  textoDoAtalho: { color: colors.textPrimary },
 });

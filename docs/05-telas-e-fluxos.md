@@ -17,6 +17,7 @@
 | T-07 | Detalhe da denúncia | a criar | — |
 | T-08 | Perfil | a criar | — |
 | T-09 | Minhas denúncias | a criar | — |
+| T-10 | Ajuda (rota `/ajuda`) | a criar (design system v2) | — |
 | C-01 | Barra inferior (componente) | Figma | [`2033:1080`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-1080) |
 | C-02 | Identidade visual (logo e ícone) | Figma | [`2033:1136`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-1136) |
 | P-01 | Painel: Login do operador | a criar | — |
@@ -107,25 +108,29 @@ flowchart LR
 - **Ajustes ao protótipo** (decisões do escopo): remover **CPF** e **Nascimento**; trocar "WhatsApp de contato" por "Telefone (opcional)"; remover "Cadastre com Google"; trocar "Seus dados de denúncia são criptografados e anônimos" por "Suas denúncias aparecem para outros cidadãos sem identificação"; ajustar o card "Status Imediato" (sem WhatsApp: "Receba avisos no celular quando o status da sua denúncia mudar"); checkbox na cor da marca (no Figma está azul `#0075FF`, padrão do navegador).
 
 ### T-03 – Início
-[Figma `2033:161`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-161) · RF-016, RF-017, RF-018, RF-023, RF-024 · RN-007, RN-008, RN-017, RN-025
+[Figma `2033:161`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-161) (referência antiga) · RF-016, RF-017, RF-023, RF-024 · RN-007, RN-025
 
-**Objetivo:** visão geral da situação do bairro e porta de entrada para denunciar.
+> **Design system v2 (S-44, etapa R4):** a tela foi refeita e **substitui o desenho do Figma**.
 
-| Elemento | Detalhe |
+**Objetivo:** mostrar a energia no bairro do usuário agora e levar à ação principal ("Fazer denúncia").
+
+De cima para baixo:
+
+| Bloco | Detalhe |
 |---|---|
-| Header (64 px) | Logo e botão circular de perfil (vai a T-08) |
-| Cartão de status | "Olá, {nome}!", selo "Rede Estável" ou "Instável", endereço aproximado, botão "alterar endereço" |
-| Banner herói | Selo "Central de Monitoramento Cidadão", "Faltou energia? Denuncie agora e ajude a resolver mais rápido!", botão "Registre sua denúncia" |
-| Mapa | Seção "Descubra onde pode estar sem energia" com mapa, tag da via, zonas vermelha/amarela com rótulo e legenda ("Apagão confirmado", "Oscilação de rede"); link "Ver mapa ampliado" |
-| Painel Comunitário | "Últimos 30 dias": usuários cadastrados, casos restabelecidos (taxa), denúncias registradas, casos em atendimento |
-| Como funciona | 3 passos: "Notifique a queda em 2 cliques", "Mapeamos a área afetada", "Cobramos a concessionária" |
-| Atendimento | Horário da Central e telefone da Ouvidoria (placeholders, PEN-02) |
-| Barra inferior | Início, Mapa, Denunciar, Perfil (todos com texto; sem FAB, ver [C-01](#c-01--barra-inferior-componente)) |
+| Cabeçalho | Logo e o botão de texto **"Ajuda"** (ícone + texto) → tela [T-10 Ajuda](#t-10--ajuda) |
+| "Olá, {primeiro nome}" | `title1`, sem exclamação |
+| **Cartão "Energia no seu bairro agora"** | Ícone grande da situação, o nome dela em `title2` na cor dela (**Sem energia / Oscilando / Normal**), a frase de apoio ("Nenhuma falta de energia avisada", "1 denúncia em aberto" ou "N denúncias em aberto"), a previsão de reparo (se houver, RN-009), uma divisória e o endereço com ícone de pino e o botão de texto **"Trocar"** |
+| **Cartão da ação principal** (borda azul de 2) | "Ficou sem energia?", "Avise a Equatorial por aqui. Leva menos de 1 minuto." e o botão primário **"Fazer denúncia"** (ícone `flash-off`) → T-05 |
+| Dois atalhos | **"Ver onde falta energia"** → Mapa (T-04) e **"Minhas denúncias"** → T-09 |
+| "Como funciona" | 3 passos: "Você avisa que a energia caiu.", "A Equatorial recebe o aviso na hora.", "Você acompanha aqui até a energia voltar." |
+| "Prefere falar com alguém?" | Horário da Central (placeholder, PEN-02) e o botão secundário **"Ligar para a Equatorial"** (`tel:`) |
 
-- **Dados:** nome (cadastro); posição/bairro (GPS → servidor, RN-025); status do bairro, contagens, indicadores e zonas (servidor).
-- **Ações:** "Registre sua denúncia" e FAB → T-05. "Ver mapa ampliado" → T-04. Perfil → T-08. "Alterar endereço" → seletor de bairro (RF-017).
-- **Estados:** não desenhados. Previstos: carregando (esqueleto), sem GPS (escolher bairro), offline (cache + aviso), erro.
-- **Ajustes ao protótipo:** remover os selos "+12%" e "Em rota"; rótulo "Casos restabelecidos" calculado por RN-017; aba "Mapa" → "Ocorrências"; "Cobramos a concessionária" permanece (o protocolo vai ao painel simulado).
+**Origem do bairro (RN-025, RF-017):** o bairro mais próximo da localização do celular. **"Trocar"** abre a lista de bairros (com busca por bairro ou folha); a escolha vale para o cartão e fica salva **só no aparelho** (AsyncStorage, uma chave por usuário), **sem ir para o cadastro nem para a API**. Com a escolha feita, o cartão mostra o botão **"Usar minha localização"**, que volta ao GPS e apaga a escolha. Uma escolha que não existe mais na lista é ignorada.
+
+**Estados:** buscando a localização; **GPS negado ou desligado** ("Não achamos você pela localização do celular", com "Escolher bairro" e "Tentar de novo"); **fora de Marabá** (com "Escolher bairro"); erro ao carregar (com "Tentar de novo"); sem conexão (dados salvos e aviso de conexão no topo). A situação muda em tempo real com o evento `bairro:status-atualizado`.
+
+**Ficou de fora de propósito:** o mini-mapa (o mapa fica só na aba Mapa), o painel comunitário (Fase 2) e os selos "Rede Estável / Instável" (agora é Normal / Sem energia / Oscilando).
 
 ### T-04 – Ocorrências (Mapa e Bairros Afetados)
 [Figma `2033:403`](https://www.figma.com/design/XiDKX3D8j02JggOwKPDdGp/Mobile---T%C3%A1-ligado-?node-id=2033-403) · RF-019 a RF-024 · RN-007, RN-009, RN-014
@@ -243,6 +248,17 @@ RF-013
 - Lista de cartões com protocolo, tipo, bairro, data e selo de status; atualiza em tempo real.
 - Ação "Cancelar" nos itens `RECEBIDA`.
 - Estado vazio "Você ainda não fez denúncias" com botão "Fazer denúncia"; carregando e erro.
+
+### T-10 – Ajuda
+S-44 · design system v2 (etapa R4)
+
+**Objetivo:** responder rápido a "como isso funciona?" e "e se eu precisar falar com alguém?". Rota `/ajuda`, aberta pelo botão **"Ajuda"** do cabeçalho da Início. Tela simples, só de leitura.
+
+- **"Como funciona":** os mesmos 3 passos da Início.
+- **Aviso de segurança:** "Fio caído ou risco de choque? Não chegue perto. Ligue para os Bombeiros: **193**." (o 193 é o número real).
+- **Contatos:** horário da Central, Ouvidoria e Equatorial (valores de exemplo, PEN-02) e o botão **"Ligar para a Equatorial"**, que abre o discador. Se o aparelho não puder ligar, aparece uma mensagem clara com o número para anotar.
+- **Sobre o aplicativo:** links com texto para **Termos de Uso** e **Política de Privacidade**.
+- Cabeçalho com **"Voltar"** (ícone + texto).
 
 ### P-01 – Painel: Login do operador
 RF-026

@@ -1,8 +1,12 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import * as Location from 'expo-location';
+import { StyleSheet } from 'react-native';
 
 import OcorrenciasScreen from '@/app/(app)/(tabs)/ocorrencias';
 import InicioScreen from '@/app/(app)/(tabs)/index';
+import { frasesDeApoio } from '@/components/CartaoEnergiaDoBairro';
+import { chaveDoBairroEscolhido } from '@/features/ocorrencias/bairro-escolhido';
 import { LocalizacaoProvider } from '@/providers/LocalizacaoProvider';
 import { SocketProvider } from '@/providers/SocketProvider';
 import { queryClient } from '@/services/query-client';
@@ -11,6 +15,7 @@ import { colors } from '@/theme';
 import {
   armazenamentoEmMemoria,
   configurarCacheParaTestes,
+  digitar,
   erroDaApi,
   renderizarTela,
   resposta,
@@ -102,6 +107,17 @@ type Rotas = {
 
 function simularApi(rotas: Rotas = {}) {
   mockFetch.mockImplementation(async (url: string) => {
+    if (url.endsWith('/bairros')) {
+      return resposta(200, {
+        bairros: [OUTRO_BAIRRO, bairro()].map((b) => ({
+          id: b.bairroId,
+          nome: b.nome,
+          folha: b.folha,
+          latitude: b.latitude,
+          longitude: b.longitude,
+        })),
+      });
+    }
     if (url.includes('/bairros/proximo')) {
       return (rotas.proximo ?? (() => resposta(200, { ...bairro(), id: 2, distanciaKm: 0.3 })))();
     }
@@ -160,174 +176,333 @@ beforeEach(async () => {
   global.fetch = mockFetch as unknown as typeof fetch;
   limparSockets();
   armazenamentoEmMemoria.clear();
+  await AsyncStorage.clear();
   queryClient.clear();
   await useSessao.getState().entrar(SESSAO_DE_CIDADAO);
   simularApi();
   simularGps('ok');
 });
 
-describe('T-03 Início (RF-016, RF-023, RN-008)', () => {
-  it('cumprimenta pelo primeiro nome e mostra o bairro, o selo e a contagem', async () => {
+describe('T-03 Início (design system v2)', () => {
+  const GPS_ERRO_404 = () =>
+    resposta(404, erroDaApi('NAO_ENCONTRADO', 'Nenhum bairro encontrado.'));
+
+  it('cumprimenta pelo primeiro nome, sem exclamação', async () => {
     await renderizarTela(comTudo(<InicioScreen />));
 
-    expect(await screen.findByText('Olá, Maria!')).toBeTruthy();
-    expect(await screen.findByText('REDE INSTÁVEL')).toBeTruthy();
-    expect(screen.getByText('Nova Marabá (Folha 28)')).toBeTruthy();
-    expect(screen.getByText('2 denúncias em aberto no seu bairro.')).toBeTruthy();
+    expect(await screen.findByRole('header', { name: 'Olá, Maria' })).toBeTruthy();
+    expect(screen.queryByText(/Olá, Maria!/)).toBeNull();
   });
 
-  it('bairro normal: "Rede Estável" e nenhuma denúncia em aberto', async () => {
-    simularApi({
-      status: () =>
-        resposta(200, {
-          atualizadoEm: new Date().toISOString(),
-          bairros: [OUTRO_BAIRRO, bairro({ status: 'NORMAL', emAberto: 0 })],
+  describe('cartão "Energia no seu bairro agora"', () => {
+    it('mostra a situação (ícone, nome na cor dela) e a frase de apoio', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Energia no seu bairro agora')).toBeTruthy();
+      const nome = await screen.findByText('Sem energia');
+      expect(StyleSheet.flatten(nome.props.style).color).toBe(colors.situacao.semEnergia.texto);
+      expect(screen.getByText('2 denúncias em aberto')).toBeTruthy();
+      expect(
+        screen.getByLabelText('Situação da energia: Sem energia. 2 denúncias em aberto'),
+      ).toBeTruthy();
+    });
+
+    it('bairro normal: "Normal" e "Nenhuma falta de energia avisada"', async () => {
+      simularApi({
+        status: () =>
+          resposta(200, {
+            atualizadoEm: new Date().toISOString(),
+            bairros: [OUTRO_BAIRRO, bairro({ status: 'NORMAL', emAberto: 0 })],
+          }),
+      });
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Normal')).toBeTruthy();
+      expect(screen.getByText('Nenhuma falta de energia avisada')).toBeTruthy();
+    });
+
+    it('oscilando: "Oscilando" e "1 denúncia em aberto"', async () => {
+      simularApi({
+        status: () =>
+          resposta(200, {
+            atualizadoEm: new Date().toISOString(),
+            bairros: [OUTRO_BAIRRO, bairro({ status: 'OSCILACAO', emAberto: 1 })],
+          }),
+      });
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Oscilando')).toBeTruthy();
+      expect(screen.getByText('1 denúncia em aberto')).toBeTruthy();
+    });
+
+    it('não usa mais "Rede estável/instável" nem "Sem luz"', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+
+      expect(screen.queryByText(/Rede (estável|instável)/i)).toBeNull();
+      expect(screen.queryByText(/Sem luz/)).toBeNull();
+    });
+
+    it('mostra a previsão de reparo quando há', async () => {
+      simularApi({
+        status: () =>
+          resposta(200, {
+            atualizadoEm: new Date().toISOString(),
+            bairros: [bairro({ previsaoReparo: '2026-11-20T01:30:00.000Z' })],
+          }),
+      });
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Previsão de reparo: 19/11/2026 às 22:30')).toBeTruthy();
+    });
+
+    it('mostra o endereço achado pela localização, com o bairro e a cidade, e "Trocar"', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Rua A, 1')).toBeTruthy();
+      expect(screen.getByText('Nova Marabá (Folha 28), Marabá')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Trocar' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Usar minha localização' })).toBeNull();
+    });
+
+    it('usa o bairro mais próximo do GPS (RN-025)', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+
+      expect(urlsDe('/bairros/proximo')[0]).toContain('lat=-5.371');
+    });
+
+    it('a situação muda em tempo real quando o painel atualiza o bairro (RF-023)', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+      const chamadas = mockFetch.mock.calls.length;
+
+      await act(async () =>
+        ultimoSocket()!.__emitir('bairro:status-atualizado', {
+          bairroId: 2,
+          nome: 'Nova Marabá',
+          folha: 'Folha 28',
+          status: 'NORMAL',
+          emAberto: 0,
+          previsaoReparo: null,
         }),
+      );
+
+      expect(await screen.findByText('Normal')).toBeTruthy();
+      expect(screen.getByText('Nenhuma falta de energia avisada')).toBeTruthy();
+      expect(mockFetch.mock.calls.length).toBe(chamadas); // sem nova consulta
     });
-    await renderizarTela(comTudo(<InicioScreen />));
 
-    expect(await screen.findByText('REDE ESTÁVEL')).toBeTruthy();
-    expect(screen.getByText('Nenhuma denúncia em aberto no seu bairro.')).toBeTruthy();
-  });
+    it('erro ao carregar a situação: mostra a mensagem e tenta de novo', async () => {
+      simularApi({ status: () => resposta(403, erroDaApi('SEM_PERMISSAO', 'Sem permissão.')) });
+      await renderizarTela(comTudo(<InicioScreen />));
 
-  it.each(['SEM_LUZ', 'OSCILACAO'])('bairro com %s é "Rede Instável"', async (s) => {
-    simularApi({
-      status: () =>
-        resposta(200, {
-          atualizadoEm: new Date().toISOString(),
-          bairros: [OUTRO_BAIRRO, bairro({ status: s, emAberto: 1 })],
-        }),
+      expect(await screen.findByText('Sem permissão.')).toBeTruthy();
+
+      simularApi();
+      await tocar('Tentar de novo');
+      expect(await screen.findByText('Sem energia')).toBeTruthy();
     });
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    expect(await screen.findByText('REDE INSTÁVEL')).toBeTruthy();
-    expect(screen.getByText('1 denúncia em aberto no seu bairro.')).toBeTruthy();
   });
 
-  it('mostra a previsão de reparo quando há', async () => {
-    simularApi({
-      status: () =>
-        resposta(200, {
-          atualizadoEm: new Date().toISOString(),
-          bairros: [bairro({ previsaoReparo: '2026-11-20T01:30:00.000Z' })],
-        }),
+  describe('GPS indisponível e bairro escolhido à mão (Trocar)', () => {
+    it('GPS negado: explica e oferece escolher o bairro ou tentar de novo', async () => {
+      simularGps('negada');
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText(/Não achamos você pela localização do celular/)).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Escolher bairro' })).toBeTruthy();
+
+      simularGps('ok');
+      await tocar('Tentar de novo');
+      expect(await screen.findByText('Sem energia')).toBeTruthy();
     });
-    await renderizarTela(comTudo(<InicioScreen />));
 
-    expect(await screen.findByText('Previsão de reparo: 19/11/2026 às 22:30')).toBeTruthy();
-  });
+    it('fora de Marabá (404 do bairro próximo): explica e oferece escolher o bairro', async () => {
+      simularApi({ proximo: GPS_ERRO_404 });
+      await renderizarTela(comTudo(<InicioScreen />));
 
-  it('o selo é lido pelo leitor de tela', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    expect(await screen.findByLabelText('Situação do bairro: Rede Instável')).toBeTruthy();
-  });
-
-  it('usa o bairro mais próximo do GPS (RN-025)', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-    await screen.findByText('REDE INSTÁVEL');
-
-    expect(urlsDe('/bairros/proximo')[0]).toContain('lat=-5.371');
-  });
-
-  it('GPS negado: avisa e permite tentar de novo', async () => {
-    simularGps('negada');
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    expect(await screen.findByText(/Não foi possível identificar o seu bairro/)).toBeTruthy();
-    expect(screen.queryByText(/REDE/)).toBeNull();
-
-    simularGps('ok');
-    await tocar('Tentar de novo');
-    expect(await screen.findByText('REDE INSTÁVEL')).toBeTruthy();
-  });
-
-  it('fora de Marabá (404 do bairro próximo): explica, sem selo', async () => {
-    simularApi({
-      proximo: () => resposta(404, erroDaApi('NAO_ENCONTRADO', 'Nenhum bairro encontrado.')),
+      expect(await screen.findByText(/fora de Marabá/)).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Escolher bairro' })).toBeTruthy();
     });
-    await renderizarTela(comTudo(<InicioScreen />));
 
-    expect(await screen.findByText(/fora da área de Marabá/)).toBeTruthy();
-    expect(screen.queryByText(/REDE/)).toBeNull();
+    it('sem GPS: escolher o bairro mostra a energia dele e salva só no aparelho', async () => {
+      simularGps('negada');
+      await renderizarTela(comTudo(<InicioScreen />));
+      await tocar('Escolher bairro');
+
+      await fireEvent.press(await screen.findByRole('button', { name: 'Cidade Nova' }));
+
+      expect(await screen.findByText('Normal')).toBeTruthy();
+      expect(screen.getByText('Nenhuma falta de energia avisada')).toBeTruthy();
+      expect(screen.getAllByText('Cidade Nova').length).toBeGreaterThan(0);
+      await waitFor(async () =>
+        expect(await AsyncStorage.getItem(chaveDoBairroEscolhido('u1'))).toBe('{"bairroId":1}'),
+      );
+    });
+
+    it('a escolha NUNCA vai para a API: só há leituras (GET)', async () => {
+      simularGps('negada');
+      await renderizarTela(comTudo(<InicioScreen />));
+      await tocar('Escolher bairro');
+      await fireEvent.press(await screen.findByRole('button', { name: 'Cidade Nova' }));
+      await screen.findByText('Normal');
+
+      const metodos = mockFetch.mock.calls.map(([, init]) => (init as { method?: string }).method);
+      expect(metodos.every((m) => m === 'GET')).toBe(true);
+      expect(mockFetch.mock.calls.some(([u]) => String(u).includes('bairroId=1'))).toBe(false);
+    });
+
+    it('"Trocar" com GPS: escolhe outro bairro e aparece "Usar minha localização"', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+
+      await tocar('Trocar');
+      await fireEvent.press(await screen.findByRole('button', { name: 'Cidade Nova' }));
+
+      expect(await screen.findByText('Normal')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Usar minha localização' })).toBeTruthy();
+      expect(screen.queryByText('Rua A, 1')).toBeNull(); // o endereço do GPS não vale para o bairro escolhido
+    });
+
+    it('"Usar minha localização" volta ao bairro do GPS e apaga a escolha salva', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+      await tocar('Trocar');
+      await fireEvent.press(await screen.findByRole('button', { name: 'Cidade Nova' }));
+      await screen.findByText('Normal');
+
+      await tocar('Usar minha localização');
+
+      expect(await screen.findByText('Sem energia')).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Usar minha localização' })).toBeNull();
+      await waitFor(async () =>
+        expect(await AsyncStorage.getItem(chaveDoBairroEscolhido('u1'))).toBeNull(),
+      );
+    });
+
+    it('a escolha salva volta ao abrir o app de novo', async () => {
+      await AsyncStorage.setItem(chaveDoBairroEscolhido('u1'), '{"bairroId":1}');
+
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Normal')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Usar minha localização' })).toBeTruthy();
+    });
+
+    it('uma escolha antiga que não existe mais na lista é ignorada (volta ao GPS)', async () => {
+      await AsyncStorage.setItem(chaveDoBairroEscolhido('u1'), '{"bairroId":999}');
+
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Sem energia')).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Usar minha localização' })).toBeNull();
+    });
+
+    it('o bairro escolhido de uma conta não aparece em outra', async () => {
+      await AsyncStorage.setItem(chaveDoBairroEscolhido('outra-conta'), '{"bairroId":1}');
+
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(await screen.findByText('Sem energia')).toBeTruthy();
+    });
+
+    it('a lista do "Trocar" tem busca por bairro ou folha e botão "Fechar" com texto', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+      await tocar('Trocar');
+
+      await digitar('Buscar bairro ou folha', 'folha 28');
+      expect(await screen.findByRole('button', { name: 'Nova Marabá (Folha 28)' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Cidade Nova' })).toBeNull();
+
+      await tocar('Fechar');
+      expect(screen.queryByText('Escolha o bairro')).toBeNull();
+    });
   });
 
-  it('erro ao carregar a situação: mostra a mensagem e tenta de novo', async () => {
-    simularApi({ status: () => resposta(403, erroDaApi('SEM_PERMISSAO', 'Sem permissão.')) });
-    await renderizarTela(comTudo(<InicioScreen />));
+  describe('ação principal, atalhos e contatos', () => {
+    it('o cartão da ação principal tem o botão "Fazer denúncia", que abre o formulário', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
 
-    expect((await screen.findAllByText('Sem permissão.')).length).toBeGreaterThan(0);
+      expect(screen.getByText('Ficou sem energia?')).toBeTruthy();
+      expect(screen.getByText('Avise a Equatorial por aqui. Leva menos de 1 minuto.')).toBeTruthy();
+      await tocar('Fazer denúncia');
 
-    simularApi();
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Tentar de novo' })[0]!);
-    expect(await screen.findByText('REDE INSTÁVEL')).toBeTruthy();
+      expect(mockPush).toHaveBeenCalledWith('/denunciar');
+    });
+
+    it('os textos antigos de denúncia e de mapa não existem mais', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(screen.queryByText(/Registre sua denúncia/)).toBeNull();
+      expect(screen.queryByText(/Ver mapa ampliado/)).toBeNull();
+    });
+
+    it('"Ver onde falta energia" abre o Mapa e "Minhas denúncias" abre a lista', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      await tocar('Ver onde falta energia');
+      expect(mockPush).toHaveBeenLastCalledWith('/ocorrencias');
+
+      await tocar('Minhas denúncias');
+      expect(mockPush).toHaveBeenLastCalledWith('/minhas-denuncias');
+    });
+
+    it('"Ajuda" (ícone e texto) abre a tela de ajuda', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(screen.getByText('Ajuda')).toBeTruthy();
+      await tocar('Ajuda');
+
+      expect(mockPush).toHaveBeenCalledWith('/ajuda');
+    });
+
+    it('o mini-mapa saiu da Início: o mapa fica só na aba Mapa', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+
+      expect(screen.queryByTestId('mapa')).toBeNull();
+      expect(screen.queryByTestId('circulo')).toBeNull();
+    });
+
+    it('"Como funciona" tem 3 passos curtos', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(screen.getByRole('header', { name: 'Como funciona' })).toBeTruthy();
+      expect(screen.getByLabelText('Passo 1: Você avisa que a energia caiu.')).toBeTruthy();
+      expect(screen.getByLabelText('Passo 2: A Equatorial recebe o aviso na hora.')).toBeTruthy();
+      expect(
+        screen.getByLabelText('Passo 3: Você acompanha aqui até a energia voltar.'),
+      ).toBeTruthy();
+    });
+
+    it('"Prefere falar com alguém?" mostra o horário e o botão "Ligar para a Equatorial"', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+
+      expect(screen.getByText('Prefere falar com alguém?')).toBeTruthy();
+      expect(screen.getByText(/Central: Segunda a Sexta/)).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Ligar para a Equatorial' })).toBeTruthy();
+    });
+
+    it('não tem painel comunitário nem o antigo "alterar endereço"', async () => {
+      await renderizarTela(comTudo(<InicioScreen />));
+      await screen.findByText('Sem energia');
+
+      expect(screen.queryByText(/Últimos 30 dias/i)).toBeNull();
+      expect(screen.queryByText(/alterar endereço/i)).toBeNull();
+    });
   });
+});
 
-  it('o banner leva ao formulário de denúncia', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    expect(
-      screen.getByText('Faltou energia? Denuncie agora e ajude a resolver mais rápido!'),
-    ).toBeTruthy();
-    await tocar('Registre sua denúncia');
-
-    expect(mockPush).toHaveBeenCalledWith('/denunciar');
-  });
-
-  it('"Ver mapa ampliado" abre Ocorrências e o botão de perfil abre o Perfil', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    await fireEvent.press(screen.getByRole('link', { name: 'Ver mapa ampliado' }));
-    expect(mockPush).toHaveBeenCalledWith('/ocorrencias');
-
-    await tocar('Meu perfil');
-    expect(mockPush).toHaveBeenCalledWith('/perfil');
-  });
-
-  it('mini-mapa: um círculo por bairro, sem pinos de ocorrência', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    await screen.findByText('REDE INSTÁVEL');
-    await waitFor(() => expect(screen.getAllByTestId('circulo')).toHaveLength(2));
-    expect(screen.queryByTestId('pino')).toBeNull();
-  });
-
-  it('mostra "Como funciona" em 3 passos e o atendimento com os contatos de exemplo', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-
-    expect(screen.getByText('Notifique a queda em 2 cliques')).toBeTruthy();
-    expect(screen.getByText('Mapeamos a área afetada')).toBeTruthy();
-    expect(screen.getByText('Cobramos a concessionária')).toBeTruthy();
-    expect(screen.getByText(/Central: Segunda a Sexta/)).toBeTruthy();
-  });
-
-  it('não tem painel comunitário nem "alterar endereço" (fora da Fase 1)', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-    await screen.findByText('REDE INSTÁVEL');
-
-    expect(screen.queryByText(/Últimos 30 dias/i)).toBeNull();
-    expect(screen.queryByText(/alterar endereço/i)).toBeNull();
-  });
-
-  it('o selo e a cor mudam em tempo real quando o painel atualiza o bairro (RF-023)', async () => {
-    await renderizarTela(comTudo(<InicioScreen />));
-    await screen.findByText('REDE INSTÁVEL');
-    const chamadas = mockFetch.mock.calls.length;
-
-    await act(async () =>
-      ultimoSocket()!.__emitir('bairro:status-atualizado', {
-        bairroId: 2,
-        nome: 'Nova Marabá',
-        folha: 'Folha 28',
-        status: 'NORMAL',
-        emAberto: 0,
-        previsaoReparo: null,
-      }),
-    );
-
-    expect(await screen.findByText('REDE ESTÁVEL')).toBeTruthy();
-    expect(screen.getByText('Nenhuma denúncia em aberto no seu bairro.')).toBeTruthy();
-    expect(mockFetch.mock.calls.length).toBe(chamadas); // sem nova consulta
+describe('frasesDeApoio', () => {
+  it.each([
+    [0, 'Nenhuma falta de energia avisada'],
+    [1, '1 denúncia em aberto'],
+    [2, '2 denúncias em aberto'],
+    [15, '15 denúncias em aberto'],
+  ])('%i em aberto → "%s"', (n, frase) => {
+    expect(frasesDeApoio(n)).toBe(frase);
   });
 });
 
