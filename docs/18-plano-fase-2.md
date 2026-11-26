@@ -225,6 +225,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 
 ### F2-4 · Perfil e exclusão de conta (M, 8 h) · B-037, RF-005, RF-006, RN-024
 
+**Implementada.** Ajustes em relação ao plano: o aviso "Sua conta foi excluída." passa pela store `aviso-de-entrada` (ao encerrar a sessão o roteador troca de tela sozinho e os parâmetros da rota se perderiam); o painel passou a escrever "Conta excluída" (antes "Conta removida"); o publicador ganhou o método opcional `desconectarUsuario`; os textos da exclusão ficam em `features/auth/exclusao.ts`.
+
 | Camada | Tarefas | Arquivos |
 |---|---|---|
 | API | `PATCH /me` (nome e telefone, com as regras do cadastro; e-mail só leitura, S-22). `DELETE /me` com **`{ "senha": "…" }`** (S-59): confere a senha com o bcrypt; errada → `403 SENHA_INCORRETA` ("Senha incorreta."), com o **limite de tentativas do login** (5 falhas por minuto, por IP e por conta). Certa, numa transação: anula `necessidadeEspecial` e `consentimentoNecessidadeEm` das denúncias da conta, apaga os registros de `DenunciaFoto` e o `Usuario` (o `SetNull` desvincula denúncias e histórico; o `Cascade` apaga os tokens). **Depois** do commit, apaga os arquivos das fotos (erro de disco vira log sem dado pessoal). Desconecta os sockets do usuário. Denúncia em aberto **continua aberta** (S-50). Resposta `204` | `modules/auth/{routes,service,schemas}.ts` (ou `modules/conta/`), `shared/rate-limit.ts`, `realtime/socket.ts` |

@@ -333,6 +333,28 @@ describe('Aviso', () => {
     );
   });
 
+  it('`comBorda` põe uma borda de 2 na cor do tom (aviso grave, não só cor de fundo)', async () => {
+    await render(
+      <Aviso tom="erro" comBorda testID="aviso">
+        Isso não pode ser desfeito.
+      </Aviso>,
+    );
+    const faixa = StyleSheet.flatten(screen.getByTestId('aviso').props.style);
+
+    expect(faixa.borderWidth).toBe(2);
+    expect(faixa.borderColor).toBe(colors.situacao.semEnergia.texto);
+  });
+
+  it('sem `comBorda`, o aviso não tem borda (os de sempre não mudam)', async () => {
+    await render(
+      <Aviso tom="erro" testID="aviso">
+        Não deu certo.
+      </Aviso>,
+    );
+
+    expect(StyleSheet.flatten(screen.getByTestId('aviso').props.style).borderWidth).toBeUndefined();
+  });
+
   it('com `anunciar={false}` não vira alerta do leitor de tela', async () => {
     await render(
       <Aviso tom="info" anunciar={false}>

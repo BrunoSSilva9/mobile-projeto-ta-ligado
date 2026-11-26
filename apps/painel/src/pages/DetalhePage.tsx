@@ -117,10 +117,22 @@ function Conteudo({
         <section className="card" aria-labelledby="bloco-autor">
           <h2 id="bloco-autor">Autor</h2>
           <dl className="dados">
-            <dt>Nome</dt>
-            <dd>{d.autor?.nome ?? 'Conta removida'}</dd>
-            <dt>Telefone</dt>
-            <dd>{d.autor?.telefone ?? 'Não informado'}</dd>
+            {d.autor ? (
+              <>
+                <dt>Nome</dt>
+                <dd>{d.autor.nome}</dd>
+                <dt>Telefone</dt>
+                <dd>{d.autor.telefone ?? 'Não informado'}</dd>
+              </>
+            ) : (
+              // A conta foi excluída (S-50): a denúncia continua, mas sem nome nem contato.
+              <>
+                <dt>Conta</dt>
+                <dd>Conta excluída</dd>
+                <dt>Contato</dt>
+                <dd>Sem contato: a pessoa excluiu a conta</dd>
+              </>
+            )}
           </dl>
         </section>
 

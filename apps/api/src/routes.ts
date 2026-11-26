@@ -42,13 +42,21 @@ export function criarRotas({
   const limitesFinais: LimitesDeTaxa = { ...LIMITES_PADRAO, ...limites };
   const autenticacao = criarAutenticacao(prisma, segredoJwt);
   const router = Router();
+  const armazenamentoDeFotos = criarArmazenamento(uploadsDir);
 
   router.use(limitadorGeral(limitesFinais));
 
   router.use(
     criarRotasAuth({
-      servico: criarServicoAuth({ prisma, segredoJwt, bcryptCost }),
+      servico: criarServicoAuth({
+        prisma,
+        segredoJwt,
+        bcryptCost,
+        armazenamento: armazenamentoDeFotos,
+        publicador,
+      }),
       autenticar: autenticacao.autenticar,
+      exigirPapel: autenticacao.exigirPapel,
       limites: limitesFinais,
     }),
   );
@@ -65,7 +73,7 @@ export function criarRotas({
         prisma,
         publicador,
         relogio,
-        armazenamento: criarArmazenamento(uploadsDir),
+        armazenamento: armazenamentoDeFotos,
       }),
       autenticacao,
     }),

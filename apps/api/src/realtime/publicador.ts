@@ -37,6 +37,11 @@ export type StatusAtualizadoEvento = {
 export interface Publicador {
   denunciaCriada(denuncia: DenunciaCriadaEvento): void | Promise<void>;
   statusAtualizado(evento: StatusAtualizadoEvento): void | Promise<void>;
+  /**
+   * Derruba as conexões abertas de um usuário (exclusão de conta, S-50). Opcional: quem não tem
+   * Socket.IO (testes sem tempo real) não precisa implementar.
+   */
+  desconectarUsuario?(usuarioId: string): void | Promise<void>;
 }
 
 /** Não emite nada. Usado quando não há Socket.IO (testes sem tempo real). */

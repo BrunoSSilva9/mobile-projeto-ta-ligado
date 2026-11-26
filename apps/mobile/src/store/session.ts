@@ -24,6 +24,8 @@ export type EstadoDaSessao = {
   hidratar(): Promise<void>;
   /** Guarda a sessão depois de um login ou cadastro. */
   entrar(dados: DadosDeSessao): Promise<void>;
+  /** Troca os dados do usuário da sessão (depois de editar o perfil), mantendo o token. */
+  atualizarUsuario(usuario: UsuarioDaSessao): Promise<void>;
   /** Encerra a sessão e apaga o token do aparelho (RF-004). */
   sair(): Promise<void>;
 };
@@ -55,7 +57,7 @@ function lerSessaoSalva(texto: string | null): DadosDeSessao | null {
 
 /** Cria a store da sessão. Em produção usa o SecureStore; nos testes, um armazenamento em memória. */
 export function criarSessao(armazenamento: Armazenamento) {
-  return create<EstadoDaSessao>((set) => ({
+  return create<EstadoDaSessao>((set, get) => ({
     token: null,
     usuario: null,
     hidratada: false,
@@ -74,6 +76,17 @@ export function criarSessao(armazenamento: Armazenamento) {
     async entrar(dados) {
       await armazenamento.gravar(CHAVE_DA_SESSAO, JSON.stringify(dados));
       set({ token: dados.token, usuario: dados.usuario, hidratada: true });
+    },
+
+    async atualizarUsuario(usuario) {
+      const { token } = get();
+      if (!token) return; // sem sessão não há o que atualizar
+      set({ usuario });
+      try {
+        await armazenamento.gravar(CHAVE_DA_SESSAO, JSON.stringify({ token, usuario }));
+      } catch {
+        // O estado em memória já mudou; na próxima abertura o app lê os dados da API de novo.
+      }
     },
 
     async sair() {

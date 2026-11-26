@@ -12,8 +12,8 @@ import { useSessao } from '@/store/session';
 import { colors, radius, size, space, type } from '@/theme';
 
 /**
- * T-08 (mínimo na Fase 1, decisão S-37): dados da conta, "Minhas denúncias" e "Sair" (RF-004).
- * Editar dados e excluir conta ficam para a Fase 2.
+ * T-08 (RF-004, RF-005, RF-006): dados da conta, "Editar meus dados", "Minhas denúncias", "Sair"
+ * e "Excluir minha conta", que abre a tela própria de exclusão (S-51), nunca apaga direto daqui.
  */
 export default function PerfilScreen() {
   const usuario = useSessao((s) => s.usuario);
@@ -51,10 +51,26 @@ export default function PerfilScreen() {
         </Pressable>
 
         <Button
+          testID="botao-editar-perfil"
+          titulo="Editar meus dados"
+          variante="secundario"
+          nomeDoIcone="create-outline"
+          onPress={() => router.push('/perfil/editar')}
+        />
+
+        <Button
           testID="botao-sair"
           titulo="Sair"
           variante="secundario"
           onPress={() => void encerrarSessao()}
+        />
+
+        <Button
+          testID="botao-excluir-conta-perfil"
+          titulo="Excluir minha conta"
+          variante="texto"
+          nomeDoIcone="trash-outline"
+          onPress={() => router.push('/perfil/excluir')}
         />
       </View>
     </SafeAreaView>

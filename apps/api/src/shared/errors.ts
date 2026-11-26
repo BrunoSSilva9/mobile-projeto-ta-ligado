@@ -25,6 +25,11 @@ export const erros = {
     new AppError(401, 'NAO_AUTENTICADO', mensagem),
   semPermissao: (mensagem = 'Você não tem permissão para isso.') =>
     new AppError(403, 'SEM_PERMISSAO', mensagem),
+  /**
+   * Senha atual errada ao excluir a conta (S-59). É 403, e não 401: numa rota com sessão, o app
+   * trata 401 como sessão expirada e desconectaria a pessoa. A mensagem não diz mais nada.
+   */
+  senhaIncorreta: () => new AppError(403, 'SENHA_INCORRETA', 'Senha incorreta.'),
   validacao: (detalhes: DetalheDeErro[]) =>
     new AppError(400, 'VALIDACAO_ERRO', 'Dados inválidos.', detalhes),
   credenciaisInvalidas: () =>

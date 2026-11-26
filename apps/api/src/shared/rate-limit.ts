@@ -42,3 +42,20 @@ export function limitadorLogin(limites: LimitesDeTaxa): RequestHandler {
     handler: (_req, _res, next) => next(erros.muitasRequisicoes()),
   });
 }
+
+/**
+ * Limita as tentativas de **exclusão de conta** com senha errada (S-59), com o mesmo critério do
+ * login: só conta as que falham e usa os mesmos limites (5 por minuto). A chave combina o IP e a
+ * conta, então vem **depois** da autenticação.
+ */
+export function limitadorExclusaoDeConta(limites: LimitesDeTaxa): RequestHandler {
+  return rateLimit({
+    windowMs: limites.janelaMs,
+    limit: limites.login,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    skipSuccessfulRequests: true,
+    keyGenerator: (req) => `${ipKeyGenerator(req.ip ?? '')}|excluir|${req.usuario?.id ?? ''}`,
+    handler: (_req, _res, next) => next(erros.muitasRequisicoes()),
+  });
+}

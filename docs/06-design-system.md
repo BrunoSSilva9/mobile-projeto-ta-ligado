@@ -106,7 +106,7 @@ Componentes base construídos na **etapa R2** (`apps/mobile/src/components`): `B
 | `FilterChip` | 48 de altura, ícone, "Todos (n)"; selecionado **azul cheio** com texto branco; não selecionado branco com borda `borderField` |
 | `CartaoDeEscolha` | Rádio grande (≥ 104 de altura) com ícone, título e descrição; selecionado: borda azul de 3, fundo `actionSoft` e rádio marcado |
 | `Cartao` | Branco, canto 16, sem sombra; `destaque` = borda azul de 2 |
-| `Aviso` | Faixa com **ícone e texto** (erro, atenção, informação); o papel de alerta fica no `Text`, não no `View` |
+| `Aviso` | Faixa com **ícone e texto** (erro, atenção, informação); o papel de alerta fica no `Text`, não no `View`. `comBorda` (F2-4) acrescenta uma **borda de 2 na cor do tom**, para avisos graves como a exclusão da conta (ícone, texto e borda, nunca só cor) |
 | `CabecalhoDePasso` | "Voltar" (ícone + texto), "Passo X de 3" e barra de 3 segmentos |
 | Barra inferior (`BarraInferior.tsx`, **pronta na R3**) | 4 itens com ícone e texto (14 negrito): **Início, Mapa, Denunciar, Perfil**; aba ativa com pílula `actionTabPill` e texto `actionPressed`; fundo branco com borda superior `borderSubtle`; "Denunciar" com o ícone dentro de uma pílula azul cheia (56×32) |
 | `CartaoEnergiaDoBairro` (**R4**) | Cartão "Energia no seu bairro agora": ícone grande e nome da situação na cor dela, frase de apoio, endereço com pino, "Trocar" e "Usar minha localização"; cuida dos estados de GPS, fora de Marabá, erro e sem conexão |

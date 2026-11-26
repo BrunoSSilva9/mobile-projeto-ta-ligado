@@ -69,6 +69,17 @@ describe('P-03 Detalhe da denúncia (RF-030, RF-036)', () => {
     expect(topo.getByText('Prioritária')).toBeInTheDocument();
   });
 
+  it('autor com a conta excluída (S-50): mostra "Conta excluída", sem nome nem telefone, e a denúncia continua atendível', async () => {
+    await abrir({ detalhe: () => resposta(200, { ...DETALHE, autor: null }) });
+
+    const autor = within(screen.getByRole('region', { name: 'Autor' }));
+    expect(autor.getByText('Conta excluída')).toBeInTheDocument();
+    expect(autor.getByText('Sem contato: a pessoa excluiu a conta')).toBeInTheDocument();
+    expect(autor.queryByText('Nome')).toBeNull();
+    expect(autor.queryByText('Telefone')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Iniciar atendimento' })).toBeInTheDocument();
+  });
+
   it('sem coordenadas e sem telefone, avisa em vez de deixar em branco', async () => {
     await abrir({
       detalhe: () =>

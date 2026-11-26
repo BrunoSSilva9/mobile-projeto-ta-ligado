@@ -114,6 +114,51 @@ describe('cliente HTTP: requisições', () => {
   });
 });
 
+describe('cliente HTTP: DELETE com corpo (exclusão de conta, S-59)', () => {
+  it('envia o corpo em JSON com o Content-Type e o token', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(resposta(200, null));
+    const { http } = criar(fetchImpl, { token: 'abc.def' });
+
+    await http.delete('/me', { senha: 'minhasenha1' });
+
+    const [url, init] = fetchImpl.mock.calls[0]!;
+    expect(url).toBe('http://api.teste:3000/api/v1/me');
+    expect(init.method).toBe('DELETE');
+    expect(init.headers['Content-Type']).toBe('application/json');
+    expect(init.headers.Authorization).toBe('Bearer abc.def');
+    expect(JSON.parse(init.body)).toEqual({ senha: 'minhasenha1' });
+  });
+
+  it('sem corpo, continua como antes: sem body e sem Content-Type', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(resposta(200, {}));
+
+    await criar(fetchImpl).http.delete('/algo');
+
+    const [, init] = fetchImpl.mock.calls[0]!;
+    expect(init.body).toBeUndefined();
+    expect(init.headers['Content-Type']).toBeUndefined();
+  });
+
+  it('o 403 SENHA_INCORRETA NÃO derruba a sessão (só o 401 faz isso)', async () => {
+    const fetchImpl = jest
+      .fn()
+      .mockResolvedValue(resposta(403, erroDaApi('SENHA_INCORRETA', 'Senha incorreta.')));
+    const { http, aoNaoAutenticado } = criar(fetchImpl, { token: 'abc.def' });
+
+    await expect(http.delete('/me', { senha: 'x' })).rejects.toMatchObject({
+      codigo: 'SENHA_INCORRETA',
+      status: 403,
+    });
+    expect(aoNaoAutenticado).not.toHaveBeenCalled();
+  });
+
+  it('204 sem corpo é sucesso', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(respostaSemJson(204));
+
+    await expect(criar(fetchImpl).http.delete('/me', { senha: 'x' })).resolves.toBeNull();
+  });
+});
+
 describe('cliente HTTP: envio com arquivos (multipart, S-58)', () => {
   it('FormData vai como veio, SEM Content-Type (o fetch põe o boundary), com o token', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(resposta(201, { id: '1' }));

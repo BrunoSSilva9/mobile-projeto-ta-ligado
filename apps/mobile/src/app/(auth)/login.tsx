@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
@@ -10,6 +10,7 @@ import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { aplicarErroDaApi, useEntrar } from '@/features/auth/hooks';
 import { loginSchema, type DadosDoLogin } from '@/features/auth/schemas';
+import { useAvisoDeEntrada } from '@/store/aviso-de-entrada';
 import { colors, size, type } from '@/theme';
 
 const CAMPOS = ['email', 'senha'] as const;
@@ -18,6 +19,9 @@ const CAMPOS = ['email', 'senha'] as const;
 export default function LoginScreen() {
   const entrar = useEntrar();
   const [erroGeral, setErroGeral] = useState<string | null>(null);
+  // Vindo de outra tela (ex.: "Sua conta foi excluída."): aparece uma vez e some ao sair do login.
+  const aviso = useAvisoDeEntrada((s) => s.mensagem);
+  useEffect(() => () => useAvisoDeEntrada.getState().limpar(), []);
 
   const { control, handleSubmit, setError, formState } = useForm<DadosDoLogin>({
     resolver: zodResolver(loginSchema),
@@ -50,6 +54,11 @@ export default function LoginScreen() {
         </Pressable>
       }
     >
+      {aviso ? (
+        <Aviso tom="info" icone="checkmark-circle-outline">
+          {aviso}
+        </Aviso>
+      ) : null}
       <Controller
         control={control}
         name="email"

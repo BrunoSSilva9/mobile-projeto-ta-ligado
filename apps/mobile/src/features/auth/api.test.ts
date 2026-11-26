@@ -1,11 +1,23 @@
-import { entrar, garantirContaDeCidadao, registrar } from '@/features/auth/api';
+import {
+  atualizarPerfil,
+  entrar,
+  excluirConta,
+  garantirContaDeCidadao,
+  registrar,
+} from '@/features/auth/api';
 import { ErroDeApi } from '@/services/http';
 import type { DadosDeSessao } from '@/store/session';
 import { VERSAO_TERMOS } from '@/config/constants';
 
 const mockPost = jest.fn();
+const mockPatch = jest.fn();
+const mockDelete = jest.fn();
 jest.mock('@/services/api', () => ({
-  http: { post: (...argumentos: unknown[]) => mockPost(...argumentos) },
+  http: {
+    post: (...argumentos: unknown[]) => mockPost(...argumentos),
+    patch: (...argumentos: unknown[]) => mockPatch(...argumentos),
+    delete: (...argumentos: unknown[]) => mockDelete(...argumentos),
+  },
 }));
 
 const cidadao: DadosDeSessao = {
@@ -129,5 +141,33 @@ describe('conta de operador no app do cidadão (RF-003, ADR-0001)', () => {
   it('garantirContaDeCidadao deixa o cidadão passar e barra o operador', () => {
     expect(garantirContaDeCidadao(cidadao)).toBe(cidadao);
     expect(() => garantirContaDeCidadao(operador)).toThrow(ErroDeApi);
+  });
+});
+
+describe('atualizarPerfil (RF-005)', () => {
+  it('faz PATCH /me só com nome e telefone (o e-mail nunca vai) e devolve o usuário', async () => {
+    mockPatch.mockResolvedValue({ ...cidadao.usuario, nome: 'Maria Souza' });
+
+    const usuario = await atualizarPerfil({ nome: 'Maria Souza', telefone: '' });
+
+    expect(mockPatch).toHaveBeenCalledWith('/me', { nome: 'Maria Souza', telefone: '' });
+    expect(usuario.nome).toBe('Maria Souza');
+  });
+});
+
+describe('excluirConta (RF-006, S-59)', () => {
+  it('faz DELETE /me com a senha atual no corpo', async () => {
+    mockDelete.mockResolvedValue(null);
+
+    await expect(excluirConta('minhasenha1')).resolves.toBeUndefined();
+
+    expect(mockDelete).toHaveBeenCalledWith('/me', { senha: 'minhasenha1' });
+  });
+
+  it('repassa o erro da API (ex.: SENHA_INCORRETA)', async () => {
+    const erro = new ErroDeApi('SENHA_INCORRETA', 'Senha incorreta.', 403);
+    mockDelete.mockRejectedValue(erro);
+
+    await expect(excluirConta('errada')).rejects.toBe(erro);
   });
 });

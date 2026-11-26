@@ -1,6 +1,7 @@
 import {
   cadastroSchema,
   loginSchema,
+  perfilSchema,
   VALORES_INICIAIS_DO_CADASTRO,
   type DadosDoCadastro,
 } from '@/features/auth/schemas';
@@ -114,5 +115,36 @@ describe('loginSchema (RF-003)', () => {
 
   it('não exige tamanho mínimo da senha no login (contas antigas continuam entrando)', () => {
     expect(loginSchema.safeParse({ email: 'maria@exemplo.com', senha: '1' }).success).toBe(true);
+  });
+});
+
+describe('perfilSchema (RF-005)', () => {
+  it('aceita nome e telefone válidos, ou telefone em branco', () => {
+    expect(
+      perfilSchema.safeParse({ nome: 'Maria Silva', telefone: '(94) 90000-0000' }).success,
+    ).toBe(true);
+    expect(perfilSchema.safeParse({ nome: 'Maria Silva', telefone: '' }).success).toBe(true);
+  });
+
+  it('apara o nome', () => {
+    expect(perfilSchema.parse({ nome: '  Maria Silva ', telefone: '' }).nome).toBe('Maria Silva');
+  });
+
+  it.each([
+    ['nome curto', { nome: 'M', telefone: '' }, 'O nome precisa ter pelo menos 2 caracteres.'],
+    [
+      'nome longo',
+      { nome: 'M'.repeat(101), telefone: '' },
+      'O nome pode ter no máximo 100 caracteres.',
+    ],
+    [
+      'telefone sem DDD',
+      { nome: 'Maria', telefone: '90000-0000' },
+      'Informe o telefone com DDD, ex.: (94) 90000-0000.',
+    ],
+  ])('recusa %s', (_nome, dados, mensagem) => {
+    const resultado = perfilSchema.safeParse(dados);
+    expect(resultado.success).toBe(false);
+    if (!resultado.success) expect(resultado.error.issues[0]!.message).toBe(mensagem);
   });
 });

@@ -251,6 +251,10 @@ RF-004, RF-005, RF-006
 - Item "Termos de Uso e Política de Privacidade".
 - Botão "Sair" e botão discreto "Excluir conta" (confirmação em duas etapas).
 - Versão do app no rodapé.
+- **Fase 2 (F2-4) – perfil e exclusão de conta (RF-005, RF-006; S-22, S-50, S-51, S-59):**
+  - **Perfil:** ganhou o botão **"Editar meus dados"** e, no fim, o botão de texto **"Excluir minha conta"**, que só **abre a tela própria** (nunca apaga direto do Perfil).
+  - **Editar meus dados** (`/perfil/editar`): nome e telefone (opcional, vazio apaga o telefone) com a validação do cadastro; o **e-mail aparece só como texto**, com "O e-mail não pode ser alterado por aqui." (S-22). "Salvar" atualiza a sessão (em memória e no aparelho), anuncia "Dados salvos." e volta. Erro do servidor vai para o campo; sem internet, a mensagem fica acima do botão e o que foi digitado continua.
+  - **Excluir minha conta** (`/perfil/excluir`): aviso de erro com **ícone, texto e borda** ("Esta ação não pode ser desfeita…"); cartão **"O que será apagado"** (nome, e-mail, telefone e senha; as fotos; a resposta sobre necessidade especial; o aviso no celular); cartão **"O que fica"** (as denúncias ficam sem o nome e sem o contato; uma denúncia em aberto continua sendo atendida); campo **"Sua senha atual"**; caixa **"Entendi que meus dados serão apagados e que isso não pode ser desfeito"**; botão primário azul **"Excluir minha conta"**, **desativado até preencher a senha e marcar a caixa** (com o motivo escrito). Não pede para digitar "EXCLUIR". Senha errada: "Senha incorreta." no campo, **sem desconectar** e sem apagar nada. Sucesso: o app apaga o que era da conta no aparelho (token, cache, rascunho e bairro escolhido), encerra a sessão e volta ao login com o aviso **"Sua conta foi excluída."**
 
 ### T-09 – Minhas denúncias
 RF-013
@@ -304,3 +308,4 @@ RF-030 a RF-033, RF-036
 - **Implementação (Passo 10):** blocos Autor, Local, Ocorrência, Atualizar status e Histórico. O mini-mapa, a galeria de fotos e o seletor de previsão fora do "Iniciar atendimento" ficam para a Fase 2. As ações vêm do status (cópia de `acoesDisponiveis` no painel; a API é quem decide); conflito (422) avisa e mostra a situação atual.
 - **Fase 2 (F2-2):** no bloco Ocorrência, "Pessoas no local" e sempre a linha **Necessidade especial**: "Sim, prioridade (autorizado pelo cidadão em …)", "Não", "Não informada" ou "Informação apagada ao encerrar a denúncia" (RN-026). Sem texto livre. O alerta de nova denúncia diz "Nova denúncia prioritária: …" quando for o caso.
 - **Fase 2 (F2-3):** cartão **"Fotos (N)"** com a galeria: cada foto é baixada com o token do operador (a rota é autenticada) e mostrada com o texto alternativo "Foto N de M enviada pelo cidadão"; uma foto que falha mostra "Não foi possível carregar a foto N" e "Tentar de novo" sem derrubar as outras; sem fotos, o cartão não aparece.
+- **Fase 2 (F2-4):** quando a conta do autor foi excluída (S-50), o bloco **Autor** mostra **"Conta excluída"** e "Sem contato: a pessoa excluiu a conta", sem nome nem telefone (antes dizia "Conta removida"). A denúncia continua atendível: os botões de status seguem iguais.

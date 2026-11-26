@@ -1,8 +1,8 @@
 import { VERSAO_TERMOS } from '@/config/constants';
 import { http } from '@/services/api';
 import { ErroDeApi } from '@/services/http';
-import type { DadosDeSessao } from '@/store/session';
-import type { DadosDoCadastro, DadosDoLogin } from './schemas';
+import type { DadosDeSessao, UsuarioDaSessao } from '@/store/session';
+import type { DadosDoCadastro, DadosDoLogin, DadosDoPerfil } from './schemas';
 
 /** Este app é só do cidadão: a conta de operador usa o painel web (RF-003, ADR-0001). */
 export function garantirContaDeCidadao(resposta: DadosDeSessao): DadosDeSessao {
@@ -37,4 +37,17 @@ export async function entrar(dados: DadosDoLogin): Promise<DadosDeSessao> {
     senha: dados.senha,
   });
   return garantirContaDeCidadao(resposta);
+}
+
+/** RF-005: edita nome e telefone. Telefone vazio apaga o telefone. Devolve o usuário atualizado. */
+export function atualizarPerfil(dados: DadosDoPerfil): Promise<UsuarioDaSessao> {
+  return http.patch<UsuarioDaSessao>('/me', { nome: dados.nome, telefone: dados.telefone });
+}
+
+/**
+ * RF-006, RN-024, S-50, S-59: exclui a conta. A API confere a senha atual: errada, responde `403
+ * SENHA_INCORRETA` (e nada é apagado). Certa, responde 204.
+ */
+export async function excluirConta(senha: string): Promise<void> {
+  await http.delete<void>('/me', { senha });
 }

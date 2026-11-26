@@ -38,6 +38,23 @@ export const cadastroSchema = z
     path: ['confirmarSenha'],
   });
 
+/** Edição do perfil (RF-005): nome e telefone. O e-mail é somente leitura (S-22). Igual ao da API. */
+export const perfilSchema = z.object({
+  nome: z
+    .string()
+    .trim()
+    .min(2, 'O nome precisa ter pelo menos 2 caracteres.')
+    .max(100, 'O nome pode ter no máximo 100 caracteres.'),
+  telefone: z
+    .string()
+    .trim()
+    .refine((valor) => valor === '' || TELEFONE_BR.test(valor), {
+      error: 'Informe o telefone com DDD, ex.: (94) 90000-0000.',
+    }),
+});
+
+export type DadosDoPerfil = z.infer<typeof perfilSchema>;
+
 export const loginSchema = z.object({
   email: z
     .string()

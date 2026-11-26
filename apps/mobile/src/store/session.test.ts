@@ -179,3 +179,43 @@ describe('sessão (RF-003, RF-004, RNF-013)', () => {
     });
   });
 });
+
+describe('atualizarUsuario (editar o perfil, RF-005)', () => {
+  it('troca os dados do usuário, mantém o token e regrava a sessão salva', async () => {
+    const { armazenamento, dados } = armazenamentoFalso();
+    const store = criarSessao(armazenamento);
+    await store.getState().entrar(sessao);
+
+    await store
+      .getState()
+      .atualizarUsuario({ ...sessao.usuario, nome: 'Maria Souza', telefone: null });
+
+    expect(store.getState().token).toBe(sessao.token);
+    expect(store.getState().usuario).toMatchObject({ nome: 'Maria Souza', telefone: null });
+    const salva = JSON.parse(dados.get(CHAVE_DA_SESSAO)!);
+    expect(salva.token).toBe(sessao.token);
+    expect(salva.usuario.nome).toBe('Maria Souza');
+  });
+
+  it('sem sessão, não faz nada (não cria sessão do nada)', async () => {
+    const { armazenamento, dados } = armazenamentoFalso();
+    const store = criarSessao(armazenamento);
+
+    await store.getState().atualizarUsuario(sessao.usuario);
+
+    expect(store.getState()).toMatchObject({ token: null, usuario: null });
+    expect(dados.size).toBe(0);
+  });
+
+  it('falha ao gravar no disco não lança: o estado em memória já mudou', async () => {
+    const { armazenamento, falhas } = armazenamentoFalso();
+    const store = criarSessao(armazenamento);
+    await store.getState().entrar(sessao);
+    falhas.gravar = true;
+
+    await expect(
+      store.getState().atualizarUsuario({ ...sessao.usuario, nome: 'Maria Souza' }),
+    ).resolves.toBeUndefined();
+    expect(store.getState().usuario?.nome).toBe('Maria Souza');
+  });
+});

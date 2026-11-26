@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import LoginScreen from '@/app/(auth)/login';
 import { queryClient } from '@/services/query-client';
+import { useAvisoDeEntrada } from '@/store/aviso-de-entrada';
 import { CHAVE_DA_SESSAO, useSessao } from '@/store/session';
 import {
   armazenamentoEmMemoria,
@@ -48,6 +49,26 @@ async function preencherEEntrar(email = 'maria@exemplo.com', senha = 'minhasenha
   await digitar('Senha', senha);
   await tocar('Entrar na conta');
 }
+
+describe('T-02 Login: aviso vindo de outra tela (conta excluída, S-50)', () => {
+  beforeEach(() => useAvisoDeEntrada.getState().limpar());
+
+  it('mostra "Sua conta foi excluída." com ícone e texto, e some ao sair do login', async () => {
+    useAvisoDeEntrada.getState().definir('Sua conta foi excluída.');
+    const { unmount } = await renderizarTela(<LoginScreen />);
+
+    expect(screen.getByText('Sua conta foi excluída.')).toBeTruthy();
+
+    await unmount();
+    expect(useAvisoDeEntrada.getState().mensagem).toBeNull();
+  });
+
+  it('sem aviso pendente, o login é o de sempre', async () => {
+    await renderizarTela(<LoginScreen />);
+
+    expect(screen.queryByText('Sua conta foi excluída.')).toBeNull();
+  });
+});
 
 describe('T-02 Login (RF-003)', () => {
   it('o formulário fica num cartão branco, com "Entrar" em caixa normal e o erro como aviso com ícone', async () => {

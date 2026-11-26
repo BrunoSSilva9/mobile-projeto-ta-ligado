@@ -154,7 +154,8 @@ export function criarHttp(opcoes: OpcoesDoHttp) {
       requisitar<T>('GET', caminho, undefined, consulta),
     post: <T>(caminho: string, corpo?: unknown) => requisitar<T>('POST', caminho, corpo ?? {}),
     patch: <T>(caminho: string, corpo?: unknown) => requisitar<T>('PATCH', caminho, corpo ?? {}),
-    delete: <T>(caminho: string) => requisitar<T>('DELETE', caminho),
+    /** `DELETE` com corpo opcional (a exclusão de conta envia a senha atual, S-59). */
+    delete: <T>(caminho: string, corpo?: unknown) => requisitar<T>('DELETE', caminho, corpo),
   };
 }
 

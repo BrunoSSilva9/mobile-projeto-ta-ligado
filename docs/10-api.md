@@ -76,13 +76,20 @@ Erros: 401 `CREDENCIAIS_INVALIDAS`, 429. O cliente recusa o papel que não for o
 | PUT | `/me/push-token` | Cidadão | Registra o token de push `{ "token", "plataforma" }` | RF-025 |
 | DELETE | `/me/push-token` | Cidadão | Remove o token (logout) | RF-004 |
 
-**`DELETE /me`** (RN-024, decisões S-50 e S-59)
+**`PATCH /me`** (RF-005, decisão S-22; **implementada na F2-4**) → `200` com `{ id, nome, email, telefone, papel }`.
+```json
+// requisição: só nome e telefone; campo ausente = não muda; telefone "" ou null = apaga o telefone
+{ "nome": "Maria Souza", "telefone": "(94) 98888-7777" }
+```
+O **e-mail é somente leitura**: é ignorado, assim como `papel`, `senha` e qualquer outro campo. Erros: `400 VALIDACAO_ERRO` (nome com menos de 2 ou mais de 100 caracteres, telefone sem DDD, corpo sem `nome` nem `telefone`), `401`, `403 SEM_PERMISSAO` (operador).
+
+**`DELETE /me`** (RN-024, decisões S-50 e S-59; **implementada na F2-4**)
 ```json
 // requisição
 { "senha": "minhasenha1" }
 // 204, sem corpo
 ```
-A API confere a senha atual antes de apagar. Numa transação: remove nome, e-mail, telefone, hash da senha, tokens de push, fotos (registros; os arquivos são apagados logo depois) e a resposta de necessidade especial; mantém as denúncias e o histórico **sem vínculo** com a conta. **Uma denúncia em aberto continua aberta** (o painel mostra "Conta excluída"). Depois, desconecta os sockets da conta; o token antigo passa a receber `401`.
+A API confere a senha atual antes de apagar. Numa transação: remove nome, e-mail, telefone, hash da senha, tokens de push, fotos (registros; os arquivos são apagados logo depois) e a resposta de necessidade especial; mantém as denúncias e o histórico **sem vínculo** com a conta. **Uma denúncia em aberto continua aberta** (o painel mostra "Conta excluída"). Depois do commit apaga os arquivos das fotos (uma falha de disco só vira log, sem dado pessoal) e **derruba as conexões em tempo real da conta**; o token antigo passa a receber `401` e o e-mail fica livre para um novo cadastro. A rota tem o limite de tentativas **por IP e por conta**, contando só as falhas (como o login).
 Erros: `400 VALIDACAO_ERRO` (sem senha), `403 SENHA_INCORRETA` ("Senha incorreta.", sem mais detalhes; nada é apagado), `403 SEM_PERMISSAO` (operador), `429 MUITAS_REQUISICOES` (mesmo limite do login: 5 falhas por minuto, por IP e por conta, S-18).
 
 ### Bairros e indicadores

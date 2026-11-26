@@ -18,6 +18,8 @@ export default function AppLayout() {
           <Stack.Screen name="denuncia/[id]" />
           <Stack.Screen name="minhas-denuncias" />
           <Stack.Screen name="ajuda" />
+          <Stack.Screen name="perfil/editar" />
+          <Stack.Screen name="perfil/excluir" />
         </Stack>
       </LocalizacaoProvider>
     </SocketProvider>

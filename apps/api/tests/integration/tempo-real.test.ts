@@ -507,6 +507,53 @@ describe('denuncia:status-atualizado (RF-024)', () => {
   });
 });
 
+describe('exclusão de conta e conexões abertas (S-50)', () => {
+  const excluirConta = (token: string) =>
+    request(servidor.url)
+      .delete('/api/v1/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ senha: 'senha-do-cidadao' });
+
+  it('as conexões da conta excluída são derrubadas (todas as do mesmo usuário)', async () => {
+    const maria = await registrarCidadao(servidor.app);
+    const joao = await registrarCidadao(servidor.app);
+    const celular = await servidor.conectar(maria.token);
+    const tablet = await servidor.conectar(maria.token);
+    const deJoao = await servidor.conectar(joao.token);
+
+    expect((await excluirConta(maria.token)).status).toBe(204);
+
+    await aguardar(() => !celular.connected && !tablet.connected);
+    expect(celular.connected).toBe(false);
+    expect(tablet.connected).toBe(false);
+    expect(deJoao.connected).toBe(true); // a de outra pessoa continua
+  });
+
+  it('e não dá para reconectar com o token antigo', async () => {
+    const maria = await registrarCidadao(servidor.app);
+    await servidor.conectar(maria.token);
+    await excluirConta(maria.token);
+
+    await expect(servidor.conectar(maria.token)).rejects.toMatchObject({
+      message: 'NAO_AUTENTICADO',
+    });
+  });
+
+  it('com a senha errada, a conexão continua aberta', async () => {
+    const maria = await registrarCidadao(servidor.app);
+    const celular = await servidor.conectar(maria.token);
+
+    const res = await request(servidor.url)
+      .delete('/api/v1/me')
+      .set('Authorization', `Bearer ${maria.token}`)
+      .send({ senha: 'senha-errada-123' });
+
+    expect(res.status).toBe(403);
+    await pausa(150);
+    expect(celular.connected).toBe(true);
+  });
+});
+
 describe('servidor sem Socket.IO conectado', () => {
   it('o publicador não faz nada (nem falha) antes de receber o io', async () => {
     const sozinho = new PublicadorSocketIO(prisma);

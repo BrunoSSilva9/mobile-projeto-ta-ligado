@@ -14,6 +14,8 @@ type Props = {
   icone?: ComponentProps<typeof Ionicons>['name'];
   /** `false` para avisos que já estão na tela ao abrir (não são anunciados como alerta). */
   anunciar?: boolean;
+  /** Borda de 2 na cor do tom: reforça avisos graves (como a exclusão da conta) sem depender só da cor. */
+  comBorda?: boolean;
   testID?: string;
 };
 
@@ -27,10 +29,17 @@ const VISUAL = {
  * Faixa de aviso com **ícone e texto** (a cor nunca é a única pista): erro, atenção ou informação.
  * O papel de alerta fica no `Text`, não no `View` (um `View` acessível agruparia os filhos).
  */
-export function Aviso({ tom, children, icone, anunciar = true, testID }: Props) {
+export function Aviso({ tom, children, icone, anunciar = true, comBorda = false, testID }: Props) {
   const visual = VISUAL[tom];
   return (
-    <View testID={testID} style={[styles.faixa, { backgroundColor: visual.fundo }]}>
+    <View
+      testID={testID}
+      style={[
+        styles.faixa,
+        { backgroundColor: visual.fundo },
+        comBorda && { borderWidth: 2, borderColor: visual.texto },
+      ]}
+    >
       <Ionicons
         name={icone ?? visual.icone}
         size={22}

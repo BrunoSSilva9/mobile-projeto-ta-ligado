@@ -81,6 +81,11 @@ export class PublicadorSocketIO implements Publicador {
     await this.emitirStatusDoBairro(d.bairro.id);
   }
 
+  /** Exclusão de conta: derruba todas as conexões do usuário (o token dele já não vale mais). */
+  desconectarUsuario(usuarioId: string): void {
+    this.io?.in(SALAS.usuario(usuarioId)).disconnectSockets(true);
+  }
+
   /** Lê o banco (já com o commit feito) e avisa os cidadãos do status atual do bairro. */
   private async emitirStatusDoBairro(bairroId: number): Promise<void> {
     const status = await obterStatusDoBairro(this.prisma, bairroId, this.relogio());
