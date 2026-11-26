@@ -1,5 +1,6 @@
 import type { Bairro, Denuncia } from '@prisma/client';
 
+import { ehPrioritaria } from '../../domain';
 import type { DenunciaSnapshot } from '../../realtime/publicador';
 
 const num = (valor: { toNumber(): number } | null): number | null =>
@@ -12,7 +13,7 @@ export function paraSnapshot(d: Denuncia & { bairro: Bairro }): DenunciaSnapshot
     protocolo: d.protocolo,
     tipo: d.tipo,
     status: d.status,
-    prioritaria: d.necessidadeEspecial,
+    prioritaria: ehPrioritaria(d.necessidadeEspecial),
     autorId: d.autorId,
     bairro: { id: d.bairro.id, nome: d.bairro.nome, folha: d.bairro.folha },
     logradouro: d.logradouro,

@@ -69,7 +69,40 @@ describe('rascunho da denúncia (RNF-008)', () => {
     await AsyncStorage.setItem(chaveDoRascunho('u1'), '"texto"');
     expect(await lerRascunho('u1')).toBeNull();
   });
+});
 
+describe('rascunho e dados sensíveis (S-56)', () => {
+  it('guarda a faixa de pessoas', async () => {
+    await salvarRascunho('u1', { logradouro: 'Rua A', faixaPessoas: 'DE_9_A_20' });
+
+    expect(await lerRascunho('u1')).toEqual({ logradouro: 'Rua A', faixaPessoas: 'DE_9_A_20' });
+  });
+
+  it('NUNCA guarda a necessidade especial nem o consentimento', async () => {
+    await salvarRascunho('u1', {
+      logradouro: 'Rua A',
+      necessidadeEspecial: true,
+      consentimentoNecessidade: true,
+    });
+
+    const bruto = (await AsyncStorage.getItem(chaveDoRascunho('u1')))!;
+    expect(bruto).not.toMatch(/necessidade/i);
+    expect(bruto).not.toMatch(/consentimento/i);
+    expect(await lerRascunho('u1')).toEqual({ logradouro: 'Rua A' });
+  });
+
+  it('ignora necessidade gravada por uma versão antiga ou por fora', async () => {
+    await AsyncStorage.setItem(
+      chaveDoRascunho('u1'),
+      JSON.stringify({ logradouro: 'Rua A', necessidadeEspecial: true, faixaPessoas: 'X' }),
+    );
+
+    expect(await lerRascunho('u1')).toEqual({ logradouro: 'Rua A' });
+  });
+});
+
+// Fica por último: os espiões quebram o AsyncStorage simulado para os testes seguintes.
+describe('rascunho com o armazenamento quebrado', () => {
   it('falha do armazenamento nunca lança', async () => {
     jest.spyOn(AsyncStorage, 'getItem').mockRejectedValue(new Error('disco'));
     jest.spyOn(AsyncStorage, 'setItem').mockRejectedValue(new Error('disco'));

@@ -131,8 +131,8 @@ pontoReferencia=Próximo à rotatória   (opcional)
 descricao=Estalo forte no poste…      (opcional, até 500)
 latitude=-5.3712  longitude=-49.1231  (opcionais; sem GPS, omitir)
 faixaPessoas=DE_4_A_8          (opcional: ATE_3 | DE_4_A_8 | DE_9_A_20 | RUA_TODA)
-necessidadeEspecial=true       (padrão false)
-detalheNecessidade=Idosa de 82 anos com inalação   (obrigatório se necessidadeEspecial)
+necessidadeEspecial=true       (opcional: true | false; ausente ou null = não informado. Só Sim/Não, S-46)
+consentimentoNecessidade=true  (obrigatório e true quando necessidadeEspecial=true; LGPD, art. 11)
 fotos=<arquivo>  fotos=<arquivo>   (opcional, JPEG/PNG, até 3, 5 MB cada)
 ```
 ```json
@@ -140,8 +140,8 @@ fotos=<arquivo>  fotos=<arquivo>   (opcional, JPEG/PNG, até 3, 5 MB cada)
 { "id": "uuid", "protocolo": "TL-2026-000123", "status": "RECEBIDA", "tipo": "SEM_ENERGIA",
   "bairro": { "id": 3, "nome": "Cidade Nova" }, "criadoEm": "2026-11-18T14:02:10Z" }
 ```
-Erros: 400, 409 `DENUNCIA_EM_ABERTO`, 413/415 `ARQUIVO_INVALIDO`, 422 `LIMITE_FOTOS`.
-Efeitos: grava denúncia e histórico inicial (transação); emite `denuncia:criada` e `ocorrencia:atualizada`.
+Erros: 400, 409 `DENUNCIA_EM_ABERTO`, 413/415 `ARQUIVO_INVALIDO`, 422 `LIMITE_FOTOS`. O "Sim" sem `consentimentoNecessidade: true` dá `400 VALIDACAO_ERRO` no campo `consentimentoNecessidade` ("Para enviar a necessidade especial, autorize o envio dessa informação à Equatorial."). O `detalheNecessidade` da Fase 1 não existe mais: se vier, é descartado (F2-2).
+Efeitos: grava denúncia e histórico inicial (transação); com "Sim", grava também a data do consentimento; emite `denuncia:criada` e `ocorrencia:atualizada`.
 
 **`GET /denuncias/minhas?status=&page=&limite=`** → `200`
 ```json
@@ -156,7 +156,7 @@ Efeitos: grava denúncia e histórico inicial (transação); emite `denuncia:cri
 { "id": "uuid", "protocolo": "TL-2026-000123", "tipo": "SEM_ENERGIA", "status": "EM_ATENDIMENTO",
   "logradouro": "Av. VP-3, Folha 28", "bairro": { "id": 3, "nome": "Cidade Nova" },
   "descricao": "…", "latitude": -5.3712, "longitude": -49.1231,
-  "faixaPessoas": "DE_4_A_8", "necessidadeEspecial": true, "detalheNecessidade": "…",
+  "faixaPessoas": "DE_4_A_8", "necessidadeEspecial": true,
   "previsaoReparo": "2026-11-18T16:20:00Z", "justificativa": null,
   "fotos": [ { "id": "uuid", "url": "/api/v1/denuncias/uuid/fotos/uuid" } ],
   "historico": [
@@ -209,7 +209,9 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
   "pagina": 1, "total": 12 }
 ```
 
-**`GET /painel/denuncias/{id}`** → `200`: igual a `GET /denuncias/{id}` mais `autor: { id, nome, telefone }`, `cep`, `pontoReferencia`, e `historico[].por` com o nome do operador.
+**`GET /painel/denuncias/{id}`** → `200`: igual a `GET /denuncias/{id}` mais `autor: { id, nome, telefone }`, `cep`, `pontoReferencia`, `consentimentoNecessidadeEm` e `historico[].por` com o nome do operador.
+
+**Necessidade especial nas respostas (RN-015, RN-026):** `necessidadeEspecial` é `true`, `false` ou `null` (não informada, ou **apagada** quando a denúncia fica Resolvida, Improcedente ou Cancelada). `prioritaria` é `true` só com `necessidadeEspecial === true`. Na lista do painel, a ordem é prioritárias primeiro (nulas no fim do grupo comum) e `prioritarias=false` traz as "Não" e as sem resposta. Toda mudança para status final (operador, cancelamento pelo autor e, na F2-6, o lote) apaga a resposta e o consentimento na mesma gravação.
 
 **`PATCH /painel/denuncias/{id}/status`**
 ```json

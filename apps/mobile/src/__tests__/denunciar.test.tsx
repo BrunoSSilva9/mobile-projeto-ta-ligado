@@ -5,6 +5,7 @@ import { AccessibilityInfo, BackHandler, StyleSheet } from 'react-native';
 
 import DenunciarScreen from '@/app/(app)/denunciar';
 import { chaveDoRascunho } from '@/features/denuncia/rascunho';
+import { PERGUNTA_DA_NECESSIDADE, TEXTO_DO_CONSENTIMENTO } from '@/features/denuncia/schemas';
 import { queryClient } from '@/services/query-client';
 import { useSessao } from '@/store/session';
 import { colors } from '@/theme';
@@ -555,6 +556,165 @@ describe('Passo 3 · "Quer contar mais alguma coisa?"', () => {
     await digitar('Descreva o que aconteceu (opcional)', 'sem luz');
 
     expect(screen.getByText('7/500 caracteres')).toBeTruthy();
+  });
+});
+
+describe('Passo 3: pessoas no local e necessidade especial (RF-010, RN-015, S-46, S-48)', () => {
+  const chip = (rotulo: string) => screen.getByRole('radio', { name: rotulo });
+  const sim = () => screen.getByRole('radio', { name: /^Sim\./ });
+  const nao = () => screen.getByRole('radio', { name: /^Não\./ });
+  const consentimento = () => screen.getByRole('checkbox', { name: TEXTO_DO_CONSENTIMENTO });
+
+  it('mostra as 4 faixas e a pergunta de Sim/Não, sem o consentimento ainda', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    expect(screen.getByText('Quantas pessoas estão no local? (opcional)')).toBeTruthy();
+    for (const rotulo of ['1 a 3', '4 a 8', '9 a 20', 'Rua toda']) {
+      expect(chip(rotulo).props.accessibilityState).toMatchObject({ selected: false });
+    }
+    expect(screen.getByText(PERGUNTA_DA_NECESSIDADE)).toBeTruthy();
+    expect(sim()).toBeTruthy();
+    expect(nao()).toBeTruthy();
+    expect(screen.queryByRole('checkbox', { name: TEXTO_DO_CONSENTIMENTO })).toBeNull();
+    // Sem texto livre de saúde (S-46).
+    expect(screen.queryByLabelText(/Detalhe a situação/i)).toBeNull();
+  });
+
+  it('escolher uma faixa marca o chip e aparece no resumo; tocar de novo desmarca', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await fireEvent.press(chip('4 a 8'));
+    expect(chip('4 a 8').props.accessibilityState).toMatchObject({ selected: true });
+    expect(screen.getByText('Pessoas no local: 4 a 8 pessoas')).toBeTruthy();
+
+    await fireEvent.press(chip('4 a 8'));
+    expect(chip('4 a 8').props.accessibilityState).toMatchObject({ selected: false });
+    expect(screen.queryByText(/Pessoas no local:/)).toBeNull();
+  });
+
+  it('"Sim" abre o consentimento específico; sem marcar, o resumo avisa que não será enviada', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await fireEvent.press(sim());
+
+    expect(consentimento().props.accessibilityState).toMatchObject({ checked: false });
+    expect(screen.getByText(/Ela só vai para a Equatorial se você autorizar/)).toBeTruthy();
+    expect(screen.getByText(/Sem a sua autorização, a resposta não é enviada/)).toBeTruthy();
+    expect(
+      screen.getByText('Necessidade especial: não será enviada (falta a sua autorização)'),
+    ).toBeTruthy();
+
+    await fireEvent.press(consentimento());
+
+    expect(consentimento().props.accessibilityState).toMatchObject({ checked: true });
+    expect(screen.getByText('Necessidade especial: sim (com a sua autorização)')).toBeTruthy();
+    expect(screen.queryByText(/Sem a sua autorização, a resposta não é enviada/)).toBeNull();
+  });
+
+  it('"Não" não pede consentimento e aparece no resumo', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await fireEvent.press(nao());
+
+    expect(screen.queryByRole('checkbox', { name: TEXTO_DO_CONSENTIMENTO })).toBeNull();
+    expect(screen.getByText('Necessidade especial: não')).toBeTruthy();
+  });
+
+  it('envia pessoas e o "Sim" com o consentimento', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await fireEvent.press(chip('Rua toda'));
+    await fireEvent.press(sim());
+    await fireEvent.press(consentimento());
+
+    await enviar();
+
+    await waitFor(() => expect(corposEnviados()).toHaveLength(1));
+    expect(corposEnviados()[0]).toMatchObject({
+      faixaPessoas: 'RUA_TODA',
+      necessidadeEspecial: true,
+      consentimentoNecessidade: true,
+    });
+  });
+
+  it('"Sim" sem o consentimento: a denúncia vai, mas sem nada sobre a necessidade', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await fireEvent.press(sim());
+
+    await enviar();
+
+    await waitFor(() => expect(corposEnviados()).toHaveLength(1));
+    expect(corposEnviados()[0]).not.toHaveProperty('necessidadeEspecial');
+    expect(corposEnviados()[0]).not.toHaveProperty('consentimentoNecessidade');
+  });
+
+  it('"Não": envia só a resposta', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await fireEvent.press(nao());
+
+    await enviar();
+
+    await waitFor(() => expect(corposEnviados()).toHaveLength(1));
+    expect(corposEnviados()[0]).toMatchObject({ necessidadeEspecial: false });
+    expect(corposEnviados()[0]).not.toHaveProperty('consentimentoNecessidade');
+  });
+
+  it('trocar "Sim" por "Não" esconde o consentimento e não envia nada sensível', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await fireEvent.press(sim());
+    await fireEvent.press(consentimento());
+    await fireEvent.press(nao());
+
+    expect(screen.queryByRole('checkbox', { name: TEXTO_DO_CONSENTIMENTO })).toBeNull();
+    await enviar();
+
+    await waitFor(() => expect(corposEnviados()).toHaveLength(1));
+    expect(corposEnviados()[0]).toMatchObject({ necessidadeEspecial: false });
+    expect(corposEnviados()[0]).not.toHaveProperty('consentimentoNecessidade');
+  });
+
+  it('o rascunho guarda a faixa de pessoas, mas nunca a necessidade nem o consentimento (S-56)', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await fireEvent.press(chip('9 a 20'));
+    await fireEvent.press(sim());
+    await fireEvent.press(consentimento());
+
+    await waitFor(async () =>
+      expect(JSON.parse((await AsyncStorage.getItem(chaveDoRascunho('u1'))) ?? '{}')).toMatchObject(
+        { faixaPessoas: 'DE_9_A_20' },
+      ),
+    );
+    const bruto = (await AsyncStorage.getItem(chaveDoRascunho('u1')))!;
+    expect(bruto).not.toMatch(/necessidade|consentimento/i);
+  });
+
+  it('erro do servidor no consentimento aparece no passo 3, na caixa', async () => {
+    simularApi({
+      criar: () =>
+        resposta(
+          400,
+          erroDaApi('VALIDACAO_ERRO', 'Dados inválidos.', {
+            detalhes: [{ campo: 'consentimentoNecessidade', mensagem: 'Autorize o envio.' }],
+          }),
+        ),
+    });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await fireEvent.press(sim());
+    await fireEvent.press(consentimento());
+
+    await enviar();
+
+    expect(await screen.findByText('Autorize o envio.')).toBeTruthy();
+    expect(screen.getByRole('header', { name: TITULO_3 })).toBeTruthy();
   });
 });
 

@@ -191,7 +191,7 @@ describe('denuncia:criada e eventos públicos (RF-024, RF-027)', () => {
       latitude: -5.3712,
       longitude: -49.1231,
       necessidadeEspecial: true,
-      detalheNecessidade: 'Aparelho de oxigênio',
+      consentimentoNecessidade: true,
     });
     expect(res.status).toBe(201);
     await aguardar(() => doTipo(painel, EVENTOS.denunciaCriada).length > 0);
@@ -251,7 +251,7 @@ describe('denuncia:criada e eventos públicos (RF-024, RF-027)', () => {
       cep: '68500-000',
       pontoReferencia: 'Perto da rotatória',
       necessidadeEspecial: true,
-      detalheNecessidade: 'Aparelho de oxigênio',
+      consentimentoNecessidade: true,
       faixaPessoas: 'DE_4_A_8',
     });
     await aguardar(() => doTipo(app1, EVENTOS.ocorrenciaAtualizada).length > 0);

@@ -46,8 +46,8 @@ erDiagram
     decimal latitude "opcional"
     decimal longitude "opcional"
     enum faixaPessoas "opcional"
-    boolean necessidadeEspecial
-    string detalheNecessidade "opcional"
+    boolean necessidadeEspecial "opcional (nulo = não informado ou apagado)"
+    datetime consentimentoNecessidadeEm "opcional"
     datetime previsaoReparo "opcional"
     string justificativa "se IMPROCEDENTE"
     datetime criadoEm
@@ -125,8 +125,8 @@ erDiagram
 | `pontoReferencia`, `descricao` | texto? | descrição até 500 (S-07) |
 | `latitude`, `longitude` | decimal? | vazias sem GPS (RN-012) |
 | `faixaPessoas` | enum? | `ATE_3`, `DE_4_A_8`, `DE_9_A_20`, `RUA_TODA` |
-| `necessidadeEspecial` | booleano | padrão `false`; prioridade (RN-015) |
-| `detalheNecessidade` | texto? | obrigatório se `necessidadeEspecial` |
+| `necessidadeEspecial` | booleano? | Só Sim/Não (S-46); `null` = não informado, ou apagado ao encerrar a denúncia (RN-026). `true` = prioritária (RN-015). CHECK: `true` exige `consentimentoNecessidadeEm`; status final exige os dois nulos |
+| `consentimentoNecessidadeEm` | data? | Consentimento específico do "Sim" (LGPD, art. 11, I); apagado junto com a resposta. A coluna `detalheNecessidade` (texto livre) **foi removida na F2-2** |
 | `previsaoReparo` | data? | informada pelo operador (RN-009) |
 | `justificativa` | texto? | obrigatória em `IMPROCEDENTE` (RN-010) |
 | `criadoEm`, `atualizadoEm`, `finalizadaEm` | data | `finalizadaEm` em estados finais |

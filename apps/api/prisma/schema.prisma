@@ -78,8 +78,10 @@ model Denuncia {
   latitude           Decimal?       @db.Decimal(9, 6)
   longitude          Decimal?       @db.Decimal(9, 6)
   faixaPessoas       FaixaPessoas?
-  necessidadeEspecial Boolean       @default(false)
-  detalheNecessidade String?
+  /// Só Sim/Não (S-46): `null` = não informado ou já apagado ao encerrar a denúncia (RN-026).
+  necessidadeEspecial Boolean?
+  /// Data do consentimento específico do "Sim" (LGPD, art. 11, I); apagada junto com a resposta.
+  consentimentoNecessidadeEm DateTime?
   previsaoReparo     DateTime?
   justificativa      String?
   criadoEm           DateTime       @default(now())

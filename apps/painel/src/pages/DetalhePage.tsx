@@ -16,6 +16,7 @@ import {
   rotuloDoStatus,
   rotuloDoTipo,
   statusEmAberto,
+  textoDaNecessidade,
   type DetalheDoPainel,
 } from '../features/denuncias/tipos';
 import { ErroDeApi } from '../services/http';
@@ -165,16 +166,12 @@ function Conteudo({
             ) : null}
             {d.faixaPessoas ? (
               <>
-                <dt>Pessoas afetadas</dt>
+                <dt>Pessoas no local</dt>
                 <dd>{FAIXAS[d.faixaPessoas] ?? d.faixaPessoas}</dd>
               </>
             ) : null}
-            {d.necessidadeEspecial ? (
-              <>
-                <dt>Necessidade especial</dt>
-                <dd>{d.detalheNecessidade ?? 'Sim'}</dd>
-              </>
-            ) : null}
+            <dt>Necessidade especial</dt>
+            <dd>{textoDaNecessidade(d, formatarDataHora)}</dd>
             {aberta && d.previsaoReparo ? (
               <>
                 <dt>Previsão de reparo</dt>

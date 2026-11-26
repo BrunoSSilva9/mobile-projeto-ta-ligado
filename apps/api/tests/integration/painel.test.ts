@@ -101,7 +101,7 @@ describe('GET /api/v1/painel/denuncias (RF-028, RF-029, RF-035)', () => {
       latitude: -5.3712,
       longitude: -49.1231,
       necessidadeEspecial: true,
-      detalheNecessidade: 'Aparelho de oxigênio',
+      consentimentoNecessidade: true,
     });
 
     const res = await listar(operador.token);
@@ -170,13 +170,19 @@ describe('GET /api/v1/painel/denuncias (RF-028, RF-029, RF-035)', () => {
       const nova = (logradouro: string, dados: Parameters<typeof criarDenunciaNoBanco>[0]) =>
         criarDenunciaNoBanco({ ...dados, logradouro });
       await nova('1 sem energia recebida', { bairroId: bairro.id });
-      await nova('2 oscilação recebida', { bairroId: bairro.id, tipo: 'OSCILACAO' });
-      await nova('3 sem energia em atendimento', {
+      await nova('2 oscilação recebida', {
+        bairroId: bairro.id,
+        tipo: 'OSCILACAO',
+        necessidadeEspecial: false, // "Não" explícito: conta como comum, igual à sem resposta
+      });
+      await nova('3 sem energia em atendimento prioritária', {
         bairroId: outroBairro.id,
         status: 'EM_ATENDIMENTO',
+        necessidadeEspecial: true,
       });
       await nova('4 sem energia resolvida', { bairroId: outroBairro.id, status: 'RESOLVIDA' });
-      await nova('5 oscilação cancelada prioritária', {
+      // Era prioritária, mas foi cancelada: a resposta foi apagada (RN-026).
+      await nova('5 oscilação cancelada', {
         bairroId: bairro.id,
         tipo: 'OSCILACAO',
         status: 'CANCELADA',
@@ -213,8 +219,9 @@ describe('GET /api/v1/painel/denuncias (RF-028, RF-029, RF-035)', () => {
     });
 
     it('só as prioritárias, ou só as comuns', async () => {
-      expect(await ruas('?prioritarias=true')).toEqual(['5']);
-      expect(await ruas('?prioritarias=false')).toEqual(['1', '2', '3', '4']);
+      expect(await ruas('?prioritarias=true')).toEqual(['3']);
+      // Comuns = "Não" (2) ou sem resposta (1, 4) ou resposta apagada ao encerrar (5).
+      expect(await ruas('?prioritarias=false')).toEqual(['1', '2', '4', '5']);
     });
 
     it('combinando os filtros (status + tipo + bairro)', async () => {
@@ -291,7 +298,7 @@ describe('GET /api/v1/painel/denuncias/:id (RF-030, RN-014)', () => {
       longitude: -49.1231,
       faixaPessoas: 'DE_4_A_8',
       necessidadeEspecial: true,
-      detalheNecessidade: 'Aparelho de oxigênio',
+      consentimentoNecessidade: true,
     });
     await mudar(operador.token, criada.id, { status: 'EM_ATENDIMENTO' });
 
@@ -314,7 +321,7 @@ describe('GET /api/v1/painel/denuncias/:id (RF-030, RN-014)', () => {
       longitude: -49.1231,
       faixaPessoas: 'DE_4_A_8',
       necessidadeEspecial: true,
-      detalheNecessidade: 'Aparelho de oxigênio',
+      consentimentoNecessidadeEm: expect.any(String),
       previsaoReparo: null,
       justificativa: null,
       fotos: [],
@@ -451,7 +458,7 @@ describe('PATCH /api/v1/painel/denuncias/:id/status (RF-031, RF-032, RF-033, RF-
       const gravada = await noBanco();
       expect(gravada.autorId).toBe(maria.id);
       expect(gravada.protocolo).not.toBe('TL-1999-000001');
-      expect(gravada.necessidadeEspecial).toBe(false);
+      expect(gravada.necessidadeEspecial).toBeNull();
     });
   });
 
@@ -851,5 +858,124 @@ describe('painel + tempo real, com o servidor completo (RNF-002)', () => {
       status: 'SEM_LUZ',
       emAberto: 1,
     });
+  });
+});
+
+describe('necessidade especial: prioridade e retenção (RN-015, RN-026)', () => {
+  const sim = { necessidadeEspecial: true, consentimentoNecessidade: true };
+  const noBanco = (id: string) => prisma.denuncia.findUniqueOrThrow({ where: { id } });
+
+  it('a ordem põe o "Sim" primeiro e os sem resposta (nulos) no fim do grupo comum, por data', async () => {
+    const operador = await entrarComoOperador(app);
+    const em = (min: number) => new Date(Date.now() - min * 60_000);
+    // Sem `nulls: 'last'`, o PostgreSQL poria os nulos ANTES do "Sim" na ordem decrescente.
+    await criarDenunciaNoBanco({
+      bairroId: bairro.id,
+      logradouro: 'nula antiga',
+      criadoEm: em(50),
+    });
+    await criarDenunciaNoBanco({
+      bairroId: bairro.id,
+      logradouro: 'não recente',
+      necessidadeEspecial: false,
+      criadoEm: em(10),
+    });
+    await criarDenunciaNoBanco({
+      bairroId: bairro.id,
+      logradouro: 'sim recente',
+      necessidadeEspecial: true,
+      criadoEm: em(5),
+    });
+    await criarDenunciaNoBanco({
+      bairroId: bairro.id,
+      logradouro: 'nula recente',
+      criadoEm: em(1),
+    });
+
+    const res = await listar(operador.token);
+    const ordem = (res.body.itens as Payload[]).map((i) => i.logradouro);
+
+    expect(ordem[0]).toBe('sim recente');
+    expect(ordem).toEqual(['sim recente', 'não recente', 'nula antiga', 'nula recente']);
+    expect((res.body.itens as Payload[]).map((i) => i.prioritaria)).toEqual([
+      true,
+      false,
+      false,
+      false,
+    ]);
+  });
+
+  it('o detalhe traz a resposta e a data do consentimento, sem texto livre', async () => {
+    const operador = await entrarComoOperador(app);
+    const maria = await registrarCidadao(app);
+    const criada = await abrirDenuncia(maria.token, sim);
+
+    const res = await detalhe(operador.token, criada.id);
+
+    expect(res.body.necessidadeEspecial).toBe(true);
+    expect(new Date(res.body.consentimentoNecessidadeEm).getTime()).not.toBeNaN();
+    expect(res.body).not.toHaveProperty('detalheNecessidade');
+  });
+
+  it.each([
+    ['RESOLVIDA', [{ status: 'EM_ATENDIMENTO' }, { status: 'RESOLVIDA' }]],
+    [
+      'IMPROCEDENTE',
+      [{ status: 'IMPROCEDENTE', justificativa: 'Equipe não encontrou interrupção.' }],
+    ],
+  ] as const)(
+    'ao ficar %s, a resposta e o consentimento são apagados na mesma gravação',
+    async (_status, passos) => {
+      const operador = await entrarComoOperador(app);
+      const maria = await registrarCidadao(app);
+      const criada = await abrirDenuncia(maria.token, sim);
+
+      for (const corpo of passos) {
+        expect((await mudar(operador.token, criada.id, corpo)).status).toBe(200);
+      }
+
+      const d = await noBanco(criada.id);
+      expect(d.necessidadeEspecial).toBeNull();
+      expect(d.consentimentoNecessidadeEm).toBeNull();
+      const res = await detalhe(operador.token, criada.id);
+      expect(res.body).toMatchObject({
+        prioritaria: false,
+        necessidadeEspecial: null,
+        consentimentoNecessidadeEm: null,
+      });
+    },
+  );
+
+  it('em atendimento, a resposta continua (só o encerramento apaga)', async () => {
+    const operador = await entrarComoOperador(app);
+    const maria = await registrarCidadao(app);
+    const criada = await abrirDenuncia(maria.token, sim);
+
+    await mudar(operador.token, criada.id, { status: 'EM_ATENDIMENTO' });
+
+    const d = await noBanco(criada.id);
+    expect(d.necessidadeEspecial).toBe(true);
+    expect(d.consentimentoNecessidadeEm).toBeInstanceOf(Date);
+  });
+
+  it('o evento da mudança de status já sai sem prioridade depois de encerrar', async () => {
+    const operador = await entrarComoOperador(app);
+    const maria = await registrarCidadao(app);
+    const criada = await abrirDenuncia(maria.token, sim);
+    await mudar(operador.token, criada.id, { status: 'EM_ATENDIMENTO' });
+    statusAtualizado.mockClear();
+
+    await mudar(operador.token, criada.id, { status: 'RESOLVIDA' });
+
+    expect(statusAtualizado.mock.calls[0]![0].denuncia.prioritaria).toBe(false);
+  });
+
+  it('o banco recusa guardar a resposta numa denúncia encerrada (CHECK de RN-026)', async () => {
+    const maria = await registrarCidadao(app);
+    const criada = await abrirDenuncia(maria.token, sim);
+
+    await expect(
+      prisma.denuncia.update({ where: { id: criada.id }, data: { status: 'CANCELADA' } }),
+    ).rejects.toThrow();
   });
 });

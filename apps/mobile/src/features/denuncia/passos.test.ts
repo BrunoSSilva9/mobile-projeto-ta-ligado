@@ -12,7 +12,17 @@ describe('passos da denúncia', () => {
     const todos = Object.values(CAMPOS_DO_PASSO).flat();
     expect(new Set(todos).size).toBe(todos.length);
     expect(todos.sort()).toEqual(
-      ['bairroId', 'cep', 'descricao', 'logradouro', 'pontoReferencia', 'tipo'].sort(),
+      [
+        'bairroId',
+        'cep',
+        'consentimentoNecessidade',
+        'descricao',
+        'faixaPessoas',
+        'logradouro',
+        'necessidadeEspecial',
+        'pontoReferencia',
+        'tipo',
+      ].sort(),
     );
   });
 

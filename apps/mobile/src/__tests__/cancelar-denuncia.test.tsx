@@ -170,9 +170,13 @@ describe('T-07 Cancelar denúncia (RF-015, RN-005, S-55)', () => {
     await abrirConfirmacao();
 
     await tocar('Sim, cancelar');
-    const sim = screen.getByRole('button', { name: 'Sim, cancelar' });
-    expect(sim.props.accessibilityState).toMatchObject({ busy: true });
-    await fireEvent.press(sim);
+    // Sob carga, o estado "ocupado" pode levar um instante para aparecer.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Sim, cancelar' }).props.accessibilityState,
+      ).toMatchObject({ busy: true }),
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Sim, cancelar' }));
 
     concluir(resposta(200, CANCELADA));
     expect(await screen.findByText(/Denúncia cancelada\./)).toBeTruthy();

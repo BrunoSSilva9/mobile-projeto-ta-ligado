@@ -1,10 +1,13 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 
 import {
+  camposSensiveisAoMudarStatus,
+  ehPrioritaria,
   formatarProtocolo,
   podeCriarDenuncia,
   podeVerDenuncia,
   STATUS_EM_ABERTO,
+  validarNecessidade,
   validarTransicao,
   type UsuarioAutenticado,
 } from '../../domain';
@@ -59,6 +62,16 @@ export function criarServicoDenuncias({
    */
   async function criar(autor: AutorDaDenuncia, dados: DadosDeDenuncia) {
     const agora = relogio();
+    // O schema já recusou o "Sim" sem consentimento; aqui só se decide o que gravar (RN-015).
+    const necessidade = validarNecessidade({
+      necessidadeEspecial: dados.necessidadeEspecial,
+      consentimento: dados.consentimentoNecessidade,
+    });
+    if (!necessidade.ok) {
+      throw erros.validacao([
+        { campo: 'consentimentoNecessidade', mensagem: necessidade.mensagem },
+      ]);
+    }
 
     let criada;
     try {
@@ -92,8 +105,8 @@ export function criarServicoDenuncias({
             latitude: dados.latitude,
             longitude: dados.longitude,
             faixaPessoas: dados.faixaPessoas,
-            necessidadeEspecial: dados.necessidadeEspecial,
-            detalheNecessidade: dados.necessidadeEspecial ? dados.detalheNecessidade : undefined,
+            necessidadeEspecial: necessidade.necessidadeEspecial,
+            consentimentoNecessidadeEm: necessidade.registrarConsentimento ? agora : null,
             historico: {
               create: {
                 statusAnterior: null,
@@ -121,7 +134,7 @@ export function criarServicoDenuncias({
         protocolo: criada.protocolo,
         tipo: criada.tipo,
         status: criada.status,
-        prioritaria: criada.necessidadeEspecial,
+        prioritaria: ehPrioritaria(criada.necessidadeEspecial),
         bairro: { id: criada.bairro.id, nome: criada.bairro.nome, folha: criada.bairro.folha },
         logradouro: criada.logradouro,
         descricao: criada.descricao,
@@ -207,8 +220,8 @@ export function criarServicoDenuncias({
       latitude: num(d.latitude),
       longitude: num(d.longitude),
       faixaPessoas: d.faixaPessoas,
+      // Enquanto aberta: a resposta do autor (Sim/Não ou nula). Encerrada: sempre nula (RN-026).
       necessidadeEspecial: d.necessidadeEspecial,
-      detalheNecessidade: d.detalheNecessidade,
       previsaoReparo: d.previsaoReparo?.toISOString() ?? null,
       justificativa: d.justificativa,
       fotos: [] as { id: string; url: string }[], // fotos entram na Fase 2 (B-031)
@@ -253,7 +266,11 @@ export function criarServicoDenuncias({
 
       const alterada = await tx.denuncia.updateMany({
         where: { id, status: atual.status }, // só cancela se ainda estiver como o autor viu
-        data: { status: 'CANCELADA', finalizadaEm: agora },
+        data: {
+          status: 'CANCELADA',
+          finalizadaEm: agora,
+          ...camposSensiveisAoMudarStatus('CANCELADA'),
+        },
       });
       if (alterada.count === 0) throw erros.transicaoInvalida(MENSAGEM_NAO_CANCELA);
 

@@ -1,6 +1,6 @@
 import { http } from '@/services/api';
 import { ErroDeApi } from '@/services/http';
-import type { DadosDaDenuncia } from './schemas';
+import { necessidadeAoEnviar, type DadosDaDenuncia } from './schemas';
 
 export type Bairro = {
   id: number;
@@ -46,6 +46,17 @@ export async function bairroMaisProximo(coordenadas: Coordenadas): Promise<Bairr
   }
 }
 
+/**
+ * Necessidade especial no corpo (RN-015, S-46): o "Sim" só vai **com** o consentimento; sem ele,
+ * nada é enviado. O "Não" vai sozinho (não é dado de saúde). Sem resposta, nada vai.
+ */
+function corpoDaNecessidade(dados: DadosDaDenuncia) {
+  const situacao = necessidadeAoEnviar(dados);
+  if (situacao === 'sim') return { necessidadeEspecial: true, consentimentoNecessidade: true };
+  if (situacao === 'nao') return { necessidadeEspecial: false };
+  return {};
+}
+
 /** Monta o corpo do `POST /denuncias`: campos vazios e coordenadas ausentes não são enviados. */
 export function montarCorpoDaDenuncia(dados: DadosDaDenuncia, coordenadas: Coordenadas | null) {
   return {
@@ -57,6 +68,8 @@ export function montarCorpoDaDenuncia(dados: DadosDaDenuncia, coordenadas: Coord
       ? { pontoReferencia: dados.pontoReferencia.trim() }
       : {}),
     ...(dados.descricao.trim() !== '' ? { descricao: dados.descricao.trim() } : {}),
+    ...(dados.faixaPessoas ? { faixaPessoas: dados.faixaPessoas } : {}),
+    ...corpoDaNecessidade(dados),
     // Com o GPS negado o envio continua, só que sem coordenadas (RN-012).
     ...(coordenadas ? { latitude: coordenadas.latitude, longitude: coordenadas.longitude } : {}),
   };

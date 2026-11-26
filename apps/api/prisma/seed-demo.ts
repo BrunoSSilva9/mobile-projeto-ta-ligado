@@ -147,10 +147,13 @@ async function main() {
           descricao: c.descricao,
           latitude: c.bairro.latitude.toNumber() + deslocamento,
           longitude: c.bairro.longitude.toNumber() + deslocamento,
-          necessidadeEspecial: c.prioritaria ?? false,
-          detalheNecessidade: c.prioritaria
-            ? 'Morador depende de equipamento elétrico.'
-            : undefined,
+          // RN-015/RN-026: "Sim" só com consentimento, e encerrada não guarda a resposta.
+          ...(c.status === 'RECEBIDA' || c.status === 'EM_ATENDIMENTO'
+            ? {
+                necessidadeEspecial: c.prioritaria ?? false,
+                consentimentoNecessidadeEm: c.prioritaria ? criadoEm : null,
+              }
+            : {}),
           previsaoReparo: c.previsao,
           justificativa: c.justificativa,
           criadoEm,

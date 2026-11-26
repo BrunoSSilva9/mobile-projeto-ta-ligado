@@ -1,6 +1,8 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 
 import {
+  camposSensiveisAoMudarStatus,
+  ehPrioritaria,
   ehStatusFinal,
   estaEmAberto,
   validarPrevisao,
@@ -43,7 +45,7 @@ function paraDetalheDoPainel(d: DenunciaDetalhada) {
   return {
     id: d.id,
     protocolo: d.protocolo,
-    prioritaria: d.necessidadeEspecial,
+    prioritaria: ehPrioritaria(d.necessidadeEspecial),
     tipo: d.tipo,
     status: d.status,
     autor: d.autor ? { id: d.autor.id, nome: d.autor.nome, telefone: d.autor.telefone } : null,
@@ -55,8 +57,9 @@ function paraDetalheDoPainel(d: DenunciaDetalhada) {
     latitude: num(d.latitude),
     longitude: num(d.longitude),
     faixaPessoas: d.faixaPessoas,
+    // Sim/Não ou nula (não informada, ou apagada ao encerrar: RN-026). Sem texto livre (S-46).
     necessidadeEspecial: d.necessidadeEspecial,
-    detalheNecessidade: d.detalheNecessidade,
+    consentimentoNecessidadeEm: d.consentimentoNecessidadeEm?.toISOString() ?? null,
     previsaoReparo: d.previsaoReparo?.toISOString() ?? null,
     justificativa: d.justificativa,
     fotos: [] as { id: string; url: string }[], // fotos entram na Fase 2 (B-031)
@@ -88,13 +91,23 @@ export function criarServicoPainel({
       ...(filtros.status ? { status: { in: filtros.status as StatusDenuncia[] } } : {}),
       ...(filtros.tipo ? { tipo: filtros.tipo } : {}),
       ...(filtros.bairroId ? { bairroId: filtros.bairroId } : {}),
-      ...(filtros.prioritarias !== undefined ? { necessidadeEspecial: filtros.prioritarias } : {}),
+      // "Só prioritárias" = Sim; "não prioritárias" = Não ou sem resposta (nula).
+      ...(filtros.prioritarias === true ? { necessidadeEspecial: true } : {}),
+      ...(filtros.prioritarias === false
+        ? { OR: [{ necessidadeEspecial: false }, { necessidadeEspecial: null }] }
+        : {}),
     };
 
     const [itens, total] = await Promise.all([
       prisma.denuncia.findMany({
         where,
-        orderBy: [{ necessidadeEspecial: 'desc' }, { criadoEm: 'asc' }, { id: 'asc' }],
+        // RN-015: prioritárias primeiro. `nulls: 'last'` é obrigatório: no PostgreSQL, em ordem
+        // decrescente, os nulos viriam ANTES do "Sim".
+        orderBy: [
+          { necessidadeEspecial: { sort: 'desc', nulls: 'last' } },
+          { criadoEm: 'asc' },
+          { id: 'asc' },
+        ],
         skip: (filtros.page - 1) * filtros.limite,
         take: filtros.limite,
         include: { bairro: { select: { id: true, nome: true, folha: true } } },
@@ -106,7 +119,7 @@ export function criarServicoPainel({
       itens: itens.map((d) => ({
         id: d.id,
         protocolo: d.protocolo,
-        prioritaria: d.necessidadeEspecial,
+        prioritaria: ehPrioritaria(d.necessidadeEspecial),
         tipo: d.tipo,
         status: d.status,
         bairro: { id: d.bairro.id, nome: d.bairro.nome, folha: d.bairro.folha },
@@ -180,6 +193,7 @@ export function criarServicoPainel({
           ...(justificativa ? { justificativa } : {}),
           ...(previsao ? { previsaoReparo: previsao } : {}),
           ...(ehStatusFinal(para) ? { finalizadaEm: agora } : {}),
+          ...camposSensiveisAoMudarStatus(para), // RN-026: apaga a necessidade especial ao encerrar
         },
       });
       if (alterada.count === 0) {

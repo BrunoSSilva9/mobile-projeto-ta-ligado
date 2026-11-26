@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { TIPOS_DE_DENUNCIA, type DadosDaDenuncia } from './schemas';
+import { FAIXAS_DE_PESSOAS, TIPOS_DE_DENUNCIA, type DadosDaDenuncia } from './schemas';
 
 /**
  * Rascunho do formulário de denúncia (RNF-008, ADR-0005): o que o usuário já digitou fica salvo no
@@ -8,12 +8,15 @@ import { TIPOS_DE_DENUNCIA, type DadosDaDenuncia } from './schemas';
  * se perde. Uma chave por usuário, para uma conta não ver o rascunho de outra.
  *
  * As coordenadas NÃO entram no rascunho: um GPS de horas atrás enganaria; o app busca de novo.
+ * A necessidade especial e o consentimento **nunca** entram (decisão S-56): dado de saúde não fica
+ * no aparelho sem criptografia. A lista abaixo é de campos permitidos, então nada além dela é salvo.
  */
 export type Rascunho = Partial<DadosDaDenuncia>;
 
 export const chaveDoRascunho = (usuarioId: string) => `taligado.rascunho-denuncia.${usuarioId}`;
 
 const TIPOS = TIPOS_DE_DENUNCIA.map((t) => t.valor) as readonly string[];
+const FAIXAS = FAIXAS_DE_PESSOAS.map((f) => f.valor) as readonly string[];
 const CAMPOS_DE_TEXTO = ['logradouro', 'cep', 'pontoReferencia', 'descricao'] as const;
 
 /** Mantém só o que tem o formato certo; qualquer outra coisa lida do disco é descartada. */
@@ -31,6 +34,9 @@ function sanear(bruto: unknown): Rascunho | null {
     dados.bairroId > 0
   ) {
     rascunho.bairroId = dados.bairroId;
+  }
+  if (typeof dados.faixaPessoas === 'string' && FAIXAS.includes(dados.faixaPessoas)) {
+    rascunho.faixaPessoas = dados.faixaPessoas as DadosDaDenuncia['faixaPessoas'];
   }
   for (const campo of CAMPOS_DE_TEXTO) {
     const valor = dados[campo];

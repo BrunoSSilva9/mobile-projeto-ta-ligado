@@ -12,6 +12,7 @@ Regras de negócio **puras**: sem banco, HTTP ou Socket.IO, só funções que re
 | `previsao.ts` | `validarPrevisao`, `menorPrevisaoFutura` | RN-009 |
 | `protocolo.ts` | `formatarProtocolo`, `protocoloValido`, `lerProtocolo` (`TL-AAAA-NNNNNN`) | RN-023 |
 | `prioridade.ts` | `compararPrioridade`, `ordenarPorPrioridade` | RN-015 |
+| `necessidade.ts` | `validarNecessidade` (Sim só com consentimento), `ehPrioritaria`, `camposSensiveisAoMudarStatus` (retenção) | RN-015, RN-026 |
 | `bairro-proximo.ts` | `distanciaKm` (Haversine), `bairroMaisProximo` (até 15 km) | RN-025 |
 | `indicadores.ts` | `taxaResolucao` | RN-017 |
 

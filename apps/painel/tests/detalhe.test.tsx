@@ -53,7 +53,9 @@ describe('P-03 Detalhe da denúncia (RF-030, RF-036)', () => {
     expect(ocorrencia.getByText('Sem energia')).toBeInTheDocument();
     expect(ocorrencia.getByText('sem luz desde as 14h')).toBeInTheDocument();
     expect(ocorrencia.getByText('4 a 8 pessoas')).toBeInTheDocument();
-    expect(ocorrencia.getByText('Idosa com inalador')).toBeInTheDocument();
+    expect(
+      ocorrencia.getByText('Sim, prioridade (autorizado pelo cidadão em 19/11/2026 14:00)'),
+    ).toBeInTheDocument();
 
     const historico = within(screen.getByRole('region', { name: 'Histórico' }));
     expect(historico.getByText(/Maria Silva · 19\/11\/2026 14:00/)).toBeInTheDocument();
@@ -80,6 +82,41 @@ describe('P-03 Detalhe da denúncia (RF-030, RF-036)', () => {
 
     expect(screen.getByText('Sem coordenadas (GPS não usado)')).toBeInTheDocument();
     expect(screen.getByText('Não informado')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['"Não"', { necessidadeEspecial: false, consentimentoNecessidadeEm: null }, 'Não'],
+    [
+      'sem resposta, em aberto',
+      { necessidadeEspecial: null, consentimentoNecessidadeEm: null },
+      'Não informada',
+    ],
+    [
+      'apagada ao encerrar (RN-026)',
+      {
+        status: 'RESOLVIDA',
+        prioritaria: false,
+        necessidadeEspecial: null,
+        consentimentoNecessidadeEm: null,
+      },
+      'Informação apagada ao encerrar a denúncia',
+    ],
+  ])(
+    'necessidade especial %s: mostra o texto certo, sem texto livre (S-46)',
+    async (_n, extra, texto) => {
+      await abrir({ detalhe: () => resposta(200, { ...DETALHE, ...extra }) });
+
+      const ocorrencia = within(screen.getByRole('region', { name: 'Ocorrência' }));
+      expect(ocorrencia.getByText('Necessidade especial')).toBeInTheDocument();
+      expect(ocorrencia.getByText(texto)).toBeInTheDocument();
+    },
+  );
+
+  it('mostra a faixa como "Pessoas no local"', async () => {
+    await abrir();
+
+    const ocorrencia = within(screen.getByRole('region', { name: 'Ocorrência' }));
+    expect(ocorrencia.getByText('Pessoas no local')).toBeInTheDocument();
   });
 
   it('não encontrada (404): mensagem simples', async () => {

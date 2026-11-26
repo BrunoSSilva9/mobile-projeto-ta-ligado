@@ -35,6 +35,10 @@ export type DenunciaDetalhe = {
   descricao: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** Faixa de pessoas no local (RF-010), se informada. */
+  faixaPessoas?: string | null;
+  /** Sim/Não ou nula (não informada, ou apagada ao encerrar a denúncia: RN-026). */
+  necessidadeEspecial?: boolean | null;
   previsaoReparo: string | null;
   justificativa: string | null;
   historico: EntradaDoHistorico[];

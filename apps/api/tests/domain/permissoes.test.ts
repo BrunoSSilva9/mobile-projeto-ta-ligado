@@ -66,7 +66,7 @@ describe('projetarOcorrenciaPublica (RN-014)', () => {
     longitude: -49.123456,
     faixaPessoas: 'DE_4_A_8',
     necessidadeEspecial: true,
-    detalheNecessidade: 'Idosa de 82 anos com inalação',
+    consentimentoNecessidadeEm: new Date('2026-11-18T14:02:10Z'),
     fotos: [{ id: 'f-1', arquivo: 'abc.jpg' }],
     previsaoReparo: new Date('2026-11-18T16:20:00Z'),
     justificativa: null,

@@ -114,7 +114,8 @@ export async function criarDenunciaNoBanco(dados: {
   autorId?: string | null;
   tipo?: 'SEM_ENERGIA' | 'OSCILACAO';
   status?: StatusDenuncia;
-  necessidadeEspecial?: boolean;
+  /** Sim/Não ou nula. Em status final vira nula sempre (RN-026, garantido também por CHECK). */
+  necessidadeEspecial?: boolean | null;
   criadoEm?: Date;
   logradouro?: string;
   latitude?: number | null;
@@ -125,7 +126,8 @@ export async function criarDenunciaNoBanco(dados: {
 }) {
   sequenciaDeDenuncias += 1;
   const status = dados.status ?? 'RECEBIDA';
-  const prioritaria = dados.necessidadeEspecial ?? false;
+  const encerrada = status === 'RESOLVIDA' || status === 'IMPROCEDENTE' || status === 'CANCELADA';
+  const necessidade = encerrada ? null : (dados.necessidadeEspecial ?? null);
   return prisma.denuncia.create({
     data: {
       protocolo: `TL-2020-${String(sequenciaDeDenuncias).padStart(6, '0')}`,
@@ -136,8 +138,9 @@ export async function criarDenunciaNoBanco(dados: {
       logradouro: dados.logradouro ?? `Rua ${sequenciaDeDenuncias}`,
       latitude: dados.latitude ?? undefined,
       longitude: dados.longitude ?? undefined,
-      necessidadeEspecial: prioritaria,
-      detalheNecessidade: prioritaria ? 'Detalhe da situação prioritária' : undefined,
+      necessidadeEspecial: necessidade,
+      // RN-015: o "Sim" só existe com o consentimento registrado (também garantido por CHECK).
+      consentimentoNecessidadeEm: necessidade === true ? (dados.criadoEm ?? new Date()) : null,
       justificativa: status === 'IMPROCEDENTE' ? 'Sem interrupção confirmada.' : undefined,
       criadoEm: dados.criadoEm,
       previsaoReparo: dados.previsaoReparo ?? undefined,

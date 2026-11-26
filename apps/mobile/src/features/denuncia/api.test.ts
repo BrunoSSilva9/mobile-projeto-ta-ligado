@@ -58,6 +58,50 @@ describe('montarCorpoDaDenuncia', () => {
   });
 });
 
+describe('montarCorpoDaDenuncia: pessoas e necessidade especial (RF-010, RN-015, S-46)', () => {
+  it('envia a faixa de pessoas quando escolhida', () => {
+    expect(montarCorpoDaDenuncia({ ...dados, faixaPessoas: 'DE_4_A_8' }, null)).toMatchObject({
+      faixaPessoas: 'DE_4_A_8',
+    });
+  });
+
+  it('"Sim" com consentimento: envia a resposta e o consentimento', () => {
+    expect(
+      montarCorpoDaDenuncia(
+        { ...dados, necessidadeEspecial: true, consentimentoNecessidade: true },
+        null,
+      ),
+    ).toMatchObject({ necessidadeEspecial: true, consentimentoNecessidade: true });
+  });
+
+  it.each([undefined, false])(
+    '"Sim" sem consentimento (%s): não envia nada sobre a necessidade',
+    (consentimentoNecessidade) => {
+      const corpo = montarCorpoDaDenuncia(
+        { ...dados, necessidadeEspecial: true, consentimentoNecessidade },
+        null,
+      );
+      expect(corpo).not.toHaveProperty('necessidadeEspecial');
+      expect(corpo).not.toHaveProperty('consentimentoNecessidade');
+    },
+  );
+
+  it('"Não": envia só a resposta, sem consentimento', () => {
+    const corpo = montarCorpoDaDenuncia(
+      { ...dados, necessidadeEspecial: false, consentimentoNecessidade: true },
+      null,
+    );
+    expect(corpo).toMatchObject({ necessidadeEspecial: false });
+    expect(corpo).not.toHaveProperty('consentimentoNecessidade');
+  });
+
+  it('sem resposta: nada sobre pessoas nem necessidade', () => {
+    const corpo = montarCorpoDaDenuncia(dados, null);
+    expect(corpo).not.toHaveProperty('faixaPessoas');
+    expect(corpo).not.toHaveProperty('necessidadeEspecial');
+  });
+});
+
 describe('chamadas à API', () => {
   it('criarDenuncia faz POST /denuncias e devolve o protocolo', async () => {
     mockPost.mockResolvedValue({ id: 'd1', protocolo: 'TL-2026-000001' });

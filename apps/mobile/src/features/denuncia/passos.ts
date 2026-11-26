@@ -19,7 +19,13 @@ export const TITULOS_DOS_PASSOS: Record<Passo, string> = {
 export const CAMPOS_DO_PASSO: Record<Passo, readonly (keyof DadosDaDenuncia)[]> = {
   1: ['tipo'],
   2: ['bairroId', 'logradouro', 'cep'],
-  3: ['pontoReferencia', 'descricao'],
+  3: [
+    'faixaPessoas',
+    'necessidadeEspecial',
+    'consentimentoNecessidade',
+    'pontoReferencia',
+    'descricao',
+  ],
 };
 
 /** Em qual passo o campo aparece. */

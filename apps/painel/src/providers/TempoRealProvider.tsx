@@ -88,7 +88,8 @@ export function TempoRealProvider({ children }: { children: ReactNode }) {
               {
                 id: evento.id,
                 protocolo: evento.protocolo,
-                texto: `Nova denúncia: ${rotuloDoTipo(evento.tipo)} em ${nomeDoBairro(evento.bairro)}`,
+                // RN-015: a prioritária já chega dizendo que é prioritária.
+                texto: `${evento.prioritaria ? 'Nova denúncia prioritária' : 'Nova denúncia'}: ${rotuloDoTipo(evento.tipo)} em ${nomeDoBairro(evento.bairro)}`,
               },
             ],
       );

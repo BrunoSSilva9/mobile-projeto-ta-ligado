@@ -1,4 +1,4 @@
-import { denunciaSchema, rotuloDoTipo } from './schemas';
+import { denunciaSchema, necessidadeAoEnviar, rotuloDaFaixa, rotuloDoTipo } from './schemas';
 
 const valido = {
   tipo: 'SEM_ENERGIA',
@@ -79,5 +79,39 @@ describe('rotuloDoTipo', () => {
     expect(rotuloDoTipo('SEM_ENERGIA')).toBe('Sem energia');
     expect(rotuloDoTipo('OSCILACAO')).toBe('Oscilação');
     expect(rotuloDoTipo('X')).toBe('X');
+  });
+});
+
+describe('pessoas no local e necessidade especial (RF-010, S-46, S-48)', () => {
+  it('aceita a faixa de pessoas e as respostas, todas opcionais', () => {
+    expect(mensagens({ ...valido, faixaPessoas: 'RUA_TODA', necessidadeEspecial: true })).toEqual(
+      [],
+    );
+    expect(mensagens(valido)).toEqual([]);
+  });
+
+  it('o "Sim" sem consentimento não bloqueia o formulário (ele só não é enviado)', () => {
+    expect(
+      mensagens({ ...valido, necessidadeEspecial: true, consentimentoNecessidade: false }),
+    ).toEqual([]);
+  });
+
+  it('rejeita uma faixa desconhecida', () => {
+    expect(mensagens({ ...valido, faixaPessoas: 'MUITAS' })).toHaveLength(1);
+  });
+
+  it('necessidadeAoEnviar diz o que vai para a Equatorial', () => {
+    expect(necessidadeAoEnviar({ necessidadeEspecial: true, consentimentoNecessidade: true })).toBe(
+      'sim',
+    );
+    expect(necessidadeAoEnviar({ necessidadeEspecial: true })).toBe('sem-autorizacao');
+    expect(necessidadeAoEnviar({ necessidadeEspecial: false })).toBe('nao');
+    expect(necessidadeAoEnviar({})).toBeNull();
+  });
+
+  it('rotuloDaFaixa: "4 a 8 pessoas", "Rua toda" e valor desconhecido como veio', () => {
+    expect(rotuloDaFaixa('DE_4_A_8')).toBe('4 a 8 pessoas');
+    expect(rotuloDaFaixa('RUA_TODA')).toBe('Rua toda');
+    expect(rotuloDaFaixa('X')).toBe('X');
   });
 });

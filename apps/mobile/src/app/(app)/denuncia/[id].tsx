@@ -14,7 +14,7 @@ import type { DenunciaDetalhe } from '@/features/acompanhamento/api';
 import { formatarDataHora } from '@/features/acompanhamento/formatacao';
 import { useDenuncia } from '@/features/acompanhamento/hooks';
 import { statusEmAberto } from '@/features/acompanhamento/status';
-import { rotuloDoTipo } from '@/features/denuncia/schemas';
+import { rotuloDaFaixa, rotuloDoTipo } from '@/features/denuncia/schemas';
 import { ErroDeApi } from '@/services/http';
 import { colors, space, type } from '@/theme';
 
@@ -110,6 +110,26 @@ function Conteudo({ d }: { d: DenunciaDetalhe }) {
           <Text style={[type.body, styles.muted]}>Referência: {d.pontoReferencia}</Text>
         ) : null}
       </Cartao>
+
+      {d.faixaPessoas || (aberta && typeof d.necessidadeEspecial === 'boolean') ? (
+        <Cartao>
+          <Text style={[type.label, styles.rotulo]}>No local</Text>
+          {d.faixaPessoas ? (
+            <Text style={[type.body, styles.texto]}>
+              {`Pessoas no local: ${rotuloDaFaixa(d.faixaPessoas)}`}
+            </Text>
+          ) : null}
+          {/* A resposta só existe enquanto a denúncia está aberta (RN-026). */}
+          {aberta && d.necessidadeEspecial === true ? (
+            <Text style={[type.body, styles.texto]}>
+              Necessidade especial: informada (com prioridade)
+            </Text>
+          ) : null}
+          {aberta && d.necessidadeEspecial === false ? (
+            <Text style={[type.body, styles.texto]}>Necessidade especial: não</Text>
+          ) : null}
+        </Cartao>
+      ) : null}
 
       {d.descricao ? (
         <Cartao>

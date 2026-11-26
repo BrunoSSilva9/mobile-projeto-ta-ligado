@@ -103,7 +103,7 @@ export const DETALHE = {
   longitude: -49.12,
   faixaPessoas: 'DE_4_A_8',
   necessidadeEspecial: true,
-  detalheNecessidade: 'Idosa com inalador',
+  consentimentoNecessidadeEm: '2026-11-19T17:00:00.000Z',
   previsaoReparo: null,
   justificativa: null,
   fotos: [],

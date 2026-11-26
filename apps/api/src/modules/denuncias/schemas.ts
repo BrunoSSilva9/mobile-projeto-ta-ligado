@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { TODOS_OS_STATUS } from '../../domain';
+import { TODOS_OS_STATUS, validarNecessidade } from '../../domain';
 import { vazioOuNuloViraAusente } from '../../shared/validacao';
 
 /** Texto opcional: vazio ou `null` viram "ausente"; o resto é aparado e limitado. */
@@ -22,6 +22,7 @@ const numeroOpcional = (rotulo: string, min: number, max: number) =>
 
 /**
  * Registro de denúncia (RF-007, RF-008, RF-010, RN-002, RN-012, RN-015).
+ * O `detalheNecessidade` da Fase 1 não existe mais (S-46): se vier, é descartado como qualquer chave desconhecida.
  * Obrigatórios: tipo, bairro e logradouro. Coordenadas são opcionais (GPS negado), mas vêm juntas.
  * Campos como `status`, `protocolo`, `autorId` e `prioritaria` NÃO são aceitos do cliente:
  * o Zod descarta chaves desconhecidas e o servidor define esses valores.
@@ -60,19 +61,33 @@ export const criarDenunciaSchema = z
         })
         .optional(),
     ),
+    // RN-015, S-46: só Sim/Não (sem texto livre); `null` ou ausente = não informado.
     necessidadeEspecial: z.preprocess(
-      (valor) => (valor === null || valor === undefined ? false : valor),
-      z.boolean({ error: 'Informe se há necessidade especial (sim ou não).' }),
+      vazioOuNuloViraAusente,
+      z.boolean({ error: 'Informe se há necessidade especial (sim ou não).' }).optional(),
     ),
-    detalheNecessidade: textoOpcional(500, 'O detalhe da situação'),
+    // Consentimento específico do "Sim" (LGPD, art. 11, I).
+    consentimentoNecessidade: z.preprocess(
+      vazioOuNuloViraAusente,
+      z.boolean({ error: 'Informe se autoriza o envio (sim ou não).' }).optional(),
+    ),
   })
   .refine((d) => (d.latitude === undefined) === (d.longitude === undefined), {
     error: 'Informe latitude e longitude juntas, ou nenhuma das duas.',
     path: ['latitude'],
   })
-  .refine((d) => !d.necessidadeEspecial || !!d.detalheNecessidade, {
-    error: 'Detalhe a situação prioritária.',
-    path: ['detalheNecessidade'],
+  .superRefine((d, ctx) => {
+    const resultado = validarNecessidade({
+      necessidadeEspecial: d.necessidadeEspecial,
+      consentimento: d.consentimentoNecessidade,
+    });
+    if (!resultado.ok) {
+      ctx.addIssue({
+        code: 'custom',
+        message: resultado.mensagem,
+        path: ['consentimentoNecessidade'],
+      });
+    }
   });
 
 export type DadosDeDenuncia = z.infer<typeof criarDenunciaSchema>;

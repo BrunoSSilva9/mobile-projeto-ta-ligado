@@ -68,8 +68,10 @@ export type DetalheDoPainel = {
   latitude: number | null;
   longitude: number | null;
   faixaPessoas: string | null;
-  necessidadeEspecial: boolean;
-  detalheNecessidade: string | null;
+  /** Só Sim/Não (S-46); nula = não informada, ou apagada ao encerrar a denúncia (RN-026). */
+  necessidadeEspecial: boolean | null;
+  /** Quando o cidadão autorizou o envio do "Sim" (consentimento específico). */
+  consentimentoNecessidadeEm: string | null;
   previsaoReparo: string | null;
   justificativa: string | null;
   historico: EntradaDoHistorico[];
@@ -98,3 +100,20 @@ export type EventoDeStatus = {
   status: StatusDaDenuncia;
   previsaoReparo: string | null;
 };
+
+/**
+ * Texto da necessidade especial no detalhe (RN-015, RN-026). Sem texto livre (S-46): o painel só
+ * sabe se a resposta foi Sim, Não, não informada ou apagada ao encerrar.
+ */
+export function textoDaNecessidade(
+  d: Pick<DetalheDoPainel, 'necessidadeEspecial' | 'consentimentoNecessidadeEm' | 'status'>,
+  formatarData: (iso: string) => string,
+): string {
+  if (d.necessidadeEspecial === true) {
+    return d.consentimentoNecessidadeEm
+      ? `Sim, prioridade (autorizado pelo cidadão em ${formatarData(d.consentimentoNecessidadeEm)})`
+      : 'Sim, prioridade';
+  }
+  if (d.necessidadeEspecial === false) return 'Não';
+  return statusEmAberto(d.status) ? 'Não informada' : 'Informação apagada ao encerrar a denúncia';
+}

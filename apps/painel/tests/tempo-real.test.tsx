@@ -225,6 +225,20 @@ describe('Nova denúncia: alerta visual (RF-027)', () => {
     expect(screen.getAllByText(/Nova denúncia: Sem energia/)).toHaveLength(1);
   });
 
+  it('a prioritária chega com o alerta "Nova denúncia prioritária" (RN-015)', async () => {
+    await abrirPainel();
+
+    await emitir(
+      'denuncia:criada',
+      eventoCriada({ id: 'p2', protocolo: 'TL-P2', prioritaria: true }),
+    );
+
+    const regiao = screen.getByRole('status', { name: 'Alertas de novas denúncias' });
+    expect(
+      await within(regiao).findByText(/Nova denúncia prioritária: Sem energia em Cidade Nova/),
+    ).toBeInTheDocument();
+  });
+
   it('a prioritária entra depois das outras prioritárias, a normal no fim (RN-015)', async () => {
     await abrirPainel();
 

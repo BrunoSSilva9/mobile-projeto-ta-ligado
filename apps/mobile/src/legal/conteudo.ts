@@ -55,7 +55,7 @@ export const TERMOS_DE_USO: DocumentoLegal = {
       itens: [
         'Informe dados verdadeiros e mantenha sua senha em segredo.',
         'Você é responsável pelo que for feito com a sua conta.',
-        'Você pode editar seu nome e telefone e excluir sua conta a qualquer momento, no Perfil.',
+        'Você pode editar seu nome e telefone e excluir sua conta a qualquer momento, no Perfil. Ao excluir, apagamos seus dados pessoais, suas fotos e as respostas de necessidade especial; as denúncias ficam sem o seu nome (uma denúncia em aberto continua sendo atendida).',
       ],
     },
     {
@@ -78,7 +78,7 @@ export const TERMOS_DE_USO: DocumentoLegal = {
     {
       titulo: 'O que a operadora vê',
       paragrafos: [
-        'A operadora (simulada) vê a denúncia completa: seu nome, telefone, endereço, coordenadas, fotos, quantidade de pessoas no local e se há alguém com necessidade especial.',
+        'A operadora (simulada) vê a denúncia completa: seu nome, telefone, endereço, coordenadas, fotos, quantidade de pessoas no local e, só se você autorizar, se há alguém com necessidade especial (essa resposta é apagada quando a denúncia termina).',
       ],
     },
     {
@@ -137,9 +137,11 @@ export const POLITICA_DE_PRIVACIDADE: DocumentoLegal = {
         'Endereço da ocorrência, ponto de referência e descrição (denúncia): localizar e entender o problema. Base legal: consentimento.',
         'Fotos, opcional (denúncia): ajudar a operadora a avaliar o problema. Base legal: consentimento.',
         'Quantidade de pessoas no local (denúncia): dimensionar o atendimento. Base legal: consentimento.',
-        'Necessidade especial, se você marcar "Sim" (denúncia): priorizar o atendimento. Pode revelar dado de saúde, que é dado sensível. Base legal: consentimento específico e destacado.',
+        'Necessidade especial, só "Sim" ou "Não" (alguém no local depende de aparelho elétrico, como respirador ou geladeira de remédios, ou tem necessidade especial), enviada só se você responder "Sim" e autorizar (denúncia): priorizar o atendimento. Pode revelar dado de saúde, que é dado sensível. Não pedimos detalhes. Base legal: consentimento específico e destacado, pedido na hora, separado destes termos.',
         'Token de notificação, se você permitir notificações: avisar quando o status da denúncia mudar. Base legal: consentimento.',
         'Histórico de mudanças de status e registros de acesso: segurança e auditoria. Base legal: legítimo interesse.',
+        'Sobre a necessidade especial: se você responder "Sim", o app pede uma autorização própria: "Autorizo enviar essa informação à Equatorial, só para dar prioridade ao atendimento. Ela é apagada quando a denúncia termina." Sem essa autorização, a resposta não é enviada e a denúncia segue sem prioridade.',
+        'Sobre as fotos: antes de enviar, o app diminui a foto e apaga os dados escondidos nela (como o local exato onde foi tirada); o servidor apaga de novo, por garantia.',
         'Sobre a localização: só coletamos o GPS enquanto você usa o app, quando precisa dele. Não rastreamos você em segundo plano. Se você negar a permissão, ainda pode denunciar digitando o endereço e escolhendo o bairro.',
       ],
     },
@@ -156,8 +158,9 @@ export const POLITICA_DE_PRIVACIDADE: DocumentoLegal = {
       titulo: 'Por quanto tempo guardamos',
       itens: [
         'Conta e dados pessoais: enquanto sua conta existir.',
-        'Denúncias: mantidas para estatística, sem vínculo com você depois que você excluir a conta.',
+        'Denúncias: mantidas para estatística, sem vínculo com você depois que você excluir a conta. Uma denúncia ainda em aberto continua sendo atendida, mas a operadora deixa de ver seu nome e telefone.',
         'Fotos: enquanto a denúncia existir; apagadas se você excluir a conta.',
+        'Necessidade especial: só enquanto a denúncia estiver em aberto: apagada quando ela é resolvida, considerada improcedente ou cancelada.',
         'Token de notificação: até você sair do app ou excluir a conta.',
         'Registros de acesso: 6 meses.',
       ],

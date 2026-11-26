@@ -77,8 +77,7 @@ const DETALHE = {
   latitude: null,
   longitude: null,
   faixaPessoas: null,
-  necessidadeEspecial: false,
-  detalheNecessidade: null,
+  necessidadeEspecial: null,
   previsaoReparo: null,
   justificativa: null,
   fotos: [],
@@ -256,6 +255,41 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
   it('oferece cancelar só enquanto RECEBIDA (F2-1; o fluxo completo está em cancelar-denuncia.test.tsx)', async () => {
     await renderizarTela(<DetalheScreen />);
     expect(await screen.findByRole('button', { name: 'Cancelar denúncia' })).toBeTruthy();
+  });
+
+  it('em aberto, mostra pessoas no local e a necessidade especial informada (RF-010)', async () => {
+    simularApi({
+      detalhe: () =>
+        resposta(200, { ...DETALHE, faixaPessoas: 'DE_4_A_8', necessidadeEspecial: true }),
+    });
+    await renderizarTela(<DetalheScreen />);
+
+    expect(await screen.findByText('No local')).toBeTruthy();
+    expect(screen.getByText('Pessoas no local: 4 a 8 pessoas')).toBeTruthy();
+    expect(screen.getByText('Necessidade especial: informada (com prioridade)')).toBeTruthy();
+  });
+
+  it('encerrada, não mostra a necessidade especial (ela foi apagada, RN-026)', async () => {
+    simularApi({
+      detalhe: () =>
+        resposta(200, {
+          ...DETALHE,
+          status: 'RESOLVIDA',
+          faixaPessoas: 'ATE_3',
+          necessidadeEspecial: null,
+        }),
+    });
+    await renderizarTela(<DetalheScreen />);
+
+    expect(await screen.findByText('Pessoas no local: 1 a 3 pessoas')).toBeTruthy();
+    expect(screen.queryByText(/Necessidade especial/)).toBeNull();
+  });
+
+  it('sem pessoas nem resposta, não mostra o cartão "No local"', async () => {
+    await renderizarTela(<DetalheScreen />);
+
+    await screen.findByText('Rua das Flores, 10');
+    expect(screen.queryByText('No local')).toBeNull();
   });
 
   it('mostra a previsão de reparo enquanto a denúncia está em aberto', async () => {

@@ -95,7 +95,7 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
       longitude: -49.1231,
       faixaPessoas: 'DE_4_A_8',
       necessidadeEspecial: true,
-      detalheNecessidade: 'Idosa de 82 anos com inalação',
+      consentimentoNecessidade: true,
     });
     expect(res.status).toBe(201);
 
@@ -108,8 +108,8 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
       descricao: 'Estalo forte no poste',
       faixaPessoas: 'DE_4_A_8',
       necessidadeEspecial: true,
-      detalheNecessidade: 'Idosa de 82 anos com inalação',
     });
+    expect(d.consentimentoNecessidadeEm).toBeInstanceOf(Date); // RN-015: consentimento registrado
     expect(d.latitude?.toNumber()).toBeCloseTo(-5.3712, 4);
     expect(d.longitude?.toNumber()).toBeCloseTo(-49.1231, 4);
   });
@@ -143,7 +143,8 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
       pontoReferencia: null,
       descricao: null,
       faixaPessoas: null,
-      necessidadeEspecial: false,
+      necessidadeEspecial: null, // não informado (S-46)
+      consentimentoNecessidadeEm: null,
     });
   });
 
@@ -170,20 +171,104 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
       status: 'RECEBIDA',
       protocolo: `TL-${ANO}-000001`,
       autorId: id,
-      necessidadeEspecial: false,
+      necessidadeEspecial: null,
       previsaoReparo: null,
       justificativa: null,
     });
   });
 
-  it('não guarda o detalhe da necessidade quando não há necessidade especial', async () => {
-    const { token } = await registrarCidadao(app);
-    const res = await criar(token, { necessidadeEspecial: false, detalheNecessidade: 'ignorado' });
+  describe('necessidade especial só Sim/Não, com consentimento (RN-015, S-46)', () => {
+    it('"Não" é guardado sem consentimento; o texto livre da Fase 1 é descartado', async () => {
+      const { token } = await registrarCidadao(app);
+      const res = await criar(token, {
+        necessidadeEspecial: false,
+        detalheNecessidade: 'ignorado',
+      });
 
-    expect(res.status).toBe(201);
-    const d = await prisma.denuncia.findUniqueOrThrow({ where: { id: res.body.id } });
-    expect(d.necessidadeEspecial).toBe(false);
-    expect(d.detalheNecessidade).toBeNull();
+      expect(res.status).toBe(201);
+      const d = await prisma.denuncia.findUniqueOrThrow({ where: { id: res.body.id } });
+      expect(d.necessidadeEspecial).toBe(false);
+      expect(d.consentimentoNecessidadeEm).toBeNull();
+      expect(d).not.toHaveProperty('detalheNecessidade');
+    });
+
+    it('"Sim" com consentimento grava a data do consentimento', async () => {
+      const relogio = () => new Date('2026-11-25T15:00:00Z');
+      const appComRelogio = criarAppDeTeste({}, { relogio });
+      const { token } = await registrarCidadao(appComRelogio);
+
+      const res = await criar(
+        token,
+        { necessidadeEspecial: true, consentimentoNecessidade: true },
+        appComRelogio,
+      );
+
+      expect(res.status).toBe(201);
+      const d = await prisma.denuncia.findUniqueOrThrow({ where: { id: res.body.id } });
+      expect(d.necessidadeEspecial).toBe(true);
+      expect(d.consentimentoNecessidadeEm).toEqual(new Date('2026-11-25T15:00:00Z'));
+    });
+
+    it.each([
+      ['sem o consentimento', {}],
+      ['com o consentimento negado', { consentimentoNecessidade: false }],
+    ])('"Sim" %s: 400 no campo do consentimento e nada é criado', async (_nome, extra) => {
+      const { token } = await registrarCidadao(app);
+
+      const res = await criar(token, { necessidadeEspecial: true, ...extra });
+
+      expect(res.status).toBe(400);
+      expect(res.body.erro.detalhes).toEqual([
+        {
+          campo: 'consentimentoNecessidade',
+          mensagem:
+            'Para enviar a necessidade especial, autorize o envio dessa informação à Equatorial.',
+        },
+      ]);
+      expect(await prisma.denuncia.count()).toBe(0);
+    });
+
+    it('o consentimento sozinho (sem "Sim") não grava nada sensível', async () => {
+      const { token } = await registrarCidadao(app);
+      const res = await criar(token, { consentimentoNecessidade: true });
+
+      const d = await prisma.denuncia.findUniqueOrThrow({ where: { id: res.body.id } });
+      expect(d.necessidadeEspecial).toBeNull();
+      expect(d.consentimentoNecessidadeEm).toBeNull();
+    });
+
+    it('o banco recusa um "Sim" sem consentimento, mesmo gravado por fora da API (CHECK)', async () => {
+      const { id } = await registrarCidadao(app);
+      await expect(
+        prisma.denuncia.create({
+          data: {
+            protocolo: 'TL-2020-999999',
+            autorId: id,
+            bairroId: bairro.id,
+            tipo: 'SEM_ENERGIA',
+            logradouro: 'Rua X',
+            necessidadeEspecial: true,
+          },
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('cancelar apaga a resposta e o consentimento (RN-026)', async () => {
+      const { token } = await registrarCidadao(app);
+      const criada = await criar(token, {
+        necessidadeEspecial: true,
+        consentimentoNecessidade: true,
+      });
+
+      await request(app)
+        .post(`/api/v1/denuncias/${criada.body.id}/cancelar`)
+        .set('Authorization', `Bearer ${token}`);
+
+      const d = await prisma.denuncia.findUniqueOrThrow({ where: { id: criada.body.id } });
+      expect(d.status).toBe('CANCELADA');
+      expect(d.necessidadeEspecial).toBeNull();
+      expect(d.consentimentoNecessidadeEm).toBeNull();
+    });
   });
 
   describe('autenticação e papel', () => {
@@ -318,7 +403,16 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
       ['longitude fora do intervalo', { latitude: -5.3, longitude: -181 }, 'longitude'],
       ['faixa de pessoas inválida', { faixaPessoas: 'MUITAS' }, 'faixaPessoas'],
       ['necessidade especial como texto', { necessidadeEspecial: 'sim' }, 'necessidadeEspecial'],
-      ['necessidade especial sem detalhe', { necessidadeEspecial: true }, 'detalheNecessidade'],
+      [
+        'necessidade especial sem consentimento',
+        { necessidadeEspecial: true },
+        'consentimentoNecessidade',
+      ],
+      [
+        'consentimento como texto',
+        { necessidadeEspecial: true, consentimentoNecessidade: 'sim' },
+        'consentimentoNecessidade',
+      ],
     ])('recusa %s', async (_nome, alteracao, campo) => {
       const { token } = await registrarCidadao(app);
       const res = await criar(token, alteracao);
@@ -385,7 +479,7 @@ describe('POST /api/v1/denuncias (RF-007, RF-011, RF-012, RF-036)', () => {
           latitude: -5.3712,
           longitude: -49.1231,
           necessidadeEspecial: true,
-          detalheNecessidade: 'Aparelho de oxigênio',
+          consentimentoNecessidade: true,
         },
         appEspiao,
       );
@@ -591,12 +685,12 @@ describe('GET /api/v1/denuncias/:id (RF-014, RF-036)', () => {
       latitude: -5.3712,
       longitude: -49.1231,
       faixaPessoas: 'DE_4_A_8',
-      necessidadeEspecial: false,
-      detalheNecessidade: null,
+      necessidadeEspecial: null, // não respondida (S-46)
       previsaoReparo: null,
       justificativa: null,
       fotos: [],
     });
+    expect(res.body).not.toHaveProperty('detalheNecessidade');
     expect(typeof res.body.latitude).toBe('number');
     expect(res.body.historico).toEqual([
       {
