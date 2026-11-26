@@ -114,3 +114,22 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function idValido(id: string): boolean {
   return UUID.test(id);
 }
+
+/**
+ * No `multipart/form-data` todo campo chega como texto. Converte os que não são texto (números e
+ * sim/não) para os tipos que o schema espera; o que não der para converter segue como veio e o
+ * schema recusa com a mensagem de sempre. Texto vazio fica como está (vira "ausente" no schema).
+ */
+export function normalizarCamposDoMultipart(corpo: Record<string, unknown> | undefined) {
+  const saida: Record<string, unknown> = { ...(corpo ?? {}) };
+  for (const campo of ['bairroId', 'latitude', 'longitude']) {
+    const valor = saida[campo];
+    if (typeof valor === 'string' && valor.trim() !== '') saida[campo] = Number(valor);
+  }
+  for (const campo of ['necessidadeEspecial', 'consentimentoNecessidade']) {
+    const valor = saida[campo];
+    if (valor === 'true') saida[campo] = true;
+    if (valor === 'false') saida[campo] = false;
+  }
+  return saida;
+}

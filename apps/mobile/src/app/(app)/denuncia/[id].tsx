@@ -6,6 +6,7 @@ import { Aviso } from '@/components/Aviso';
 import { AvisoDeConexao } from '@/components/AvisoDeConexao';
 import { CancelarDenuncia } from '@/components/CancelarDenuncia';
 import { Cartao } from '@/components/Cartao';
+import { FotosDaDenuncia } from '@/components/FotosDaDenuncia';
 import { CabecalhoDeTela } from '@/components/CabecalhoDeTela';
 import { CarregandoOuOffline, EmptyState, ErrorState } from '@/components/Estados';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -130,6 +131,8 @@ function Conteudo({ d }: { d: DenunciaDetalhe }) {
           ) : null}
         </Cartao>
       ) : null}
+
+      <FotosDaDenuncia fotos={d.fotos ?? []} />
 
       {d.descricao ? (
         <Cartao>

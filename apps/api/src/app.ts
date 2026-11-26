@@ -22,6 +22,8 @@ export type AppDeps = {
   publicador?: Publicador;
   /** Relógio injetável (testes). */
   relogio?: () => Date;
+  /** Pasta das fotos (`UPLOADS_DIR`). */
+  uploadsDir?: string;
 };
 
 /** Cria o app Express (sem abrir porta). */
@@ -34,6 +36,7 @@ export function createApp({
   bcryptCost,
   publicador,
   relogio,
+  uploadsDir,
 }: AppDeps = {}): Express {
   const app = express();
 
@@ -64,7 +67,7 @@ export function createApp({
   if (prisma && segredoJwt) {
     app.use(
       '/api/v1',
-      criarRotas({ prisma, segredoJwt, limites, bcryptCost, publicador, relogio }),
+      criarRotas({ prisma, segredoJwt, limites, bcryptCost, publicador, relogio, uploadsDir }),
     );
   }
 

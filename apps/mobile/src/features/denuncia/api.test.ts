@@ -4,6 +4,7 @@ import {
   criarDenuncia,
   listarBairros,
   montarCorpoDaDenuncia,
+  montarFormularioDaDenuncia,
   nomeDoBairro,
 } from './api';
 
@@ -99,6 +100,70 @@ describe('montarCorpoDaDenuncia: pessoas e necessidade especial (RF-010, RN-015,
     const corpo = montarCorpoDaDenuncia(dados, null);
     expect(corpo).not.toHaveProperty('faixaPessoas');
     expect(corpo).not.toHaveProperty('necessidadeEspecial');
+  });
+});
+
+describe('envio com fotos (multipart, S-58, S-49)', () => {
+  const fotos = [
+    { id: 'a', uri: 'file:///1.jpg' },
+    { id: 'b', uri: 'file:///2.jpg' },
+  ];
+
+  it('o formulário leva os mesmos campos do JSON, como texto, e as fotos no campo "fotos" como JPEG', () => {
+    // No React Native o arquivo é um objeto { uri, name, type }; o `append` é observado direto.
+    const anexos: [string, unknown][] = [];
+    const espiao = jest
+      .spyOn(FormData.prototype, 'append')
+      .mockImplementation((nome: string, valor: unknown) => void anexos.push([nome, valor]));
+
+    montarFormularioDaDenuncia(
+      {
+        ...dados,
+        faixaPessoas: 'RUA_TODA',
+        necessidadeEspecial: true,
+        consentimentoNecessidade: true,
+      },
+      { latitude: -5.37, longitude: -49.12 },
+      fotos,
+    );
+    espiao.mockRestore();
+
+    expect(Object.fromEntries(anexos.filter(([k]) => k !== 'fotos'))).toEqual({
+      tipo: 'SEM_ENERGIA',
+      bairroId: '3',
+      logradouro: 'Rua das Flores, 10',
+      faixaPessoas: 'RUA_TODA',
+      necessidadeEspecial: 'true',
+      consentimentoNecessidade: 'true',
+      latitude: '-5.37',
+      longitude: '-49.12',
+    });
+    expect(anexos.filter(([k]) => k === 'fotos').map(([, v]) => v)).toEqual([
+      { uri: 'file:///1.jpg', name: 'foto-1.jpg', type: 'image/jpeg' },
+      { uri: 'file:///2.jpg', name: 'foto-2.jpg', type: 'image/jpeg' },
+    ]);
+  });
+
+  it('com fotos, criarDenuncia envia um FormData', async () => {
+    mockPost.mockResolvedValue({ id: 'd1' });
+
+    await criarDenuncia(dados, null, fotos);
+
+    const corpo = mockPost.mock.calls[0]![1];
+    expect(mockPost.mock.calls[0]![0]).toBe('/denuncias');
+    expect(corpo).toBeInstanceOf(FormData);
+  });
+
+  it('sem fotos, continua em JSON (os testes e o app de antes não mudam)', async () => {
+    mockPost.mockResolvedValue({ id: 'd1' });
+
+    await criarDenuncia(dados, null, []);
+    await criarDenuncia(dados, null);
+
+    for (const chamada of mockPost.mock.calls) {
+      expect(chamada[1]).not.toBeInstanceOf(FormData);
+      expect(chamada[1]).toMatchObject({ tipo: 'SEM_ENERGIA', bairroId: 3 });
+    }
   });
 });
 

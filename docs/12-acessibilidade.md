@@ -36,6 +36,7 @@ Meta: **WCAG 2.2 nível AA** no app (adaptado ao mobile) e no painel web (RNF-02
 - **Login e cadastro:** o botão de enviar tem nome próprio para leitor de tela ("Entrar na conta", "Cadastrar e criar conta"), diferente dos botões "Entrar" e "Cadastrar" da barra (que ficam como `selected`); erro geral em `Aviso` (ícone + texto, anunciado como alerta); links dos termos em azul **e sublinhados**.
 - **Detalhe e histórico:** cada passo do histórico é lido como "Recebida, por …, em …" e tem o ícone do andamento (a cor nunca é a única pista); a justificativa de improcedente é um aviso com ícone.
 - **Cancelar denúncia:** o botão tem ícone e texto; a confirmação fica na própria tela (sem diálogo do sistema), e o leitor de tela anuncia a pergunta ao abrir e "Denúncia cancelada." ao concluir; "Sim, cancelar" fica ocupado (`busy`) enquanto envia.
+- **Fotos (passo 3):** "Tirar foto" e "Escolher da galeria" têm ícone e texto; "Remover foto N" é botão com texto (nunca só ícone); o contador "N de 3 fotos" é região `polite`; com 3 fotos, os botões desativados explicam o motivo por escrito; cada miniatura é lida como "Foto N de M"; a permissão negada é explicada com uma frase, sem depender de cor. No painel, cada foto tem o texto alternativo "Foto N de M enviada pelo cidadão" e o erro é anunciado como alerta, com "Tentar de novo".
 - Título de cada tela marcado como `header` para navegação por títulos.
 - No painel: HTML semântico, `aria-live` para novas denúncias (`role="status"`), tabela com `scope`, foco gerenciado ao abrir/fechar diálogos.
 

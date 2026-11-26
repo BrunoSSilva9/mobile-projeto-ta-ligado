@@ -208,6 +208,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 
 ### F2-3 · Fotos (G, 14 h) · B-031, RF-009, RN-013, RNF-015
 
+**Implementada.** Ajustes em relação ao plano: a `foto de exemplo com GPS` é gerada por `tests/fixtures/gerar-foto-com-gps.ts` (EXIF com GPS e XMP montados à mão sobre um JPEG do `jpeg-js`) e commitada como `foto-com-gps.jpg`; o app usa `manipulateAsync` (API estável do `expo-image-manipulator`); a galeria usa o seletor do sistema, que não pede permissão de acesso às fotos (só a câmera pede, ao tocar em "Tirar foto").
+
 **Aprovado (2026-11-25):** `jpeg-js` **só como `devDependency` da API**, com a versão fixada por `npm view` e registrada no `docs/08`, na parte de ferramentas de teste.
 
 | Camada | Tarefas | Arquivos |

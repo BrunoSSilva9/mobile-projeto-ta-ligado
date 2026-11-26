@@ -292,6 +292,35 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     expect(screen.queryByText('No local')).toBeNull();
   });
 
+  it('mostra as fotos, cada uma pedida à rota autenticada com o token da sessão (RNF-015)', async () => {
+    simularApi({
+      detalhe: () =>
+        resposta(200, {
+          ...DETALHE,
+          fotos: [
+            { id: 'f1', url: '/api/v1/denuncias/d1/fotos/f1' },
+            { id: 'f2', url: '/api/v1/denuncias/d1/fotos/f2' },
+          ],
+        }),
+    });
+    await renderizarTela(<DetalheScreen />);
+
+    expect(await screen.findByRole('header', { name: 'Fotos (2)' })).toBeTruthy();
+    const primeira = screen.getByLabelText('Foto 1 de 2');
+    expect(screen.getByLabelText('Foto 2 de 2')).toBeTruthy();
+    expect(primeira.props.source.uri).toMatch(/\/api\/v1\/denuncias\/d1\/fotos\/f1$/);
+    expect(primeira.props.source.headers).toEqual({
+      Authorization: `Bearer ${SESSAO_DE_CIDADAO.token}`,
+    });
+  });
+
+  it('sem fotos, não mostra o cartão de fotos', async () => {
+    await renderizarTela(<DetalheScreen />);
+
+    await screen.findByText('Rua das Flores, 10');
+    expect(screen.queryByText(/^Fotos \(/)).toBeNull();
+  });
+
   it('mostra a previsão de reparo enquanto a denúncia está em aberto', async () => {
     simularApi({
       detalhe: () =>

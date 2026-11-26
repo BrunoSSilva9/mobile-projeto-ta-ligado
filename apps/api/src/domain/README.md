@@ -7,6 +7,7 @@ Regras de negócio **puras**: sem banco, HTTP ou Socket.IO, só funções que re
 | `tipos.ts` | Tipos `Papel`, `TipoDenuncia`, `StatusDenuncia`, `StatusBairro`; status em aberto e finais | RN-002, RN-003 |
 | `status-bairro.ts` | `calcularStatusBairro`, `redeEstavel` | RN-007, RN-008 |
 | `transicoes.ts` | `validarTransicao`, `acoesDisponiveis` (inclui cancelamento, justificativa e resolução em lote) | RN-004, RN-005, RN-010, RN-016 |
+| `fotos.ts` | `ehJpeg` (assinatura do conteúdo), `validarFotos` (até 3, 5 MB, só JPEG) | RN-013 |
 | `limite-denuncia.ts` | `podeCriarDenuncia` | RN-006 |
 | `permissoes.ts` | `temPapel`, `podeVerDenuncia`, `projetarOcorrenciaPublica` (visão anonimizada) | RN-001, RN-014 |
 | `previsao.ts` | `validarPrevisao`, `menorPrevisaoFutura` | RN-009 |

@@ -129,7 +129,45 @@ export function criarHttp(opcoes: OpcoesDoHttp) {
     return json as T;
   }
 
+  /**
+   * Baixa um arquivo da API (as fotos, RNF-015): como a rota exige o token, não dá para usar
+   * `<img src>` direto. Devolve o conteúdo para o painel mostrar. Erros viram `ErroDeApi`.
+   */
+  async function baixar(caminho: string): Promise<Blob> {
+    const token = obterToken();
+    const controle = new AbortController();
+    const relogio = setTimeout(() => controle.abort(), timeoutMs);
+    let resposta: Response;
+    try {
+      resposta = await (fetchImpl ?? fetch)(`${raiz}${caminho}`, {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        signal: controle.signal,
+      });
+    } catch (erro) {
+      if (controle.signal.aborted || (erro as { name?: string })?.name === 'AbortError') {
+        throw new ErroDeApi('TEMPO_ESGOTADO', MENSAGENS.tempoEsgotado, 0);
+      }
+      throw new ErroDeApi('SEM_CONEXAO', MENSAGENS.semConexao, 0);
+    } finally {
+      clearTimeout(relogio);
+    }
+    if (!resposta.ok) {
+      let json: unknown = null;
+      try {
+        json = await resposta.json();
+      } catch {
+        // Corpo que não é JSON: o erro genérico cobre.
+      }
+      const erro = erroDaResposta(resposta.status, json);
+      if (token && erro.codigo === 'NAO_AUTENTICADO') aoNaoAutenticado();
+      throw erro;
+    }
+    return resposta.blob();
+  }
+
   return {
+    baixar,
     get: <T>(caminho: string, consulta?: Record<string, string | number | boolean | undefined>) =>
       requisitar<T>('GET', caminho, undefined, consulta),
     post: <T>(caminho: string, corpo?: unknown) => requisitar<T>('POST', caminho, corpo ?? {}),

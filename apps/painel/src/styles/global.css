@@ -464,3 +464,26 @@ body {
 .campo textarea[aria-invalid='true'] {
   border-color: var(--color-no-power);
 }
+
+/* Galeria de fotos do detalhe (P-03) */
+.galeria {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.galeria__foto {
+  display: block;
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 8px;
+  border: 1px solid var(--color-bg-muted);
+  object-fit: cover;
+}
+.galeria__estado {
+  margin: 0;
+  padding: 12px;
+  color: var(--color-text-secondary);
+}

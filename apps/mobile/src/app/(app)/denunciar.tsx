@@ -20,6 +20,7 @@ import { rotuloDoBairro } from '@/components/ListaDeBairrosModal';
 import { PassoDetalhes } from '@/components/denuncia/PassoDetalhes';
 import { PassoLocal } from '@/components/denuncia/PassoLocal';
 import { PassoTipo } from '@/components/denuncia/PassoTipo';
+import type { FotoDoFormulario } from '@/features/denuncia/fotos';
 import { useBairros, useCriarDenuncia, useGps } from '@/features/denuncia/hooks';
 import {
   anuncioDoPasso,
@@ -73,6 +74,8 @@ export default function DenunciarScreen() {
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [denunciaEmAberto, setDenunciaEmAberto] = useState<string | null>(null);
   const [rascunhoLido, setRascunhoLido] = useState(false);
+  // As fotos ficam só na memória da tela: não vão para o rascunho (S-56).
+  const [fotos, setFotos] = useState<FotoDoFormulario[]>([]);
 
   const { control, handleSubmit, setError, setValue, getValues, reset, trigger, formState } =
     useForm<DadosDaDenuncia>({
@@ -163,7 +166,7 @@ export default function DenunciarScreen() {
       setErroGeral(null);
       setDenunciaEmAberto(null);
       criar.mutate(
-        { dados, coordenadas: gps.coordenadas },
+        { dados, coordenadas: gps.coordenadas, fotos },
         {
           onSuccess: async (denuncia) => {
             if (usuarioId) await limparRascunho(usuarioId);
@@ -255,6 +258,8 @@ export default function DenunciarScreen() {
               denunciaEmAberto={denunciaEmAberto}
               onVerDenunciaEmAberto={verDenunciaEmAberto}
               erroGeral={erroGeral}
+              fotos={fotos}
+              onAlterarFotos={setFotos}
             />
           ) : null}
         </ScrollView>

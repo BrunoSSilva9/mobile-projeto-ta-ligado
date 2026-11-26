@@ -8,6 +8,7 @@ import {
   type BairroProximo,
   type Coordenadas,
 } from './api';
+import type { FotoDoFormulario } from './fotos';
 import { obterLocalizacao, type ResultadoDaLocalizacao } from './localizacao';
 import type { DadosDaDenuncia } from './schemas';
 
@@ -24,8 +25,11 @@ export function useBairros() {
 export function useCriarDenuncia() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (entrada: { dados: DadosDaDenuncia; coordenadas: Coordenadas | null }) =>
-      criarDenuncia(entrada.dados, entrada.coordenadas),
+    mutationFn: (entrada: {
+      dados: DadosDaDenuncia;
+      coordenadas: Coordenadas | null;
+      fotos?: readonly FotoDoFormulario[];
+    }) => criarDenuncia(entrada.dados, entrada.coordenadas, entrada.fotos),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ['minhas-denuncias'] }),

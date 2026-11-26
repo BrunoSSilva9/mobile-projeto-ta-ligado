@@ -7,8 +7,10 @@ import { Cartao } from '@/components/Cartao';
 import { CartaoDeEscolha } from '@/components/CartaoDeEscolha';
 import { Checkbox } from '@/components/Checkbox';
 import { FilterChip } from '@/components/FilterChip';
+import { SeletorDeFotos } from '@/components/denuncia/SeletorDeFotos';
 import { SeloDeSituacao } from '@/components/SeloDeSituacao';
 import { TextField } from '@/components/TextField';
+import type { FotoDoFormulario } from '@/features/denuncia/fotos';
 import { TITULOS_DOS_PASSOS } from '@/features/denuncia/passos';
 import {
   FAIXAS_DE_PESSOAS,
@@ -33,6 +35,9 @@ type Props = {
   denunciaEmAberto: string | null;
   onVerDenunciaEmAberto: () => void;
   erroGeral: string | null;
+  /** Fotos já escolhidas (JPEG reduzido). Não vão para o rascunho (S-56). */
+  fotos: readonly FotoDoFormulario[];
+  onAlterarFotos: (fotos: FotoDoFormulario[]) => void;
 };
 
 /** Frase do resumo para a necessidade especial (o que vai, ou não vai, para a Equatorial). */
@@ -58,6 +63,8 @@ export function PassoDetalhes({
   denunciaEmAberto,
   onVerDenunciaEmAberto,
   erroGeral,
+  fotos,
+  onAlterarFotos,
 }: Props) {
   const [faixaPessoas, necessidadeEspecial, consentimentoNecessidade] = useWatch({
     control,
@@ -193,6 +200,8 @@ export function PassoDetalhes({
         )}
       />
 
+      <SeletorDeFotos fotos={fotos} onAlterar={onAlterarFotos} />
+
       <Cartao>
         <Text accessibilityRole="header" style={[type.label, styles.apoio]}>
           O que será enviado
@@ -209,6 +218,11 @@ export function PassoDetalhes({
         ) : null}
         {necessidade ? (
           <Text style={[type.bodySmall, styles.texto]}>{TEXTO_DO_RESUMO[necessidade]}</Text>
+        ) : null}
+        {fotos.length > 0 ? (
+          <Text style={[type.bodySmall, styles.texto]}>
+            {`Fotos: ${fotos.length} ${fotos.length === 1 ? 'anexada' : 'anexadas'}`}
+          </Text>
         ) : null}
       </Cartao>
 

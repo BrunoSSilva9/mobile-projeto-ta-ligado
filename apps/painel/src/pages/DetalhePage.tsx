@@ -8,6 +8,7 @@ import {
   JUSTIFICATIVA_MAX,
   previsaoParaIso,
 } from '../features/denuncias/acoes';
+import { GaleriaDeFotos } from '../components/GaleriaDeFotos';
 import { atualizarStatus, obterDetalhe, type MudancaDeStatus } from '../features/denuncias/api';
 import { CHAVE_LISTAS, chaveDoDetalhe } from '../features/denuncias/cache';
 import { formatarDataHora } from '../features/denuncias/formatacao';
@@ -186,6 +187,13 @@ function Conteudo({
             ) : null}
           </dl>
         </section>
+
+        {d.fotos.length > 0 ? (
+          <section className="card" aria-labelledby="bloco-fotos">
+            <h2 id="bloco-fotos">Fotos ({d.fotos.length})</h2>
+            <GaleriaDeFotos fotos={d.fotos} />
+          </section>
+        ) : null}
 
         <section className="card" aria-labelledby="bloco-acoes">
           <h2 id="bloco-acoes">Atualizar status</h2>

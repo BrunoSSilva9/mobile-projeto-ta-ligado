@@ -22,7 +22,7 @@ const LIMITES_DE_TESTE: Partial<LimitesDeTaxa> = { geral: 10_000, login: 10_000 
  */
 export function criarAppDeTeste(
   limites: Partial<LimitesDeTaxa> = {},
-  extras: { publicador?: Publicador; relogio?: () => Date } = {},
+  extras: { publicador?: Publicador; relogio?: () => Date; uploadsDir?: string } = {},
 ) {
   return createApp({
     prisma,

@@ -46,6 +46,11 @@ export const erros = {
     new AppError(422, 'JUSTIFICATIVA_OBRIGATORIA', mensagem),
   /** RN-009: a previsão de reparo precisa ser futura. */
   previsaoNoPassado: (mensagem: string) => new AppError(422, 'PREVISAO_NO_PASSADO', mensagem),
+  /** RN-013: foto com tamanho ou tipo inválido (413 grande demais, 415 não é JPEG). */
+  arquivoInvalido: (status: 413 | 415, mensagem: string) =>
+    new AppError(status, 'ARQUIVO_INVALIDO', mensagem),
+  /** RN-013: mais de 3 fotos. */
+  limiteFotos: (mensagem: string) => new AppError(422, 'LIMITE_FOTOS', mensagem),
   muitasRequisicoes: () =>
     new AppError(
       429,

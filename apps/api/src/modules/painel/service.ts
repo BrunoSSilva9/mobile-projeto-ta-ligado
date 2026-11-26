@@ -31,6 +31,7 @@ const num = (valor: Prisma.Decimal | null): number | null =>
 
 const INCLUIR_DETALHE = {
   bairro: true,
+  fotos: { orderBy: [{ criadoEm: 'asc' }, { id: 'asc' }] },
   autor: { select: { id: true, nome: true, telefone: true } },
   historico: {
     orderBy: [{ criadoEm: 'asc' }, { id: 'asc' }],
@@ -62,7 +63,7 @@ function paraDetalheDoPainel(d: DenunciaDetalhada) {
     consentimentoNecessidadeEm: d.consentimentoNecessidadeEm?.toISOString() ?? null,
     previsaoReparo: d.previsaoReparo?.toISOString() ?? null,
     justificativa: d.justificativa,
-    fotos: [] as { id: string; url: string }[], // fotos entram na Fase 2 (B-031)
+    fotos: d.fotos.map((f) => ({ id: f.id, url: `/api/v1/denuncias/${d.id}/fotos/${f.id}` })),
     historico: d.historico.map((h) => ({
       statusAnterior: h.statusAnterior,
       statusNovo: h.statusNovo,

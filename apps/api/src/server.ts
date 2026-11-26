@@ -8,6 +8,7 @@ const { httpServer, io } = criarServidor({
   prisma: getPrisma(),
   segredoJwt: env.JWT_SECRET,
   corsOrigins: env.CORS_ORIGINS,
+  uploadsDir: env.UPLOADS_DIR,
   checkDb: checkDatabase,
 });
 

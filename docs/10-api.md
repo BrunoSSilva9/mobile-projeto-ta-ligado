@@ -2,7 +2,7 @@
 
 Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastro/login, registrar denúncia, listar ocorrências e mapa, detalhe, minhas denúncias, cancelar, listar denúncias no painel e atualizar status, além dos **eventos WebSocket**.
 
-- **Base:** `/api/v1` · **Formato:** JSON (`multipart/form-data` só quando as fotos entrarem, na Fase 2) · **Datas:** ISO 8601 em UTC.
+- **Base:** `/api/v1` · **Formato:** JSON (e `multipart/form-data` no envio de denúncia com fotos, F2-3) · **Datas:** ISO 8601 em UTC.
 - **Autenticação:** `Authorization: Bearer <JWT>` em todas as rotas, exceto `register` e `login` ([ADR-0004](adr/0004-autenticacao-jwt-com-rbac.md)).
 - **Papéis:** `CIDADAO` (app) e `OPERADOR` (painel). Rotas `/painel/*` exigem `OPERADOR`.
 - **Regras:** referências `RN-xxx` em [regras-de-negocio.md](02-requisitos/regras-de-negocio.md).
@@ -29,7 +29,7 @@ Rascunho do contrato da API (`apps/api`). Cobre os endpoints principais: cadastr
 | 404 | `NAO_ENCONTRADO` | Recurso inexistente |
 | 409 | `EMAIL_JA_CADASTRADO` | E-mail repetido (RN-022) |
 | 409 | `DENUNCIA_EM_ABERTO` | Já existe denúncia em aberto do autor (RN-006). O corpo traz `erro.dados.denunciaEmAbertoId` para o app abrir essa denúncia |
-| 413 / 415 | `ARQUIVO_INVALIDO` | Foto > 5 MB ou tipo diferente de JPEG/PNG (RN-013) |
+| 413 / 415 | `ARQUIVO_INVALIDO` | **413:** foto acima de 5 MB. **415:** a foto não é um JPEG (conferido pelo **conteúdo**, não pela extensão nem pelo `Content-Type`) ou está quebrada (RN-013, S-49) |
 | 422 | `TRANSICAO_INVALIDA` | Mudança de status não permitida (RN-004, RN-005) |
 | 422 | `JUSTIFICATIVA_OBRIGATORIA` | Improcedente sem justificativa (RN-010) |
 | 422 | `PREVISAO_NO_PASSADO` | Previsão de reparo anterior a agora (RN-009) |
@@ -121,7 +121,7 @@ Erros: `400 VALIDACAO_ERRO` (sem senha), `403 SENHA_INCORRETA` ("Senha incorreta
 | POST | `/denuncias/{id}/cancelar` | Cidadão (autor) | Cancela se `RECEBIDA` | RF-015 |
 | GET | `/denuncias/{id}/fotos/{fotoId}` | Autor ou Operador | Baixa a foto (rota autenticada) | RN-014, RNF-015 |
 
-**`POST /denuncias`** (JSON na Fase 1, decisão S-33; o `multipart/form-data` com até 3 arquivos `fotos` entra com B-031)
+**`POST /denuncias`** (aceita **JSON** e **`multipart/form-data`**, decisão S-58; o `multipart` é o envio com fotos, F2-3). No `multipart` cada campo vai como texto (`bairroId=3`, `latitude=-5.37`, `necessidadeEspecial=true`...) e a API converte; um arquivo em outro campo que não `fotos` é recusado (`400`).
 ```
 tipo=SEM_ENERGIA               (obrigatório: SEM_ENERGIA | OSCILACAO)
 bairroId=3                     (obrigatório)
@@ -133,7 +133,7 @@ latitude=-5.3712  longitude=-49.1231  (opcionais; sem GPS, omitir)
 faixaPessoas=DE_4_A_8          (opcional: ATE_3 | DE_4_A_8 | DE_9_A_20 | RUA_TODA)
 necessidadeEspecial=true       (opcional: true | false; ausente ou null = não informado. Só Sim/Não, S-46)
 consentimentoNecessidade=true  (obrigatório e true quando necessidadeEspecial=true; LGPD, art. 11)
-fotos=<arquivo>  fotos=<arquivo>   (opcional, JPEG/PNG, até 3, 5 MB cada)
+fotos=<arquivo>  fotos=<arquivo>   (opcional, só multipart: até 3, 5 MB cada, SÓ JPEG — S-49)
 ```
 ```json
 // 201
@@ -141,6 +141,7 @@ fotos=<arquivo>  fotos=<arquivo>   (opcional, JPEG/PNG, até 3, 5 MB cada)
   "bairro": { "id": 3, "nome": "Cidade Nova" }, "criadoEm": "2026-11-18T14:02:10Z" }
 ```
 Erros: 400, 409 `DENUNCIA_EM_ABERTO`, 413/415 `ARQUIVO_INVALIDO`, 422 `LIMITE_FOTOS`. O "Sim" sem `consentimentoNecessidade: true` dá `400 VALIDACAO_ERRO` no campo `consentimentoNecessidade` ("Para enviar a necessidade especial, autorize o envio dessa informação à Equatorial."). O `detalheNecessidade` da Fase 1 não existe mais: se vier, é descartado (F2-2).
+**Fotos (RF-009, RN-013, S-49, S-57):** a API confere a assinatura do conteúdo (`FF D8 FF`), recusa tudo que não for JPEG (`415`, mesmo com `Content-Type: image/jpeg`), acima de 5 MB (`413`) e a partir da 4ª (`422 LIMITE_FOTOS`; a mensagem diz qual foto tem problema), **remove os metadados (segmentos APP1: EXIF e XMP, onde fica o GPS)** e grava o arquivo com nome aleatório em `UPLOADS_DIR/{denunciaId}/{fotoId}.jpg`, **fora de qualquer rota pública**. Os arquivos só vão para o disco depois de validados; se o registro falhar (ex.: `409`), são apagados. O app já envia JPEG reduzido (lado maior de 1600 px) e sem EXIF; a limpeza do servidor é uma garantia a mais.
 Efeitos: grava denúncia e histórico inicial (transação); com "Sim", grava também a data do consentimento; emite `denuncia:criada` e `ocorrencia:atualizada`.
 
 **`GET /denuncias/minhas?status=&page=&limite=`** → `200`
@@ -150,6 +151,8 @@ Efeitos: grava denúncia e histórico inicial (transação); com "Sim", grava ta
     "previsaoReparo": "2026-11-18T16:20:00Z" } ],
   "pagina": 1, "total": 1 }
 ```
+
+**`GET /denuncias/{id}/fotos/{fotoId}`** (RNF-015, RN-014) → `200` com o JPEG (`Content-Type: image/jpeg`, `Cache-Control: private, no-store`, `X-Content-Type-Options: nosniff`). **Só o autor da denúncia e o operador** (com o token no cabeçalho `Authorization`); outro cidadão, foto inexistente, id inválido, denúncia anonimizada (para cidadãos) e arquivo ausente respondem **`404`** igual, sem revelar nada. Sem token: `401`. A pasta das fotos nunca é servida como arquivo estático.
 
 **`GET /denuncias/{id}`** → `200`
 ```json

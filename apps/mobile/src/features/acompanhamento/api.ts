@@ -41,6 +41,8 @@ export type DenunciaDetalhe = {
   necessidadeEspecial?: boolean | null;
   previsaoReparo: string | null;
   justificativa: string | null;
+  /** Fotos enviadas (RF-009): `url` é a rota autenticada da API. */
+  fotos?: { id: string; url: string }[];
   historico: EntradaDoHistorico[];
   criadoEm: string;
   atualizadoEm: string;

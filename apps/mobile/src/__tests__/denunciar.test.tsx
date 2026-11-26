@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import * as Location from 'expo-location';
-import { AccessibilityInfo, BackHandler, StyleSheet } from 'react-native';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
+import { AccessibilityInfo, BackHandler, Linking, StyleSheet } from 'react-native';
 
 import DenunciarScreen from '@/app/(app)/denunciar';
 import { chaveDoRascunho } from '@/features/denuncia/rascunho';
@@ -39,6 +41,16 @@ jest.mock('expo-location', () => ({
   reverseGeocodeAsync: jest.fn(),
 }));
 
+jest.mock('expo-image-manipulator', () => ({
+  manipulateAsync: jest.fn(),
+  SaveFormat: { JPEG: 'jpeg', PNG: 'png' },
+}));
+jest.mock('expo-image-picker', () => ({
+  requestCameraPermissionsAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  launchImageLibraryAsync: jest.fn(),
+}));
+
 jest.mock('@/services/armazenamento', () => {
   const { armazenamentoEmMemoria } = jest.requireActual('@/testing/ajudas');
   return {
@@ -52,6 +64,10 @@ jest.mock('@/services/armazenamento', () => {
 
 const loc = Location as jest.Mocked<typeof Location>;
 const mockFetch = jest.fn();
+const manipular = ImageManipulator.manipulateAsync as jest.Mock;
+const permissaoDaCamera = ImagePicker.requestCameraPermissionsAsync as jest.Mock;
+const camera = ImagePicker.launchCameraAsync as jest.Mock;
+const galeria = ImagePicker.launchImageLibraryAsync as jest.Mock;
 const anunciar = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
 
 const BAIRROS = [
@@ -175,6 +191,8 @@ beforeEach(async () => {
   await useSessao.getState().entrar(SESSAO_DE_CIDADAO);
   simularApi();
   simularGps('ok');
+  permissaoDaCamera.mockResolvedValue({ granted: true, canAskAgain: true });
+  manipular.mockImplementation(async (uri: string) => ({ uri: `${uri}.jpg` }));
 });
 
 describe('Passo 1 · "O que está acontecendo?"', () => {
@@ -715,6 +733,222 @@ describe('Passo 3: pessoas no local e necessidade especial (RF-010, RN-015, S-46
 
     expect(await screen.findByText('Autorize o envio.')).toBeTruthy();
     expect(screen.getByRole('header', { name: TITULO_3 })).toBeTruthy();
+  });
+});
+
+describe('Passo 3: fotos (RF-009, RN-013, S-49, S-56, S-58)', () => {
+  const foto = (n: number) => ({ uri: `file:///foto-${n}.heic`, width: 4000, height: 3000 });
+  const tirar = () => tocar('Tirar foto');
+  const escolher = () => tocar('Escolher da galeria');
+  const envios = () =>
+    mockFetch.mock.calls.filter(
+      ([url, init]) => String(url).endsWith('/denuncias') && init?.method === 'POST',
+    );
+
+  it('mostra "0 de 3 fotos" e os dois botões com texto, sem miniaturas', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    expect(screen.getByText('Fotos (opcional)')).toBeTruthy();
+    expect(screen.getByText('0 de 3 fotos')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Tirar foto' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Escolher da galeria' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Remover foto/ })).toBeNull();
+  });
+
+  it('a permissão da câmera só é pedida ao tocar em "Tirar foto", e não ao abrir a tela', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    expect(permissaoDaCamera).not.toHaveBeenCalled();
+
+    camera.mockResolvedValue({ canceled: true, assets: null });
+    await tirar();
+
+    expect(permissaoDaCamera).toHaveBeenCalledTimes(1);
+  });
+
+  it('tirar uma foto: converte para JPEG reduzido, mostra a miniatura e "1 de 3 fotos"', async () => {
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await tirar();
+
+    expect(await screen.findByText('1 de 3 fotos')).toBeTruthy();
+    expect(screen.getByLabelText('Foto 1 de 1')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remover foto 1' })).toBeTruthy();
+    expect(manipular).toHaveBeenCalledWith(
+      'file:///foto-1.heic',
+      [{ resize: { width: 1600 } }],
+      expect.objectContaining({ compress: 0.7, format: 'jpeg' }),
+    );
+    expect(screen.getByText('Fotos: 1 anexada')).toBeTruthy(); // no resumo
+  });
+
+  it('da galeria: pede só as que ainda cabem', async () => {
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    galeria.mockResolvedValue({ canceled: false, assets: [foto(2), foto(3)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await tirar();
+    await screen.findByText('1 de 3 fotos');
+
+    await escolher();
+
+    expect(galeria).toHaveBeenCalledWith(expect.objectContaining({ selectionLimit: 2 }));
+    expect(await screen.findByText('3 de 3 fotos')).toBeTruthy();
+  });
+
+  it('com 3 fotos, os dois botões ficam desativados e o motivo aparece escrito', async () => {
+    galeria.mockResolvedValue({ canceled: false, assets: [foto(1), foto(2), foto(3)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await escolher();
+    await screen.findByText('3 de 3 fotos');
+
+    expect(
+      screen.getByRole('button', { name: 'Tirar foto' }).props.accessibilityState,
+    ).toMatchObject({ disabled: true });
+    expect(
+      screen.getByRole('button', { name: 'Escolher da galeria' }).props.accessibilityState,
+    ).toMatchObject({ disabled: true });
+    expect(screen.getByText(/Você já escolheu as 3 fotos\. Remova uma para trocar\./)).toBeTruthy();
+  });
+
+  it('"Remover foto N" (botão com texto) tira a foto e libera os botões', async () => {
+    galeria.mockResolvedValue({ canceled: false, assets: [foto(1), foto(2), foto(3)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await escolher();
+    await screen.findByText('3 de 3 fotos');
+
+    await tocar('Remover foto 2');
+
+    expect(await screen.findByText('2 de 3 fotos')).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /^Remover foto/ })).toHaveLength(2);
+    expect(
+      screen.getByRole('button', { name: 'Tirar foto' }).props.accessibilityState,
+    ).toMatchObject({ disabled: false });
+  });
+
+  it('permissão da câmera negada: explica e continua dando para escolher da galeria', async () => {
+    permissaoDaCamera.mockResolvedValue({ granted: false, canAskAgain: true });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await tirar();
+
+    expect(
+      await screen.findByText(/Sem a permissão da câmera não dá para tirar a foto/),
+    ).toBeTruthy();
+    expect(camera).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Escolher da galeria' })).toBeTruthy();
+  });
+
+  it('câmera bloqueada de vez: oferece "Abrir configurações"', async () => {
+    permissaoDaCamera.mockResolvedValue({ granted: false, canAskAgain: false });
+    const abrir = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await tirar();
+    await tocar('Abrir configurações');
+
+    expect(await screen.findByText(/A câmera está bloqueada para este aplicativo/)).toBeTruthy();
+    expect(abrir).toHaveBeenCalledTimes(1);
+    abrir.mockRestore();
+  });
+
+  it('falha ao preparar a foto: mostra o erro e não anexa nada', async () => {
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    manipular.mockRejectedValue(new Error('sem memória'));
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await tirar();
+
+    expect(await screen.findByText(/Não foi possível preparar a foto/)).toBeTruthy();
+    expect(screen.getByText('0 de 3 fotos')).toBeTruthy();
+  });
+
+  it('com fotos, o envio é multipart (FormData) e a denúncia vai para a tela de sucesso', async () => {
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await tirar();
+    await screen.findByText('1 de 3 fotos');
+
+    await enviar();
+
+    await waitFor(() => expect(envios()).toHaveLength(1));
+    const [, init] = envios()[0]!;
+    expect(init.body).toBeInstanceOf(FormData);
+    expect(init.headers['Content-Type']).toBeUndefined(); // o fetch põe o boundary
+    await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+  });
+
+  it('sem fotos, o envio continua em JSON', async () => {
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+
+    await enviar();
+
+    await waitFor(() => expect(envios()).toHaveLength(1));
+    const [, init] = envios()[0]!;
+    expect(typeof init.body).toBe('string');
+    expect(init.headers['Content-Type']).toBe('application/json');
+  });
+
+  it('as fotos nunca vão para o rascunho (S-56)', async () => {
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await digitar('Descreva o que aconteceu (opcional)', 'sem luz');
+    await tirar();
+    await screen.findByText('1 de 3 fotos');
+
+    await waitFor(async () =>
+      expect(JSON.parse((await AsyncStorage.getItem(chaveDoRascunho('u1'))) ?? '{}')).toMatchObject(
+        { descricao: 'sem luz' },
+      ),
+    );
+    const bruto = (await AsyncStorage.getItem(chaveDoRascunho('u1')))!;
+    expect(bruto).not.toMatch(/foto|file:|uri|\.jpg/i);
+  });
+
+  it('erro de rede ao enviar: as fotos continuam anexadas para tentar de novo', async () => {
+    simularApi({
+      criar: () => {
+        throw new TypeError('Network request failed');
+      },
+    });
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await tirar();
+    await screen.findByText('1 de 3 fotos');
+
+    await enviar();
+
+    expect(await screen.findByText(/Sem conexão/)).toBeTruthy();
+    expect(screen.getByText('1 de 3 fotos')).toBeTruthy();
+  });
+
+  it('413/415 do servidor aparece como mensagem e as fotos continuam', async () => {
+    simularApi({
+      criar: () => resposta(415, erroDaApi('ARQUIVO_INVALIDO', 'A foto 1 precisa ser um JPEG.')),
+    });
+    camera.mockResolvedValue({ canceled: false, assets: [foto(1)] });
+    await renderizarTela(<DenunciarScreen />);
+    await irAtePasso3ComGps();
+    await tirar();
+    await screen.findByText('1 de 3 fotos');
+
+    await enviar();
+
+    expect(await screen.findByText('A foto 1 precisa ser um JPEG.')).toBeTruthy();
+    expect(screen.getByText('1 de 3 fotos')).toBeTruthy();
   });
 });
 

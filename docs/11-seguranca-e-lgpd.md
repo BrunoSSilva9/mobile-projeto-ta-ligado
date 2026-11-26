@@ -75,7 +75,7 @@ Para ambiente de demonstração, os dados são fictícios e podem ser apagados a
 - **RBAC** com papéis `CIDADAO` e `OPERADOR`; rotas `/painel/*` só para `OPERADOR`; o cidadão acessa apenas os próprios recursos (RN-014).
 - Contas de operador **só por seed**; nenhuma rota pública cria operador.
 - **HTTPS/WSS** em produção; `helmet` e CORS restrito às origens do painel; segredos só em variáveis de ambiente (RNF-013, RNF-023).
-- **Fotos** com nome aleatório, servidas apenas por rota autenticada ao autor e ao operador (RNF-015); tipos e tamanhos validados no servidor.
+- **Fotos** (F2-3): **só JPEG**, conferido pelo **conteúdo** (assinatura), nunca pela extensão nem pelo `Content-Type`; 3 por denúncia e 5 MB cada; o app converte e reduz antes de enviar e a API **remove os metadados (EXIF e XMP, onde fica a localização) de novo**; nome aleatório (UUID) numa pasta fora de qualquer rota pública; servidas apenas por rota autenticada ao autor e ao operador, com `Cache-Control: private, no-store` e `nosniff` (RNF-015); os arquivos só são gravados depois de validados e são apagados se o registro falhar.
 - **Auditoria:** cada mudança de status registra quem, o quê e quando (RN-011). O operador não consegue apagar histórico.
 - **Mensagens de erro genéricas** no login; *rate limit* (S-18).
 - **Exclusão de conta** exige a **senha atual** (`DELETE /me`, S-59): senha errada responde `403 SENHA_INCORRETA` sem mais detalhes e não apaga nada; a rota tem o mesmo limite de tentativas do login. Isso impede que um token roubado ou um celular desbloqueado apague a conta.

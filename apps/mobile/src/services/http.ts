@@ -43,6 +43,8 @@ export type OpcoesDoHttp = {
   aoNaoAutenticado: () => void;
   /** Padrão: 15 s (docs/13, RNF-007). */
   timeoutMs?: number;
+  /** Tempo limite dos envios com arquivos (fotos), que demoram mais. Padrão: 60 s. */
+  timeoutDeArquivosMs?: number;
   /** Troca o `fetch` (testes). */
   fetchImpl?: typeof fetch;
 };
@@ -71,7 +73,14 @@ function erroDaResposta(status: number, corpo: unknown): ErroDeApi {
 
 /** Cliente HTTP da API: token, tempo limite de 15 s e erros normalizados. */
 export function criarHttp(opcoes: OpcoesDoHttp) {
-  const { baseUrl, obterToken, aoNaoAutenticado, timeoutMs = 15_000, fetchImpl } = opcoes;
+  const {
+    baseUrl,
+    obterToken,
+    aoNaoAutenticado,
+    timeoutMs = 15_000,
+    timeoutDeArquivosMs = 60_000,
+    fetchImpl,
+  } = opcoes;
   const raiz = `${baseUrl.replace(/\/+$/, '')}/api/v1`;
 
   async function requisitar<T>(
@@ -89,8 +98,14 @@ export function criarHttp(opcoes: OpcoesDoHttp) {
       : '';
     const url = `${raiz}${caminho}${parametros ? `?${parametros}` : ''}`;
 
+    // `FormData` (envio com fotos): o `Content-Type` NÃO é definido à mão, para o fetch incluir o
+    // `boundary` do multipart sozinho.
+    const ehFormulario = typeof FormData !== 'undefined' && corpo instanceof FormData;
     const controle = new AbortController();
-    const relogio = setTimeout(() => controle.abort(), timeoutMs);
+    const relogio = setTimeout(
+      () => controle.abort(),
+      ehFormulario ? timeoutDeArquivosMs : timeoutMs,
+    );
 
     let resposta: Response;
     try {
@@ -98,10 +113,15 @@ export function criarHttp(opcoes: OpcoesDoHttp) {
         method: metodo,
         headers: {
           Accept: 'application/json',
-          ...(corpo !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...(corpo !== undefined && !ehFormulario ? { 'Content-Type': 'application/json' } : {}),
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: corpo !== undefined ? JSON.stringify(corpo) : undefined,
+        body:
+          corpo === undefined
+            ? undefined
+            : ehFormulario
+              ? (corpo as FormData)
+              : JSON.stringify(corpo),
         signal: controle.signal,
       });
     } catch (erro) {

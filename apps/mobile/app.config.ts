@@ -41,6 +41,17 @@ const config: ExpoConfig = {
       },
     ],
     [
+      'expo-image-picker',
+      {
+        // Textos em linguagem simples (LGPD): dizem para que a foto serve e que ela é opcional.
+        cameraPermission:
+          'O Tá Ligado? usa a câmera só para você tirar fotos do problema e anexá-las à denúncia (opcional).',
+        photosPermission:
+          'O Tá Ligado? acessa as suas fotos só para você escolher imagens do problema e anexá-las à denúncia (opcional).',
+        microphonePermission: false,
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#0B1F3A',

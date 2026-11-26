@@ -74,6 +74,8 @@ export type DetalheDoPainel = {
   consentimentoNecessidadeEm: string | null;
   previsaoReparo: string | null;
   justificativa: string | null;
+  /** Fotos da denúncia (RF-009): só o autor e o operador as veem. `url` é a rota autenticada. */
+  fotos: { id: string; url: string }[];
   historico: EntradaDoHistorico[];
   criadoEm: string;
   atualizadoEm: string;

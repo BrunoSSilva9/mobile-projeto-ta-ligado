@@ -3,6 +3,7 @@ import { Router } from 'express';
 
 import { criarRotasAuth } from './modules/auth/routes';
 import { criarServicoAuth } from './modules/auth/service';
+import { criarArmazenamento } from './modules/fotos/armazenamento';
 import { criarRotasBairros } from './modules/bairros/routes';
 import { criarRotasDenuncias } from './modules/denuncias/routes';
 import { criarServicoDenuncias } from './modules/denuncias/service';
@@ -24,6 +25,8 @@ export type RotasDeps = {
   publicador?: Publicador;
   /** Relógio injetável (testes). */
   relogio?: () => Date;
+  /** Pasta das fotos (`UPLOADS_DIR`). Fica fora de qualquer rota pública (S-49). */
+  uploadsDir?: string;
 };
 
 /** Todas as rotas da API, montadas em `/api/v1` pelo `createApp`. */
@@ -34,6 +37,7 @@ export function criarRotas({
   bcryptCost = 10,
   publicador = publicadorNulo,
   relogio,
+  uploadsDir = 'uploads',
 }: RotasDeps): Router {
   const limitesFinais: LimitesDeTaxa = { ...LIMITES_PADRAO, ...limites };
   const autenticacao = criarAutenticacao(prisma, segredoJwt);
@@ -57,7 +61,12 @@ export function criarRotas({
   );
   router.use(
     criarRotasDenuncias({
-      servico: criarServicoDenuncias({ prisma, publicador, relogio }),
+      servico: criarServicoDenuncias({
+        prisma,
+        publicador,
+        relogio,
+        armazenamento: criarArmazenamento(uploadsDir),
+      }),
       autenticacao,
     }),
   );

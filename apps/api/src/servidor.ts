@@ -10,7 +10,7 @@ export type ServidorDeps = {
   prisma: PrismaClient;
   segredoJwt: string;
   corsOrigins?: string[];
-} & Pick<AppDeps, 'checkDb' | 'limites' | 'bcryptCost' | 'relogio'>;
+} & Pick<AppDeps, 'checkDb' | 'limites' | 'bcryptCost' | 'relogio' | 'uploadsDir'>;
 
 /**
  * Monta o servidor completo: app Express (REST), Socket.IO e o publicador que liga os dois.

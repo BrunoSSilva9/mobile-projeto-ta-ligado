@@ -25,3 +25,6 @@ export async function listarBairros(): Promise<Bairro[]> {
   const r = await http.get<{ bairros: Bairro[] }>('/bairros');
   return r.bairros;
 }
+
+/** Baixa uma foto pela URL que a API devolve (`/api/v1/denuncias/{id}/fotos/{fotoId}`), com o token. */
+export const baixarFoto = (url: string) => http.baixar(url.replace(/^\/api\/v1/, ''));

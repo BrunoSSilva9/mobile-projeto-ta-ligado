@@ -114,6 +114,59 @@ describe('cliente HTTP: requisições', () => {
   });
 });
 
+describe('cliente HTTP: envio com arquivos (multipart, S-58)', () => {
+  it('FormData vai como veio, SEM Content-Type (o fetch põe o boundary), com o token', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(resposta(201, { id: '1' }));
+    const { http } = criar(fetchImpl, { token: 'abc.def' });
+    const formulario = new FormData();
+    formulario.append('tipo', 'SEM_ENERGIA');
+
+    await http.post('/denuncias', formulario);
+
+    const [, init] = fetchImpl.mock.calls[0]!;
+    expect(init.method).toBe('POST');
+    expect(init.body).toBe(formulario);
+    expect(init.headers['Content-Type']).toBeUndefined();
+    expect(init.headers.Authorization).toBe('Bearer abc.def');
+  });
+
+  it('o JSON continua com o Content-Type de sempre', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(resposta(201, {}));
+    await criar(fetchImpl).http.post('/denuncias', { a: 1 });
+
+    expect(fetchImpl.mock.calls[0]![1].headers['Content-Type']).toBe('application/json');
+  });
+
+  describe('tempo limite maior para arquivos', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    const fetchTravado = () =>
+      jest.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolver, rejeitar) => {
+            init.signal?.addEventListener('abort', () =>
+              rejeitar(Object.assign(new Error('Aborted'), { name: 'AbortError' })),
+            );
+          }),
+      );
+
+    it('com FormData espera 60 s (e não 15 s)', async () => {
+      const { http } = criar(fetchTravado() as unknown as jest.Mock);
+      let terminou = false;
+      const resultado = http.post('/denuncias', new FormData()).catch((e: { codigo: string }) => {
+        terminou = true;
+        return e.codigo;
+      });
+
+      await jest.advanceTimersByTimeAsync(15_000);
+      expect(terminou).toBe(false); // JSON já teria estourado aqui
+      await jest.advanceTimersByTimeAsync(45_000);
+      expect(await resultado).toBe('TEMPO_ESGOTADO');
+    });
+  });
+});
+
 describe('cliente HTTP: erros em português (RNF-005)', () => {
   it('converte o erro da API em ErroDeApi, com código, mensagem, status, detalhes e dados', async () => {
     const corpo = erroDaApi('DENUNCIA_EM_ABERTO', 'Você já tem uma denúncia em aberto.', {

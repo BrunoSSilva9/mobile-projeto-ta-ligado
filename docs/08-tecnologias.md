@@ -20,6 +20,8 @@ A stack preferida (React Native + Expo + TypeScript no app; Node.js + PostgreSQL
 | **Expo Router** | Compatível com o SDK | Navegação por arquivos, tabs e modais | Convenção simples, *deep link* (abrir detalhe pelo push) | React Navigation direto |
 | `react-native-maps` | Compatível com o SDK | Mapa, círculos, pinos | Funciona no Expo Go; API madura | Mapbox (conta/tarifa), `expo-maps` (ainda em evolução) |
 | `expo-location` | Compatível com o SDK | GPS e geocodificação reversa | Módulo oficial, permissões simples | `react-native-geolocation` |
+| `expo-image-picker` | `~58.0.10` | Tirar foto e escolher da galeria (RF-009) | Módulo oficial, funciona no Expo Go; o seletor do sistema não pede acesso a todas as fotos | `react-native-image-picker`, `expo-camera` (mais código) |
+| `expo-image-manipulator` | `~58.0.16` | Converter para JPEG, reduzir (lado maior de 1600 px) e descartar o EXIF antes de enviar (S-49) | Módulo oficial, funciona no Expo Go | Reduzir só no servidor (gastaria dados móveis) |
 | `expo-image-picker` | Compatível com o SDK | Fotos da câmera/galeria | Oficial, permissões e redimensionamento | `react-native-image-picker` |
 | `expo-notifications` | Compatível com o SDK | Push e notificações locais | Integra com Expo Push Service | OneSignal, Firebase direto |
 | `socket.io-client` | 4.x | Tempo real | Reconexão automática e salas ([ADR-0002](adr/0002-socketio-para-tempo-real.md)) | WebSocket nativo, SSE |
@@ -56,7 +58,7 @@ A stack preferida (React Native + Expo + TypeScript no app; Node.js + PostgreSQL
 | `jsonwebtoken` (ou `jose`) | Última | JWT | Padrão ([ADR-0004](adr/0004-autenticacao-jwt-com-rbac.md)) | Sessão em cookie, Auth0/Firebase Auth |
 | `bcrypt` (ou `bcryptjs`) | Última | Hash de senha | Padrão consolidado | argon2 |
 | Zod | 3.x–4.x | Validação de entrada | Mesmo esquema do app | Joi, class-validator |
-| `multer` | 2.x | Upload de fotos | Padrão com Express | `busboy` direto |
+| `multer` | **`2.5.0`** (fixada) | Recebe o `multipart` das fotos, em memória e com limites (S-57) | Padrão com Express; funciona com o Express 5 | `busboy` direto |
 | `express-rate-limit`, `helmet`, `cors` | Últimas | Segurança básica | Cobrem S-18 e RNF-014 | — |
 | `expo-server-sdk` | Última | Enviar push | Cliente oficial do Expo Push | FCM direto |
 | `pino` | 9.x | Logs | Rápido, estruturado | winston |
@@ -111,6 +113,8 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 | API | Zod | `^4.6.7` | — |
 | API | bcryptjs | `^3.0.3` | JS puro (evita compilação nativa no Windows) |
 | API | Vitest / Supertest / tsx | `^3.2.7` / `^7.3.2` / `^4.23.15` | — |
+| API | **multer** / `@types/multer` | **`2.5.0`** / **`2.3.0`** (fixadas, F2-3) | Recebe o `multipart` das fotos |
+| API (só testes) | **jpeg-js** | **`0.4.4`** (fixada, `devDependency`, F2-3) | Gera e decodifica JPEGs de teste: prova que a foto limpa de EXIF/GPS continua abrindo e com o mesmo tamanho (S-57). JavaScript puro, sem compilação nativa. **Não vai para produção** |
 | Qualidade | ESLint | `^9.39.5` | A 10.x existe; a 9 é a usada pelo `eslint-config-expo` |
 | Qualidade | typescript-eslint | `^8.73.0` | — |
 | Qualidade | Prettier | `^3.0.0` | Config em `.prettierrc.json` |
@@ -125,3 +129,4 @@ Fonte: `package.json` de cada app (2026-11-18), escolhidas com `npm view`. Estas
 - **Redesign (R1, 2026-11-23):** `@expo-google-fonts/atkinson-hyperlegible 0.4.1` no lugar de `@expo-google-fonts/plus-jakarta-sans` (removida do app; o painel continua carregando a Plus Jakarta Sans pelo Google Fonts).
 - **Instalados no Passo 13 (app):** `@react-native-community/netinfo 12.0.1`, `@tanstack/react-query-persist-client 5.108.1` e `@tanstack/query-async-storage-persister 5.108.1`.
 - **Ainda não instalados** (entram quando a funcionalidade for implementada): `expo-image-picker` e `expo-notifications`.
+- **Instalados na F2-3 (app):** `expo-image-picker ~58.0.10` e `expo-image-manipulator ~58.0.16` (versões do SDK 58, pelo `npx expo install`). **Na API:** `multer 2.5.0` e, só em testes, `jpeg-js 0.4.4` e `@types/multer 2.3.0` (todas fixadas, sem `^`).

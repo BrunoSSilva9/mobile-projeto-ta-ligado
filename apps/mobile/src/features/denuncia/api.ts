@@ -1,5 +1,6 @@
 import { http } from '@/services/api';
 import { ErroDeApi } from '@/services/http';
+import type { FotoDoFormulario } from './fotos';
 import { necessidadeAoEnviar, type DadosDaDenuncia } from './schemas';
 
 export type Bairro = {
@@ -75,10 +76,44 @@ export function montarCorpoDaDenuncia(dados: DadosDaDenuncia, coordenadas: Coord
   };
 }
 
-/** RF-007, RF-012: registra a denúncia e devolve o protocolo. */
+/**
+ * Corpo `multipart` do envio com fotos (decisão S-58): os mesmos campos do JSON, como texto, e as
+ * fotos no campo `fotos`. As fotos já são JPEG reduzido (S-49).
+ */
+export function montarFormularioDaDenuncia(
+  dados: DadosDaDenuncia,
+  coordenadas: Coordenadas | null,
+  fotos: readonly FotoDoFormulario[],
+): FormData {
+  const formulario = new FormData();
+  for (const [campo, valor] of Object.entries(montarCorpoDaDenuncia(dados, coordenadas))) {
+    formulario.append(campo, String(valor));
+  }
+  fotos.forEach((foto, indice) => {
+    // No React Native, um arquivo vai como { uri, name, type }.
+    formulario.append('fotos', {
+      uri: foto.uri,
+      name: `foto-${indice + 1}.jpg`,
+      type: 'image/jpeg',
+    } as unknown as Blob);
+  });
+  return formulario;
+}
+
+/**
+ * RF-007, RF-012: registra a denúncia e devolve o protocolo. Sem fotos, vai em JSON como sempre;
+ * com fotos, em `multipart` (S-58).
+ */
 export async function criarDenuncia(
   dados: DadosDaDenuncia,
   coordenadas: Coordenadas | null,
+  fotos: readonly FotoDoFormulario[] = [],
 ): Promise<DenunciaCriada> {
+  if (fotos.length > 0) {
+    return http.post<DenunciaCriada>(
+      '/denuncias',
+      montarFormularioDaDenuncia(dados, coordenadas, fotos),
+    );
+  }
   return http.post<DenunciaCriada>('/denuncias', montarCorpoDaDenuncia(dados, coordenadas));
 }

@@ -1,5 +1,6 @@
 export * from './bairro-proximo';
 export * from './indicadores';
+export * from './fotos';
 export * from './limite-denuncia';
 export * from './necessidade';
 export * from './permissoes';
