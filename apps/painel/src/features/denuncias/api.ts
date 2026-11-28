@@ -1,6 +1,12 @@
 import { http } from '../../services/api';
 import { montarConsulta, type Filtros } from './consulta';
-import type { Bairro, DetalheDoPainel, ListaDoPainel, StatusDaDenuncia } from './tipos';
+import type {
+  Bairro,
+  DetalheDoPainel,
+  ListaDoPainel,
+  ResumoDoBairro,
+  StatusDaDenuncia,
+} from './tipos';
 
 /** RF-030. */
 export const obterDetalhe = (id: string) =>
@@ -37,3 +43,15 @@ export async function listarBairros(): Promise<Bairro[]> {
 
 /** Baixa uma foto pela URL que a API devolve (`/api/v1/denuncias/{id}/fotos/{fotoId}`), com o token. */
 export const baixarFoto = (url: string) => http.baixar(url.replace(/^\/api\/v1/, ''));
+
+/** RF-034: bairros com denúncias em aberto, com as contagens por tipo e status. */
+export async function listarResumoPorBairro(): Promise<ResumoDoBairro[]> {
+  const r = await http.get<{ bairros: ResumoDoBairro[] }>('/painel/bairros');
+  return r.bairros;
+}
+
+/** RF-034, RN-016: resolve todas as denúncias em aberto do bairro (exige a confirmação). */
+export const resolverBairro = (bairroId: number) =>
+  http.post<{ resolvidas: number }>(`/painel/bairros/${bairroId}/resolver`, {
+    confirmacao: true,
+  });

@@ -87,6 +87,27 @@ export const DENUNCIA_B = {
   criadoEm: new Date(Date.now() - 3 * 3_600_000).toISOString(),
 };
 
+export const RESUMO_DE_BAIRROS = [
+  {
+    bairroId: 2,
+    nome: 'Nova Marabá',
+    folha: 'Folha 28',
+    emAberto: 3,
+    porTipo: { SEM_ENERGIA: 2, OSCILACAO: 1 },
+    porStatus: { RECEBIDA: 2, EM_ATENDIMENTO: 1 },
+    prioritarias: 1,
+  },
+  {
+    bairroId: 1,
+    nome: 'Cidade Nova',
+    folha: null,
+    emAberto: 1,
+    porTipo: { SEM_ENERGIA: 0, OSCILACAO: 1 },
+    porStatus: { RECEBIDA: 0, EM_ATENDIMENTO: 1 },
+    prioritarias: 0,
+  },
+];
+
 export const DETALHE = {
   id: 'd1',
   protocolo: 'TL-2026-000002',
@@ -128,6 +149,8 @@ type Rotas = {
   previsao?: (corpo: Record<string, unknown>) => Response;
   denuncias?: (url: string) => Response;
   bairros?: () => Response;
+  resumoBairros?: () => Response;
+  resolverBairro?: (bairroId: number, corpo: Record<string, unknown>) => Response;
   login?: (corpo: unknown) => Response;
 };
 
@@ -157,6 +180,16 @@ export function simularApi(rotas: Rotas = {}) {
         rotas.denuncias ??
         (() => resposta(200, { itens: [DENUNCIA_A, DENUNCIA_B], pagina: 1, total: 2 }))
       )(url);
+    }
+    if (/\/painel\/bairros\/\d+\/resolver$/.test(url)) {
+      const id = Number(/bairros\/(\d+)\/resolver/.exec(url)![1]);
+      return (rotas.resolverBairro ?? (() => resposta(200, { resolvidas: 0 })))(
+        id,
+        init?.body ? JSON.parse(init.body) : {},
+      );
+    }
+    if (url.endsWith('/painel/bairros')) {
+      return (rotas.resumoBairros ?? (() => resposta(200, { bairros: RESUMO_DE_BAIRROS })))();
     }
     if (url.endsWith('/bairros')) {
       return (rotas.bairros ?? (() => resposta(200, { bairros: BAIRROS })))();

@@ -5,6 +5,7 @@ import {
   ehPrioritaria,
   ehStatusFinal,
   estaEmAberto,
+  resumirPorBairro,
   validarMudancaDePrevisao,
   validarPrevisao,
   validarTransicao,
@@ -320,7 +321,110 @@ export function criarServicoPainel({
     return paraDetalheDoPainel(completa);
   }
 
-  return { listar, detalhe, atualizarStatus, atualizarPrevisao };
+  /**
+   * RF-034: visão agrupada por bairro, só com as denúncias em aberto (a conta é da regra de
+   * domínio `resumirPorBairro`).
+   */
+  async function listarPorBairro() {
+    const abertas = await prisma.denuncia.findMany({
+      where: { status: { in: ['RECEBIDA', 'EM_ATENDIMENTO'] } },
+      select: {
+        tipo: true,
+        status: true,
+        necessidadeEspecial: true,
+        bairro: { select: { id: true, nome: true, folha: true } },
+      },
+    });
+    return {
+      bairros: resumirPorBairro(
+        abertas.map((d) => ({
+          bairroId: d.bairro.id,
+          nome: d.bairro.nome,
+          folha: d.bairro.folha,
+          tipo: d.tipo,
+          status: d.status,
+          prioritaria: ehPrioritaria(d.necessidadeEspecial),
+        })),
+      ),
+    };
+  }
+
+  /**
+   * RF-034, RN-016: resolve de uma vez **todas as denúncias em aberto do bairro**. Numa única
+   * transação, cada uma vai para RESOLVIDA (única exceção de RN-004: RECEBIDA -> RESOLVIDA), com
+   * o seu registro no histórico (RN-011), `finalizadaEm` e a retenção da necessidade especial
+   * (RN-026). A gravação é condicional ao status lido: a denúncia que mudou no meio tempo (por
+   * exemplo, o cidadão cancelou) fica de fora, sem derrubar as outras. Os eventos em tempo real
+   * saem depois do commit, um por denúncia.
+   */
+  async function resolverBairro(operador: OperadorDaRequisicao, bairroId: number) {
+    const agora = relogio();
+
+    const bairro = await prisma.bairro.findUnique({ where: { id: bairroId } });
+    if (!bairro) throw erros.naoEncontrado('Bairro não encontrado.');
+
+    const resolvidas = await prisma.$transaction(async (tx) => {
+      const abertas = await tx.denuncia.findMany({
+        where: { bairroId, status: { in: ['RECEBIDA', 'EM_ATENDIMENTO'] } },
+        orderBy: [{ criadoEm: 'asc' }, { id: 'asc' }],
+      });
+
+      const feitas: { id: string; statusAnterior: StatusDenuncia; alteradoEm: Date }[] = [];
+      for (const atual of abertas) {
+        const validacao = validarTransicao({
+          de: atual.status,
+          para: 'RESOLVIDA',
+          ator: { papel: 'OPERADOR', ehAutor: false },
+          lote: true,
+        });
+        if (!validacao.ok) continue;
+
+        const alterada = await tx.denuncia.updateMany({
+          where: { id: atual.id, status: atual.status },
+          data: {
+            status: 'RESOLVIDA',
+            finalizadaEm: agora,
+            ...camposSensiveisAoMudarStatus('RESOLVIDA'), // RN-026
+          },
+        });
+        if (alterada.count === 0) continue;
+
+        const historico = await tx.historicoStatus.create({
+          data: {
+            denunciaId: atual.id,
+            statusAnterior: atual.status,
+            statusNovo: 'RESOLVIDA',
+            alteradoPorId: operador.id,
+            papelAutor: 'OPERADOR',
+          },
+        });
+        feitas.push({ id: atual.id, statusAnterior: atual.status, alteradoEm: historico.criadoEm });
+      }
+      return feitas;
+    });
+
+    // Depois do commit: uma falha ao emitir um evento não desfaz nem falha a operação.
+    for (const feita of resolvidas) {
+      try {
+        const completa = await prisma.denuncia.findUniqueOrThrow({
+          where: { id: feita.id },
+          include: INCLUIR_DETALHE,
+        });
+        await publicador.statusAtualizado({
+          denuncia: paraSnapshot(completa),
+          statusAnterior: feita.statusAnterior,
+          alteradoEm: feita.alteradoEm,
+          por: POR_OPERADORA,
+        });
+      } catch (erro) {
+        console.error('Falha ao publicar o evento denuncia:status-atualizado', erro);
+      }
+    }
+
+    return { resolvidas: resolvidas.length };
+  }
+
+  return { listar, detalhe, atualizarStatus, atualizarPrevisao, listarPorBairro, resolverBairro };
 }
 
 export type ServicoPainel = ReturnType<typeof criarServicoPainel>;

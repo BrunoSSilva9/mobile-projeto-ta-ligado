@@ -89,3 +89,17 @@ export const atualizarPrevisaoSchema = z.object({
 });
 
 export type DadosDePrevisao = z.infer<typeof atualizarPrevisaoSchema>;
+
+/** Id de bairro na rota (inteiro positivo). */
+export const bairroIdSchema = z.coerce
+  .number({ error: 'Bairro inválido.' })
+  .int('Bairro inválido.')
+  .positive('Bairro inválido.');
+
+/**
+ * Resolução em lote por bairro (RF-034, RN-016): a confirmação explícita é obrigatória
+ * (`"confirmacao": true`); sem ela, 400. Ação em massa nunca roda por engano.
+ */
+export const resolverBairroSchema = z.object({
+  confirmacao: z.literal(true, { error: 'Confirme a resolução em lote (confirmacao: true).' }),
+});

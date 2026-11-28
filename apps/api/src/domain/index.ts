@@ -2,6 +2,7 @@ export * from './bairro-proximo';
 export * from './indicadores';
 export * from './fotos';
 export * from './limite-denuncia';
+export * from './lote';
 export * from './necessidade';
 export * from './permissoes';
 export * from './previsao';

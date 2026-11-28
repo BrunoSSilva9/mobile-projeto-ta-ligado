@@ -4,7 +4,13 @@ import type { Autenticacao } from '../../shared/auth';
 import { erros } from '../../shared/errors';
 import { analisar, validarCorpo } from '../../shared/validacao';
 import { idValido } from '../denuncias/schemas';
-import { atualizarPrevisaoSchema, atualizarStatusSchema, filtrosDoPainelSchema } from './schemas';
+import {
+  atualizarPrevisaoSchema,
+  atualizarStatusSchema,
+  bairroIdSchema,
+  filtrosDoPainelSchema,
+  resolverBairroSchema,
+} from './schemas';
 import type { ServicoPainel } from './service';
 
 type Deps = {
@@ -49,6 +55,21 @@ export function criarRotasPainel({ servico, autenticacao }: Deps): Router {
       const id = String(req.params.id);
       if (!idValido(id)) throw erros.naoEncontrado('Denúncia não encontrada.');
       res.json(await servico.atualizarPrevisao({ id: req.usuario!.id }, id, req.body));
+    },
+  );
+
+  // RF-034: visão agrupada por bairro (só denúncias em aberto)
+  router.get('/painel/bairros', async (_req, res) => {
+    res.json(await servico.listarPorBairro());
+  });
+
+  // RF-034, RN-016: resolve em lote todas as denúncias em aberto do bairro (exige confirmacao: true)
+  router.post(
+    '/painel/bairros/:bairroId/resolver',
+    validarCorpo(resolverBairroSchema),
+    async (req, res) => {
+      const bairroId = analisar(bairroIdSchema, req.params.bairroId);
+      res.json(await servico.resolverBairro({ id: req.usuario!.id }, bairroId));
     },
   );
 

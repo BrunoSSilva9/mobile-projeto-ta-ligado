@@ -67,7 +67,7 @@
 | `GET /painel/denuncias` com `prioritarias` e ordem de RN-015 | **Existe** (Fase 1). Atenção: com a coluna anulável, a ordem precisa de `nulls: 'last'` (seção 11) |
 | `PATCH /painel/denuncias/{id}/status` com `previsaoReparo` (S-39) | **Existe** |
 | `PATCH /painel/denuncias/{id}/previsao` | **Falta** (F2-5) |
-| `GET /painel/bairros`, `POST /painel/bairros/{id}/resolver` | **Faltam** (F2-6) |
+| `GET /painel/bairros`, `POST /painel/bairros/{id}/resolver` | **Existem** (F2-6) |
 | `GET /indicadores` (cidadão) | **Não existe e não será feita**: vira `GET /painel/indicadores` (S-52, F2-7) |
 | `PUT/DELETE /me/push-token` | Faltam; só na F2-9 |
 
@@ -253,6 +253,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 **Testes:** integração (definir, alterar, remover, data passada, denúncia finalizada, eventos, **uma entrada de histórico por mudança**, inclusive a remoção); painel (salvar, remover, erro, histórico com as entradas de previsão); app (evento com nova previsão atualiza T-07 e o cartão; o histórico mostra a previsão definida e a removida).
 
 ### F2-6 · Resolução em lote por bairro (M, 6 h) · B-035, RF-034, RN-016
+
+**Implementada.** Regra pura nova: `resumirPorBairro` (`domain/lote.ts`). Ajustes em relação ao plano: o bairro só aparece se tiver denúncia em aberto; bairro inexistente é `404` e `bairroId` não numérico é `400`; a denúncia que mudou de status no meio tempo fica de fora do lote (sem derrubar as outras) e não conta em `resolvidas`; a aba "Por bairro" esconde os filtros da lista; o aviso do diálogo diz que os cidadãos "verão a mudança no app" (o push é opcional e só entra na F2-9). Cada denúncia resolvida emite os eventos normais (`denuncia:status-atualizado`, `ocorrencia:atualizada` e `bairro:status-atualizado`) pelo mesmo publicador da mudança individual.
 
 | Camada | Tarefas | Arquivos |
 |---|---|---|

@@ -8,6 +8,13 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ### Fase 2 (branch `feature/fase-2`, plano em `docs/18-plano-fase-2.md`)
 
+- **F2-6 – Resolução em lote por bairro (B-035, RF-034, RN-016, RN-011, RN-026; menor prioridade do painel):**
+  - **Sem migration.** Domínio: `resumirPorBairro` (em aberto por tipo e status, prioritárias, ordenação), com cobertura de 100%.
+  - **API:** `GET /painel/bairros` (só operador) e `POST /painel/bairros/{bairroId}/resolver` com `{ "confirmacao": true }` (sem a confirmação, `400`; cidadão, `403`; bairro inexistente, `404`) → `{ "resolvidas": n }`. Numa transação, cada denúncia em aberto do bairro vai para `RESOLVIDA` (única exceção de RN-004: `RECEBIDA → RESOLVIDA`), com histórico próprio por denúncia, `finalizadaEm` e apagamento da necessidade especial (RN-026). Gravação condicional ao status lido: a denúncia que mudou no meio tempo fica de fora. Depois do commit, um `denuncia:status-atualizado` (e os eventos de ocorrência e de bairro) por denúncia resolvida.
+  - **Compatibilidade:** só rotas novas; nenhum contrato existente mudou, **nenhum teste existente foi alterado** (o `simularApi` do painel só ganhou as duas rotas novas, antes de `/bairros`).
+  - **Painel:** aba **"Por bairro"** com um cartão por bairro e **"Resolver todas do bairro"**, que abre um diálogo de confirmação acessível (foco em "Cancelar", foco preso, `Esc` cancela, foco volta ao botão, resultado em `aria-live`). A aba atualiza sozinha com os eventos em tempo real e depois de reconectar.
+  - **Testes:** API 676 (13 de integração e 8 de domínio novos); painel 181 (13 novos). O app não mudou.
+  - Documentação: `docs/05`, `docs/10`, `docs/12` e `docs/18`.
 - **F2-5 – Previsão de reparo editável (B-034, RF-033, RN-009, RN-011; decisão S-60):**
   - **Migration aditiva** (`20261126120000_historico_previsao`, não apaga nada): `HistoricoStatus` ganha `evento` (`STATUS` ou `PREVISAO`, padrão `STATUS`) e `previsaoReparo`. **Todos os registros que já existiam viraram `STATUS`** (conferido no banco de desenvolvimento: 14 de 14), e o diff entre o schema e as migrations é vazio.
   - **Domínio:** `validarMudancaDePrevisao`: só com a denúncia em aberto; data futura; `null` remove.

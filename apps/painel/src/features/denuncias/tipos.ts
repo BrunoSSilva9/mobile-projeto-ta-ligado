@@ -39,6 +39,17 @@ export type ListaDoPainel = { itens: DenunciaDoPainel[]; pagina: number; total: 
 
 export type Bairro = { id: number; nome: string; folha: string | null };
 
+/** Um bairro com denúncias em aberto (`GET /painel/bairros`, RF-034). */
+export type ResumoDoBairro = {
+  bairroId: number;
+  nome: string;
+  folha: string | null;
+  emAberto: number;
+  porTipo: Record<TipoDeDenuncia, number>;
+  porStatus: { RECEBIDA: number; EM_ATENDIMENTO: number };
+  prioritarias: number;
+};
+
 export const nomeDoBairro = (b: { nome: string; folha: string | null }) =>
   b.folha ? `${b.nome} (${b.folha})` : b.nome;
 

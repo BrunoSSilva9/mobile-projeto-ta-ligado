@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Filtros } from '../components/Filtros';
 import { MapaDenuncias } from '../components/MapaDenuncias';
+import { PorBairro } from '../components/PorBairro';
 import { TabelaDenuncias } from '../components/TabelaDenuncias';
 import { listarBairros, listarDenuncias } from '../features/denuncias/api';
 import { useAgora } from '../features/denuncias/useAgora';
@@ -13,7 +14,13 @@ import {
   type Filtros as FiltrosDaTela,
 } from '../features/denuncias/consulta';
 
-type Aba = 'lista' | 'mapa';
+type Aba = 'lista' | 'mapa' | 'bairro';
+
+const ROTULOS_DAS_ABAS: Record<Aba, string> = {
+  lista: 'Lista',
+  mapa: 'Mapa',
+  bairro: 'Por bairro',
+};
 
 /** P-02 (parte 1): filtros e abas Lista e Mapa (RF-028, RF-029). Tempo real e alertas: Passo 10. */
 export function PainelPage() {
@@ -42,10 +49,13 @@ export function PainelPage() {
     <main className="painel">
       <h1>Denúncias</h1>
 
-      <Filtros filtros={filtros} bairros={bairros.data ?? []} onAlterar={alterarFiltros} />
+      {/* Os filtros valem para a lista e o mapa; "Por bairro" já agrupa por bairro. */}
+      {aba !== 'bairro' ? (
+        <Filtros filtros={filtros} bairros={bairros.data ?? []} onAlterar={alterarFiltros} />
+      ) : null}
 
       <div role="tablist" aria-label="Visualização" className="abas">
-        {(['lista', 'mapa'] as const).map((id) => (
+        {(['lista', 'mapa', 'bairro'] as const).map((id) => (
           <button
             key={id}
             role="tab"
@@ -56,13 +66,15 @@ export function PainelPage() {
             className={aba === id ? 'aba aba--ativa' : 'aba'}
             onClick={() => setAba(id)}
           >
-            {id === 'lista' ? 'Lista' : 'Mapa'}
+            {ROTULOS_DAS_ABAS[id]}
           </button>
         ))}
       </div>
 
       <section id="painel-conteudo" role="tabpanel" aria-labelledby={`aba-${aba}`}>
-        {denuncias.isPending ? (
+        {aba === 'bairro' ? (
+          <PorBairro />
+        ) : denuncias.isPending ? (
           <p className="estado" role="status">
             Carregando denúncias…
           </p>

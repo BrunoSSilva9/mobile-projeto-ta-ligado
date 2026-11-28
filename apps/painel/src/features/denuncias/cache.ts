@@ -11,6 +11,8 @@ import type {
 
 export const CHAVE_LISTAS = ['painel-denuncias'] as const;
 export const CHAVE_DETALHE = ['painel-denuncia'] as const;
+/** Visão "Por bairro" (RF-034): muda com qualquer denúncia nova ou mudança de status. */
+export const CHAVE_BAIRROS = ['painel-bairros'] as const;
 export const chaveDoDetalhe = (id: string) => [...CHAVE_DETALHE, id] as const;
 
 const ABERTAS: StatusDaDenuncia[] = ['RECEBIDA', 'EM_ATENDIMENTO'];
@@ -99,6 +101,7 @@ export function refazerConsultas(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: CHAVE_LISTAS }),
     queryClient.invalidateQueries({ queryKey: CHAVE_DETALHE }),
+    queryClient.invalidateQueries({ queryKey: CHAVE_BAIRROS }),
   ]);
 }
 

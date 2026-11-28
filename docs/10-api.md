@@ -251,7 +251,21 @@ Regras: `justificativa` (10 a 500 caracteres) só vale para `IMPROCEDENTE` e é 
 Erros: 400, 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
 Efeitos: status + histórico na mesma transação (RNF-010); emite `denuncia:status-atualizado` (autor e operadores), `ocorrencia:atualizada` e `bairro:status-atualizado`; envia push (RN-019).
 
-**`POST /painel/bairros/{bairroId}/resolver`** → `200 { "resolvidas": 4 }`. Aplica `RESOLVIDA` a cada denúncia em aberto (exceção de RN-004, RN-016); cada uma gera histórico e eventos.
+**`GET /painel/bairros`** (RF-034; **implementada na F2-6**) → `200` com os bairros que têm denúncias **em aberto** (`RECEBIDA` ou `EM_ATENDIMENTO`). Bairro sem nenhuma em aberto não aparece. Ordem: mais prioritárias primeiro, depois mais denúncias em aberto e, por fim, o nome (A a Z). A conta é a função pura `resumirPorBairro`.
+```json
+{ "bairros": [
+  { "bairroId": 2, "nome": "Nova Marabá", "folha": "Folha 28", "emAberto": 3,
+    "porTipo": { "SEM_ENERGIA": 2, "OSCILACAO": 1 },
+    "porStatus": { "RECEBIDA": 2, "EM_ATENDIMENTO": 1 },
+    "prioritarias": 1 } ] }
+```
+
+**`POST /painel/bairros/{bairroId}/resolver`** (RF-034, RN-016; **implementada na F2-6**) → `200 { "resolvidas": 4 }`.
+```json
+{ "confirmacao": true }
+```
+A confirmação é **obrigatória**: sem `"confirmacao": true` (ausente, `false` ou outro valor), `400 VALIDACAO_ERRO` e nada muda. Cidadão: `403`; sem login: `401`; bairro que não existe: `404`; `bairroId` que não é número: `400`. Bairro sem denúncias em aberto: `200 { "resolvidas": 0 }`, sem eventos.
+Efeitos: numa **única transação**, cada denúncia em aberto do bairro vai para `RESOLVIDA` (única exceção de RN-004: `RECEBIDA → RESOLVIDA` direto), com **um registro no histórico por denúncia** (RN-011: operador, `evento: STATUS`), `finalizadaEm` e a retenção da necessidade especial (RN-026). A gravação é condicional ao status lido: a denúncia que mudou no meio tempo (ex.: o cidadão cancelou) fica de fora, sem derrubar as outras, e não entra na contagem de `resolvidas`. Depois do commit, emite **um `denuncia:status-atualizado` por denúncia resolvida** (e, com ele, `ocorrencia:atualizada` e `bairro:status-atualizado`), no mesmo formato de sempre. Sem push.
 
 ## Eventos WebSocket
 

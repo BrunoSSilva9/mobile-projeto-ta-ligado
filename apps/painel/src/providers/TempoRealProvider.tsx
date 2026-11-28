@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   aplicarCriacao,
   aplicarMudancaDeStatus,
+  CHAVE_BAIRROS,
   chaveDoDetalhe,
   eventoDeCriacaoValido,
   eventoDeStatusValido,
@@ -79,6 +80,7 @@ export function TempoRealProvider({ children }: { children: ReactNode }) {
       const evento = eventoDeCriacaoValido(bruto);
       if (!evento) return;
       aplicarCriacao(queryClient, evento);
+      void queryClient.invalidateQueries({ queryKey: CHAVE_BAIRROS });
 
       setAlertas((atuais) =>
         atuais.some((a) => a.id === evento.id)
@@ -112,6 +114,7 @@ export function TempoRealProvider({ children }: { children: ReactNode }) {
       const evento = eventoDeStatusValido(bruto);
       if (!evento) return;
       aplicarMudancaDeStatus(queryClient, evento);
+      void queryClient.invalidateQueries({ queryKey: CHAVE_BAIRROS });
       // O detalhe aberto busca de novo (traz o nome de quem alterou e o histórico completo).
       void queryClient.invalidateQueries({ queryKey: chaveDoDetalhe(evento.id) });
     });
