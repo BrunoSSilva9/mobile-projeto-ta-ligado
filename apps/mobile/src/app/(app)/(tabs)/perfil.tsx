@@ -88,7 +88,7 @@ function Linha({ rotulo, valor }: { rotulo: string; valor?: string }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: colors.bgPage },
-  cabecalho: { height: 64, justifyContent: 'center', paddingHorizontal: space.l },
+  cabecalho: { minHeight: 64, justifyContent: 'center', paddingHorizontal: space.l },
   corpo: { flex: 1, padding: space.l, gap: space.l },
   titulo: { color: colors.textPrimary },
   cartao: { gap: space.m },

@@ -235,3 +235,31 @@ describe('Tempo real na aba "Por bairro"', () => {
     await waitFor(() => expect(leituras(f)).toBeGreaterThan(antes));
   });
 });
+
+describe('Teclado nas abas (RNF-024)', () => {
+  it('as setas, Home e End trocam de aba e levam o foco; só a aba atual entra na ordem do Tab', async () => {
+    simularApi();
+    renderizar('/');
+    const lista = await screen.findByRole('tab', { name: 'Lista' });
+    expect(lista).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('tab', { name: 'Mapa' })).toHaveAttribute('tabindex', '-1');
+    lista.focus();
+
+    fireEvent.keyDown(lista, { key: 'ArrowRight' });
+    const mapa = screen.getByRole('tab', { name: 'Mapa', selected: true });
+    expect(mapa).toHaveFocus();
+
+    fireEvent.keyDown(mapa, { key: 'End' });
+    const bairro = screen.getByRole('tab', { name: 'Por bairro', selected: true });
+    expect(bairro).toHaveFocus();
+
+    fireEvent.keyDown(bairro, { key: 'ArrowRight' }); // volta ao início
+    expect(screen.getByRole('tab', { name: 'Lista', selected: true })).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Lista' }), { key: 'ArrowLeft' }); // volta ao fim
+    expect(screen.getByRole('tab', { name: 'Por bairro', selected: true })).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Por bairro' }), { key: 'Home' });
+    expect(screen.getByRole('tab', { name: 'Lista', selected: true })).toHaveFocus();
+  });
+});

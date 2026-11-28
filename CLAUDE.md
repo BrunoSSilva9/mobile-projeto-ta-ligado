@@ -26,7 +26,7 @@ docs/         # toda a documentação
 .github/      # templates de issue/PR e CI
 ```
 
-Status atual: Fases 0 e 1 e o **redesign do app (design system v2, `docs/17-plano-redesign.md`)** concluídos e mergeados na `develop`. **Fase 2: plano aprovado em `docs/18-plano-fase-2.md`** (decisões S-45 a S-60), em execução por camada (API, painel e app) na branch `feature/fase-2`, uma etapa por vez (F2-0 concluída), com o push como última etapa condicional. Rotas do app em `apps/mobile/src/app/`. Não faça merge na `develop` sem aprovação do usuário.
+Status atual: Fases 0 e 1 e o **redesign do app (design system v2, `docs/17-plano-redesign.md`)** concluídos e mergeados na `develop`. **Fase 2: plano aprovado em `docs/18-plano-fase-2.md`** (decisões S-45 a S-60), executada por camada (API, painel e app) na branch `feature/fase-2`, uma etapa por vez: **F2-0 a F2-8 concluídas** (cancelar, pessoas/necessidade especial, fotos, perfil e exclusão de conta, previsão editável, lote por bairro, indicadores no painel, acessibilidade e fechamento); resta apenas o **push (F2-9), condicional** a *development build* e credenciais (PEN-04). Rotas do app em `apps/mobile/src/app/`. Não faça merge na `develop` sem aprovação do usuário.
 
 ## Onde fica cada documento
 

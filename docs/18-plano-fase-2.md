@@ -278,6 +278,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 
 ### F2-8 · Acessibilidade e fechamento (M, 4 h) · B-039, RNF-024
 
+**Implementada** (a verificação com TalkBack, fonte a 200% e só teclado no painel fica com o checklist manual). Auditoria do que já existia: miniaturas "Foto N de M" e "Remover foto N", consentimento como `checkbox`, `alt` nas fotos do painel, foco visível e `aria-live` nos resultados **já estavam prontos**. Corrigido: cabeçalho do Perfil com altura fixa (`minHeight`) e **abas do painel com setas, Home e End** (padrão ARIA). Quadro em `docs/12` (6.1).
+
 Só o que o redesign não cobriu:
 
 - **App:** TalkBack e fonte em 200% nas telas novas (passo 3 com pessoas, necessidade e fotos; confirmação de cancelar; editar perfil; excluir conta). Miniatura de foto com rótulo "Foto 1 de 3" e "Remover foto 1" (botão com texto). A caixa de consentimento é `checkbox` com texto completo.

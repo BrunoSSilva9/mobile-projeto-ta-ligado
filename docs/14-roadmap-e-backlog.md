@@ -41,6 +41,8 @@ Uma etapa por vez, na branch `feature/fase-2`; cada etapa só começa depois da 
 
 > **Se for preciso cortar**, nesta ordem: B-045, B-030 (push), B-035 (lote), B-038 (indicadores). Cancelar, necessidade especial, fotos e exclusão de conta não são cortados.
 
+> **Estado (F2-8):** as etapas **F2-0 a F2-8 estão concluídas** (B-031 a B-039 e B-033). Resta o **push (B-030, F2-9)**, condicional, e o *Could* B-045.
+
 > O **plano detalhado da Fase 1** (PRs, arquivos, testes e critérios) está em [16 – Plano de implementação da Fase 1](16-plano-fase-1.md).
 
 ## Backlog priorizado
@@ -82,15 +84,15 @@ Uma etapa por vez, na branch `feature/fase-2`; cada etapa só começa depois da 
 | ID | Item | Esforço | Requisitos |
 |---|---|---|---|
 | B-030 | **Push (condicional, F2-9):** registro de token, envio com `expo-server-sdk`, abrir detalhe pelo toque; exige *development build* (D-03) e credenciais (PEN-04). Nenhuma etapa depende dele (S-45) | G | RF-025, RN-019 |
-| B-031 | Anexar até 3 fotos: redução e remoção de EXIF no app e na API, tipo pelo conteúdo, rota autenticada, miniaturas (F2-3, S-49) | G | RF-009, RN-013, RNF-015 |
-| B-032 | Pessoas no local e necessidade especial **só Sim/Não**, com consentimento específico e retenção até o fim da denúncia (F2-2, S-46 a S-48) | M | RF-010, RN-015, RN-026 |
-| B-033 | Prioridade no painel. Destaque, ordenação e filtro **já entregues na Fase 1**; o que falta (nulos na ordem, pessoas e retenção no detalhe) entra na F2-2 | P | RF-035 |
-| B-034 | Previsão de reparo editável e removível no painel; o app já mostra no detalhe e no cartão do bairro (F2-5) | P | RF-033, RN-009 |
-| B-035 | Aba "Por bairro" e resolução em lote, com confirmação (F2-6; menor prioridade do painel) | M | RF-034, RN-016 |
-| B-036 | Cancelar denúncia recebida, no detalhe (F2-1) | P | RF-015, RN-005 |
-| B-037 | Perfil: editar nome e telefone; **excluir conta** (anonimização; denúncia aberta continua aberta) (F2-4, S-50) | M | RF-004, RF-005, RF-006, RN-024 |
-| B-038 | Indicadores dos últimos 30 dias **só no painel da operadora** (F2-7, S-52) | P | RF-018, RN-017 |
-| B-039 | Acessibilidade: só o que o redesign não cobriu (telas novas do app e do painel) (F2-8) | M | RNF-024, [12](12-acessibilidade.md) |
+| B-031 | **Concluído.** Anexar até 3 fotos: redução e remoção de EXIF no app e na API, tipo pelo conteúdo, rota autenticada, miniaturas (F2-3, S-49) | G | RF-009, RN-013, RNF-015 |
+| B-032 | **Concluído.** Pessoas no local e necessidade especial **só Sim/Não**, com consentimento específico e retenção até o fim da denúncia (F2-2, S-46 a S-48) | M | RF-010, RN-015, RN-026 |
+| B-033 | **Concluído.** Prioridade no painel. Destaque, ordenação e filtro **já entregues na Fase 1**; o que falta (nulos na ordem, pessoas e retenção no detalhe) entra na F2-2 | P | RF-035 |
+| B-034 | **Concluído.** Previsão de reparo editável e removível no painel; o app já mostra no detalhe e no cartão do bairro (F2-5) | P | RF-033, RN-009 |
+| B-035 | **Concluído.** Aba "Por bairro" e resolução em lote, com confirmação (F2-6; menor prioridade do painel) | M | RF-034, RN-016 |
+| B-036 | **Concluído.** Cancelar denúncia recebida, no detalhe (F2-1) | P | RF-015, RN-005 |
+| B-037 | **Concluído.** Perfil: editar nome e telefone; **excluir conta** (anonimização; denúncia aberta continua aberta) (F2-4, S-50) | M | RF-004, RF-005, RF-006, RN-024 |
+| B-038 | **Concluído.** Indicadores dos últimos 30 dias **só no painel da operadora** (F2-7, S-52) | P | RF-018, RN-017 |
+| B-039 | **Concluído.** Acessibilidade: só o que o redesign não cobriu (telas novas do app e do painel) (F2-8) | M | RNF-024, [12](12-acessibilidade.md) |
 
 ### Redesign do app (design system v2): antes da Fase 2
 

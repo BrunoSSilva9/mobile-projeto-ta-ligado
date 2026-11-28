@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 
 import { Filtros } from '../components/Filtros';
 import { Indicadores } from '../components/Indicadores';
@@ -16,6 +16,8 @@ import {
 } from '../features/denuncias/consulta';
 
 type Aba = 'lista' | 'mapa' | 'bairro';
+
+const ABAS: readonly Aba[] = ['lista', 'mapa', 'bairro'];
 
 const ROTULOS_DAS_ABAS: Record<Aba, string> = {
   lista: 'Lista',
@@ -38,6 +40,26 @@ export function PainelPage() {
     placeholderData: (anterior) => anterior,
   });
 
+  /** Teclado nas abas (padrão ARIA): setas, Home e End trocam de aba e levam o foco. */
+  const aoTeclarNasAbas = (e: KeyboardEvent<HTMLDivElement>) => {
+    const atual = ABAS.indexOf(aba);
+    const destino =
+      e.key === 'ArrowRight'
+        ? (atual + 1) % ABAS.length
+        : e.key === 'ArrowLeft'
+          ? (atual - 1 + ABAS.length) % ABAS.length
+          : e.key === 'Home'
+            ? 0
+            : e.key === 'End'
+              ? ABAS.length - 1
+              : null;
+    if (destino === null) return;
+    e.preventDefault();
+    const nova = ABAS[destino]!;
+    setAba(nova);
+    document.getElementById(`aba-${nova}`)?.focus();
+  };
+
   const alterarFiltros = (novos: FiltrosDaTela) => {
     setFiltros(novos);
     setPagina(1); // outro filtro, outra lista: volta à primeira página
@@ -57,14 +79,15 @@ export function PainelPage() {
         <Filtros filtros={filtros} bairros={bairros.data ?? []} onAlterar={alterarFiltros} />
       ) : null}
 
-      <div role="tablist" aria-label="Visualização" className="abas">
-        {(['lista', 'mapa', 'bairro'] as const).map((id) => (
+      <div role="tablist" aria-label="Visualização" className="abas" onKeyDown={aoTeclarNasAbas}>
+        {ABAS.map((id) => (
           <button
             key={id}
             role="tab"
             id={`aba-${id}`}
             type="button"
             aria-selected={aba === id}
+            tabIndex={aba === id ? 0 : -1}
             aria-controls="painel-conteudo"
             className={aba === id ? 'aba aba--ativa' : 'aba'}
             onClick={() => setAba(id)}

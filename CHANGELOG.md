@@ -8,6 +8,12 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ### Fase 2 (branch `feature/fase-2`, plano em `docs/18-plano-fase-2.md`)
 
+- **F2-8 – Acessibilidade e fechamento (B-039, RNF-024):**
+  - **App:** o cabeçalho do Perfil tinha altura fixa e podia cortar o título com a fonte a 200%; agora usa `minHeight`. O restante (miniaturas "Foto N de M", "Remover foto N", `checkbox` do consentimento) já estava correto.
+  - **Painel:** as abas Lista, Mapa e Por bairro respondem a setas, Home e End e só a aba atual entra na ordem do Tab (padrão ARIA). Teste novo.
+  - **Documentação:** roteiro de demonstração do README com os passos da Fase 2 (cancelar, pessoas e fotos, previsão, lote, indicadores, perfil); `CLAUDE.md` com o status; `docs/12` (quadro 6.1), `docs/14` (B-031 a B-039 concluídos) e `docs/18`.
+  - **Compatibilidade:** nenhum contrato nem teste existente mudou.
+  - **Testes:** painel 187 (1 novo); app 815 e API 687 sem alteração. **Ainda manual:** TalkBack e fonte a 200% no app, só teclado e axe/Lighthouse no painel.
 - **F2-7 – Indicadores no painel (B-038, RF-018, RN-017; decisão S-52):**
   - **Sem migration.** Domínio: `inicioDaJanela` (e `DIAS_DA_JANELA`), com cobertura de 100%.
   - **API:** `GET /painel/indicadores` (só operador; cidadão `403`) com usuários cadastrados (cidadãos), denúncias registradas e resolvidas nos últimos 30 dias, em atendimento agora e `taxaResolucao`. "Resolvidas" vem do histórico (`statusNovo = RESOLVIDA`, só eventos de status), então inclui o lote. A rota `GET /indicadores` para o cidadão **não existe e foi retirada da documentação**.

@@ -74,6 +74,12 @@ Teste ponta a ponta, com os três lados ao mesmo tempo (API, painel no navegador
 9. **Limite:** com a denúncia em aberto, tente enviar uma segunda: o app avisa e leva à que está aberta (409). Depois de resolvida, é possível enviar outra.
 10. **Improcedente:** no painel, o botão exige a justificativa (10 a 500 caracteres); ela aparece para o cidadão no detalhe.
 11. **Offline:** desligue a internet do celular. As telas continuam com os dados salvos e o aviso "Sem conexão" com a data da última atualização; o formulário guarda o rascunho. Religue: tudo atualiza sozinho.
+12. **Cancelar:** no app, com uma denúncia **Recebida**, abra o detalhe e toque em **"Cancelar denúncia"**; confirme no aviso. O painel mostra **Cancelada** sem recarregar. O botão não existe em "Em atendimento".
+13. **Pessoas, necessidade especial e fotos:** no passo 3 de "Fazer denúncia", escolha a **faixa de pessoas**, responda **Sim/Não** à pergunta sobre necessidade especial (o "Sim" exige marcar o consentimento específico) e anexe até **3 fotos** (a foto é reduzida e perde os metadados antes de subir). No painel, a denúncia aparece **Prioritária** no topo e o detalhe mostra a faixa, a necessidade e a **galeria de fotos**. Ao resolver, a necessidade especial é apagada.
+14. **Previsão de reparo:** no detalhe do painel, o bloco **"Previsão de reparo"** define, troca e **remove** a previsão; cada mudança aparece no **Histórico** do app, em tempo real.
+15. **Resolver em lote:** no painel, aba **Por bairro**: veja as contagens e use **"Resolver todas do bairro"** (confirme no diálogo). Todas as denúncias em aberto do bairro viram **Resolvidas**, inclusive as ainda não atendidas, e o app atualiza.
+16. **Indicadores:** a faixa no topo do painel mostra usuários cadastrados, denúncias registradas, em atendimento e resolvidas dos últimos 30 dias, com a taxa de resolução, e muda em tempo real.
+17. **Perfil:** no app, aba **Perfil**: **"Editar meus dados"** (nome e telefone) e **"Excluir minha conta"** (pede a senha e a confirmação; uma denúncia em aberto continua aberta no painel como **"Conta excluída"**).
 
 **Observações**
 - No Expo Go o mapa funciona **sem chave** do Google Maps; no painel o mapa usa Leaflet com OpenStreetMap (também sem chave). `GOOGLE_MAPS_API_KEY` e as credenciais de push (FCM/APNs) ficam nos `.env.example` **sem valor** e só serão necessárias no *development build* (pendência PEN-04).

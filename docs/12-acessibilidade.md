@@ -103,6 +103,22 @@ Meta: **WCAG 2.2 nível AA** no app (adaptado ao mobile) e no painel web (RNF-02
 - **Imagens:** miniaturas de foto com descrição ("Foto 1 de 3 anexada"). A foto em si não precisa de texto alternativo detalhado, pois o usuário a criou.
 - **Painel:** foco visível (contorno de 2 px), ordem de tabulação lógica, "pular para o conteúdo", tabela navegável.
 
+## 6.1 Fase 2 – fechamento (F2-8, RNF-024)
+
+O que as telas novas da Fase 2 já cumprem, **conferido por testes automáticos** e pela leitura do código:
+
+| Item | App | Painel |
+|---|---|---|
+| Nome acessível em tudo que se toca | Passo 3 (pessoas, necessidade, fotos), cancelar, editar perfil e excluir conta têm rótulo e texto | Aba "Por bairro", diálogo do lote, previsão e galeria têm rótulo visível ou nome completo |
+| Miniaturas de foto | "Foto 1 de 3" e botão com texto "Remover foto 1" | Imagem com `alt` "Foto 1 de 3 enviada pelo cidadão" |
+| Consentimento | `checkbox` com o texto completo | — |
+| Erros e resultados anunciados | `alert` com ícone, texto e borda | `role="alert"` (erros) e `aria-live`/`role="status"` (resultados) |
+| Teclado | — | Tab e Shift+Tab; diálogo com foco preso, `Esc` e foco devolvido; **abas com setas, Home e End** (só a aba atual entra no Tab) |
+| Foco visível | — | contorno de 2 px em tudo (`:focus-visible`) |
+| Fonte a 200% | Sem altura fixa em texto: o cabeçalho do Perfil (era `height: 64`) passou a `minHeight: 64` | — |
+
+**Ainda é manual** (precisa de aparelho ou navegador, e não foi feito nesta etapa): TalkBack e fonte a 200% nas telas novas do app, e navegação só por teclado e auditoria axe/Lighthouse no painel. O roteiro está na seção 7 e nos checklists das etapas.
+
 ## 7. Verificação
 
 | Quando | O quê | Ferramenta |
