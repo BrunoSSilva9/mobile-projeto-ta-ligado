@@ -8,6 +8,13 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ### Fase 2 (branch `feature/fase-2`, plano em `docs/18-plano-fase-2.md`)
 
+- **F2-7 – Indicadores no painel (B-038, RF-018, RN-017; decisão S-52):**
+  - **Sem migration.** Domínio: `inicioDaJanela` (e `DIAS_DA_JANELA`), com cobertura de 100%.
+  - **API:** `GET /painel/indicadores` (só operador; cidadão `403`) com usuários cadastrados (cidadãos), denúncias registradas e resolvidas nos últimos 30 dias, em atendimento agora e `taxaResolucao`. "Resolvidas" vem do histórico (`statusNovo = RESOLVIDA`, só eventos de status), então inclui o lote. A rota `GET /indicadores` para o cidadão **não existe e foi retirada da documentação**.
+  - **Painel:** faixa de 4 indicadores no topo, em todas as abas, com a taxa em texto ("85%"), atualizada pelos eventos em tempo real e depois de reconectar; erro de carga não derruba o painel.
+  - **Compatibilidade:** rota nova; nenhum contrato mudou. **Um teste existente foi ajustado:** o do painel "entra na lista sem recarregar" contava todas as chamadas de rede e agora ignora a dos indicadores (que se atualizam de propósito); a garantia de que a lista não é consultada de novo continua.
+  - **Testes:** API 687 (7 de integração e 4 de domínio novos); painel 186 (5 novos). O app não mudou.
+  - Documentação: `docs/05`, `docs/10`, `docs/12` e `docs/18`.
 - **F2-6 – Resolução em lote por bairro (B-035, RF-034, RN-016, RN-011, RN-026; menor prioridade do painel):**
   - **Sem migration.** Domínio: `resumirPorBairro` (em aberto por tipo e status, prioritárias, ordenação), com cobertura de 100%.
   - **API:** `GET /painel/bairros` (só operador) e `POST /painel/bairros/{bairroId}/resolver` com `{ "confirmacao": true }` (sem a confirmação, `400`; cidadão, `403`; bairro inexistente, `404`) → `{ "resolvidas": n }`. Numa transação, cada denúncia em aberto do bairro vai para `RESOLVIDA` (única exceção de RN-004: `RECEBIDA → RESOLVIDA`), com histórico próprio por denúncia, `finalizadaEm` e apagamento da necessidade especial (RN-026). Gravação condicional ao status lido: a denúncia que mudou no meio tempo fica de fora. Depois do commit, um `denuncia:status-atualizado` (e os eventos de ocorrência e de bairro) por denúncia resolvida.

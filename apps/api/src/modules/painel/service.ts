@@ -3,9 +3,12 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import {
   camposSensiveisAoMudarStatus,
   ehPrioritaria,
+  DIAS_DA_JANELA,
   ehStatusFinal,
   estaEmAberto,
+  inicioDaJanela,
   resumirPorBairro,
+  taxaResolucao,
   validarMudancaDePrevisao,
   validarPrevisao,
   validarTransicao,
@@ -424,7 +427,41 @@ export function criarServicoPainel({
     return { resolvidas: resolvidas.length };
   }
 
-  return { listar, detalhe, atualizarStatus, atualizarPrevisao, listarPorBairro, resolverBairro };
+  /**
+   * RF-018, RN-017: indicadores dos últimos 30 dias, calculados do banco. "Resolvidas" conta as
+   * denúncias que passaram a `RESOLVIDA` na janela (pelo histórico, que registra cada mudança
+   * uma vez); "em atendimento" é a situação de agora; usuários é o total de cidadãos.
+   */
+  async function indicadores() {
+    const desde = inicioDaJanela(relogio());
+    const [usuariosCadastrados, denunciasRegistradas, emAtendimento, resolvidas] =
+      await Promise.all([
+        prisma.usuario.count({ where: { papel: 'CIDADAO' } }),
+        prisma.denuncia.count({ where: { criadoEm: { gte: desde } } }),
+        prisma.denuncia.count({ where: { status: 'EM_ATENDIMENTO' } }),
+        prisma.historicoStatus.count({
+          where: { evento: 'STATUS', statusNovo: 'RESOLVIDA', criadoEm: { gte: desde } },
+        }),
+      ]);
+    return {
+      periodoDias: DIAS_DA_JANELA,
+      usuariosCadastrados,
+      denunciasRegistradas,
+      emAtendimento,
+      resolvidas,
+      taxaResolucao: taxaResolucao(resolvidas, denunciasRegistradas),
+    };
+  }
+
+  return {
+    listar,
+    detalhe,
+    atualizarStatus,
+    atualizarPrevisao,
+    listarPorBairro,
+    resolverBairro,
+    indicadores,
+  };
 }
 
 export type ServicoPainel = ReturnType<typeof criarServicoPainel>;

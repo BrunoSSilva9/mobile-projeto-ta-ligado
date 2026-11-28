@@ -162,7 +162,10 @@ describe('Conexão em tempo real (RF-027)', () => {
 describe('Nova denúncia: alerta visual (RF-027)', () => {
   it('entra na lista sem recarregar, com destaque e selo "Nova"', async () => {
     const f = await abrirPainel();
-    const chamadas = f.mock.calls.length;
+    // Os indicadores (F2-7) são buscados de novo a cada evento; a lista, não.
+    const consultasDaLista = () =>
+      f.mock.calls.filter(([u]) => !String(u).endsWith('/painel/indicadores')).length;
+    const chamadas = consultasDaLista();
 
     await emitir('denuncia:criada', eventoCriada());
 
@@ -171,7 +174,7 @@ describe('Nova denúncia: alerta visual (RF-027)', () => {
     expect(within(linha).getByText('Nova')).toBeInTheDocument();
     expect(within(linha).getByText('Cidade Nova')).toBeInTheDocument();
     expect(screen.getByText('3 denúncias')).toBeInTheDocument();
-    expect(f.mock.calls.length).toBe(chamadas); // sem nova consulta
+    expect(consultasDaLista()).toBe(chamadas); // a lista não é consultada de novo
   });
 
   it('mostra o alerta com tipo e bairro, em uma região aria-live, com link para abrir', async () => {

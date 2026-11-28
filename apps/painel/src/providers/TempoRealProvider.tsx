@@ -5,6 +5,7 @@ import {
   aplicarCriacao,
   aplicarMudancaDeStatus,
   CHAVE_BAIRROS,
+  CHAVE_INDICADORES,
   chaveDoDetalhe,
   eventoDeCriacaoValido,
   eventoDeStatusValido,
@@ -81,6 +82,7 @@ export function TempoRealProvider({ children }: { children: ReactNode }) {
       if (!evento) return;
       aplicarCriacao(queryClient, evento);
       void queryClient.invalidateQueries({ queryKey: CHAVE_BAIRROS });
+      void queryClient.invalidateQueries({ queryKey: CHAVE_INDICADORES });
 
       setAlertas((atuais) =>
         atuais.some((a) => a.id === evento.id)
@@ -115,6 +117,7 @@ export function TempoRealProvider({ children }: { children: ReactNode }) {
       if (!evento) return;
       aplicarMudancaDeStatus(queryClient, evento);
       void queryClient.invalidateQueries({ queryKey: CHAVE_BAIRROS });
+      void queryClient.invalidateQueries({ queryKey: CHAVE_INDICADORES });
       // O detalhe aberto busca de novo (traz o nome de quem alterou e o histórico completo).
       void queryClient.invalidateQueries({ queryKey: chaveDoDetalhe(evento.id) });
     });

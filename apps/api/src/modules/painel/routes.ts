@@ -58,6 +58,11 @@ export function criarRotasPainel({ servico, autenticacao }: Deps): Router {
     },
   );
 
+  // RF-018, RN-017, S-52: indicadores dos últimos 30 dias (só no painel)
+  router.get('/painel/indicadores', async (_req, res) => {
+    res.json(await servico.indicadores());
+  });
+
   // RF-034: visão agrupada por bairro (só denúncias em aberto)
   router.get('/painel/bairros', async (_req, res) => {
     res.json(await servico.listarPorBairro());

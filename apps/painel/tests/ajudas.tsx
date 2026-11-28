@@ -87,6 +87,15 @@ export const DENUNCIA_B = {
   criadoEm: new Date(Date.now() - 3 * 3_600_000).toISOString(),
 };
 
+export const INDICADORES = {
+  periodoDias: 30,
+  usuariosCadastrados: 40532,
+  denunciasRegistradas: 698,
+  emAtendimento: 107,
+  resolvidas: 591,
+  taxaResolucao: 0.85,
+};
+
 export const RESUMO_DE_BAIRROS = [
   {
     bairroId: 2,
@@ -150,6 +159,7 @@ type Rotas = {
   denuncias?: (url: string) => Response;
   bairros?: () => Response;
   resumoBairros?: () => Response;
+  indicadores?: () => Response;
   resolverBairro?: (bairroId: number, corpo: Record<string, unknown>) => Response;
   login?: (corpo: unknown) => Response;
 };
@@ -187,6 +197,9 @@ export function simularApi(rotas: Rotas = {}) {
         id,
         init?.body ? JSON.parse(init.body) : {},
       );
+    }
+    if (url.endsWith('/painel/indicadores')) {
+      return (rotas.indicadores ?? (() => resposta(200, INDICADORES)))();
     }
     if (url.endsWith('/painel/bairros')) {
       return (rotas.resumoBairros ?? (() => resposta(200, { bairros: RESUMO_DE_BAIRROS })))();

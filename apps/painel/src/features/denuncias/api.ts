@@ -3,6 +3,7 @@ import { montarConsulta, type Filtros } from './consulta';
 import type {
   Bairro,
   DetalheDoPainel,
+  Indicadores,
   ListaDoPainel,
   ResumoDoBairro,
   StatusDaDenuncia,
@@ -55,3 +56,6 @@ export const resolverBairro = (bairroId: number) =>
   http.post<{ resolvidas: number }>(`/painel/bairros/${bairroId}/resolver`, {
     confirmacao: true,
   });
+
+/** RF-018, RN-017, S-52: indicadores dos últimos 30 dias (só no painel). */
+export const obterIndicadores = () => http.get<Indicadores>('/painel/indicadores');

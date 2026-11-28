@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { taxaResolucao } from '../../src/domain';
+import { inicioDaJanela, taxaResolucao } from '../../src/domain';
 
 describe('taxaResolucao (RN-017)', () => {
   it('calcula resolvidas ÷ registradas com 2 casas', () => {
@@ -25,5 +25,27 @@ describe('taxaResolucao (RN-017)', () => {
   it('valores negativos não geram taxa', () => {
     expect(taxaResolucao(-3, 10)).toBe(0);
     expect(taxaResolucao(3, -10)).toBe(0);
+  });
+});
+
+describe('inicioDaJanela (RN-017)', () => {
+  const agora = new Date('2026-11-27T15:30:00.000Z');
+
+  it('padrão: 30 dias antes do instante informado, com a mesma hora', () => {
+    expect(inicioDaJanela(agora).toISOString()).toBe('2026-10-28T15:30:00.000Z');
+  });
+
+  it('aceita outro tamanho de janela', () => {
+    expect(inicioDaJanela(agora, 7).toISOString()).toBe('2026-11-20T15:30:00.000Z');
+  });
+
+  it('janela de 0 dia é o próprio instante', () => {
+    expect(inicioDaJanela(agora, 0).getTime()).toBe(agora.getTime());
+  });
+
+  it('não altera a data recebida', () => {
+    const copia = agora.getTime();
+    inicioDaJanela(agora);
+    expect(agora.getTime()).toBe(copia);
   });
 });

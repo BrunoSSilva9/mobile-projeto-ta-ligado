@@ -68,7 +68,7 @@
 | `PATCH /painel/denuncias/{id}/status` com `previsaoReparo` (S-39) | **Existe** |
 | `PATCH /painel/denuncias/{id}/previsao` | **Falta** (F2-5) |
 | `GET /painel/bairros`, `POST /painel/bairros/{id}/resolver` | **Existem** (F2-6) |
-| `GET /indicadores` (cidadão) | **Não existe e não será feita**: vira `GET /painel/indicadores` (S-52, F2-7) |
+| `GET /indicadores` (cidadão) | **Não existe e não será feita**: virou `GET /painel/indicadores` (S-52, F2-7), que **existe** |
 | `PUT/DELETE /me/push-token` | Faltam; só na F2-9 |
 
 **Autenticação:** o middleware confere o usuário no banco a cada requisição e o Socket.IO no *handshake*, então o token de uma conta excluída passa a receber `401` sem nada novo.
@@ -265,6 +265,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 **Testes:** domínio (`resumirPorBairro`); integração (resolve só as abertas do bairro, `RECEBIDA → RESOLVIDA` só no lote, histórico por denúncia, retenção aplicada, outro bairro intacto, sem confirmação → 400, cidadão → 403, eventos); painel (cartões, diálogo, cancelar não chama a API, resultado).
 
 ### F2-7 · Indicadores no painel (P, 4 h) · B-038, RF-018, RN-017
+
+**Implementada.** Regra pura nova: `inicioDaJanela` (`domain/indicadores.ts`, junto com `DIAS_DA_JANELA`). Ajustes em relação ao plano: a faixa aparece em todas as abas (não só na Lista); os indicadores são buscados de novo a cada evento de denúncia nova ou de status e depois de reconectar; "resolvidas" conta só registros `STATUS` do histórico (uma mudança só da previsão não conta). O teste do painel "entra na lista sem recarregar" passou a ignorar a rota de indicadores ao conferir que a **lista** não é consultada de novo (os indicadores agora se atualizam de propósito).
 
 | Camada | Tarefas | Arquivos |
 |---|---|---|

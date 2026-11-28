@@ -92,14 +92,13 @@ O **e-mail é somente leitura**: é ignorado, assim como `papel`, `senha` e qual
 A API confere a senha atual antes de apagar. Numa transação: remove nome, e-mail, telefone, hash da senha, tokens de push, fotos (registros; os arquivos são apagados logo depois) e a resposta de necessidade especial; mantém as denúncias e o histórico **sem vínculo** com a conta. **Uma denúncia em aberto continua aberta** (o painel mostra "Conta excluída"). Depois do commit apaga os arquivos das fotos (uma falha de disco só vira log, sem dado pessoal) e **derruba as conexões em tempo real da conta**; o token antigo passa a receber `401` e o e-mail fica livre para um novo cadastro. A rota tem o limite de tentativas **por IP e por conta**, contando só as falhas (como o login).
 Erros: `400 VALIDACAO_ERRO` (sem senha), `403 SENHA_INCORRETA` ("Senha incorreta.", sem mais detalhes; nada é apagado), `403 SEM_PERMISSAO` (operador), `429 MUITAS_REQUISICOES` (mesmo limite do login: 5 falhas por minuto, por IP e por conta, S-18).
 
-### Bairros e indicadores
+### Bairros
 
 | Método | Rota | Auth | Descrição | Requisito |
 |---|---|---|---|---|
 | GET | `/bairros` | Qualquer | Lista fixa de bairros e folhas | RN-021 |
 | GET | `/bairros/proximo?lat=&lng=` | Cidadão | Bairro de centro mais próximo (até 15 km); devolve também `distanciaKm`; 404 fora do raio | RF-016, RN-025 |
 | GET | `/bairros/status` | Cidadão | Status de cada bairro, contagem e previsão | RF-019, RF-023 |
-| GET | `/indicadores` | Cidadão | Indicadores dos últimos 30 dias | RF-018 |
 
 **`GET /bairros/status`** → `200`
 ```json
@@ -112,11 +111,7 @@ Erros: `400 VALIDACAO_ERRO` (sem senha), `403 SENHA_INCORRETA` ("Senha incorreta
 ```
 `status` ∈ `SEM_LUZ` | `OSCILACAO` | `NORMAL` (RN-007). `previsaoReparo` segue RN-009.
 
-**`GET /indicadores`** → `200`
-```json
-{ "periodoDias": 30, "usuariosCadastrados": 40532, "denunciasRegistradas": 698,
-  "emAtendimento": 107, "resolvidas": 591, "taxaResolucao": 0.85 }
-```
+> **Indicadores:** a rota `GET /indicadores` (cidadão) **não existe e não será feita** (decisão S-52). Os indicadores são só do painel: `GET /painel/indicadores`, abaixo.
 
 ### Denúncias do cidadão
 
@@ -212,6 +207,7 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 | GET | `/painel/denuncias/{id}` | Detalhe completo (autor, telefone, fotos, histórico) | RF-030 |
 | PATCH | `/painel/denuncias/{id}/status` | Atualiza status (e previsão opcional) | RF-031 a RF-033, RF-036 |
 | PATCH | `/painel/denuncias/{id}/previsao` | Define, troca ou **remove** só a previsão de reparo (denúncia em aberto; cada mudança vai para o histórico) | RF-033 |
+| GET | `/painel/indicadores` | Indicadores dos últimos 30 dias (só no painel, S-52) | RF-018 |
 | GET | `/painel/bairros` | Agrupado por bairro (contagem por tipo e status) | RF-034 |
 | POST | `/painel/bairros/{bairroId}/resolver` | Resolve em lote todas as em aberto do bairro (RN-016) | RF-034 |
 
@@ -250,6 +246,13 @@ Efeitos: a previsão e **um registro `PREVISAO` no histórico** na mesma transa�
 Regras: `justificativa` (10 a 500 caracteres) só vale para `IMPROCEDENTE` e é descartada nos outros status; `previsaoReparo` (ISO 8601) só vale enquanto a denúncia **continua em aberto** (com status final, `400`). A mudança é gravada só se o status ainda for o que o operador viu: se outra pessoa mudou antes (ex.: dois operadores ao mesmo tempo, ou o cidadão cancelou), a resposta é `422 TRANSICAO_INVALIDA` e só uma das requisições vence. O operador não pode cancelar pelo autor (`403`).
 Erros: 400, 403, 404, 422 `TRANSICAO_INVALIDA`, 422 `JUSTIFICATIVA_OBRIGATORIA`, 422 `PREVISAO_NO_PASSADO`, conflitos (ex.: o cidadão cancelou antes) resultam em 422 `TRANSICAO_INVALIDA`; não há controle de versão otimista no MVP (decisão S-29).
 Efeitos: status + histórico na mesma transação (RNF-010); emite `denuncia:status-atualizado` (autor e operadores), `ocorrencia:atualizada` e `bairro:status-atualizado`; envia push (RN-019).
+
+**`GET /painel/indicadores`** (RF-018, RN-017, decisão S-52; **implementada na F2-7**) → `200`. Só operador (cidadão `403`, sem login `401`).
+```json
+{ "periodoDias": 30, "usuariosCadastrados": 40532, "denunciasRegistradas": 698,
+  "emAtendimento": 107, "resolvidas": 591, "taxaResolucao": 0.85 }
+```
+`usuariosCadastrados`: total de cidadãos (contas excluídas saem da conta). `denunciasRegistradas`: criadas nos últimos 30 dias. `emAtendimento`: com status `EM_ATENDIMENTO` **agora**. `resolvidas`: denúncias que **passaram a `RESOLVIDA`** nos últimos 30 dias (pelo histórico; inclui a resolução em lote). `taxaResolucao`: `resolvidas ÷ denunciasRegistradas`, de 0 a 1, limitada a 100% e arredondada a 2 casas (0 sem denúncias registradas). Calculados do banco a cada chamada.
 
 **`GET /painel/bairros`** (RF-034; **implementada na F2-6**) → `200` com os bairros que têm denúncias **em aberto** (`RECEBIDA` ou `EM_ATENDIMENTO`). Bairro sem nenhuma em aberto não aparece. Ordem: mais prioritárias primeiro, depois mais denúncias em aberto e, por fim, o nome (A a Z). A conta é a função pura `resumirPorBairro`.
 ```json

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { Filtros } from '../components/Filtros';
+import { Indicadores } from '../components/Indicadores';
 import { MapaDenuncias } from '../components/MapaDenuncias';
 import { PorBairro } from '../components/PorBairro';
 import { TabelaDenuncias } from '../components/TabelaDenuncias';
@@ -48,6 +49,8 @@ export function PainelPage() {
   return (
     <main className="painel">
       <h1>Denúncias</h1>
+
+      <Indicadores />
 
       {/* Os filtros valem para a lista e o mapa; "Por bairro" já agrupa por bairro. */}
       {aba !== 'bairro' ? (

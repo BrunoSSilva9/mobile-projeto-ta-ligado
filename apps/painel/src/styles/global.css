@@ -541,3 +541,26 @@ body {
 .dialogo p {
   margin: 0;
 }
+
+/* ---------- Fase 2 (F2-7): indicadores ---------- */
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-2) 0 var(--space-4);
+}
+.indicador {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card-lg);
+}
+.indicador dt {
+  color: var(--color-text-secondary);
+}
+.indicador dd {
+  margin: 0;
+}
+.indicador dd:first-of-type {
+  font-size: 28px;
+  font-weight: 700;
+}

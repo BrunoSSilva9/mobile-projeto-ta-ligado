@@ -39,6 +39,17 @@ export type ListaDoPainel = { itens: DenunciaDoPainel[]; pagina: number; total: 
 
 export type Bairro = { id: number; nome: string; folha: string | null };
 
+/** Indicadores dos últimos 30 dias (`GET /painel/indicadores`, RF-018). */
+export type Indicadores = {
+  periodoDias: number;
+  usuariosCadastrados: number;
+  denunciasRegistradas: number;
+  emAtendimento: number;
+  resolvidas: number;
+  /** 0 a 1. */
+  taxaResolucao: number;
+};
+
 /** Um bairro com denúncias em aberto (`GET /painel/bairros`, RF-034). */
 export type ResumoDoBairro = {
   bairroId: number;

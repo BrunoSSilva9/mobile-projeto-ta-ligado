@@ -284,7 +284,7 @@ RF-026
 ### P-02 – Painel: Lista, mapa e agrupamento
 RF-027 a RF-029, RF-034, RF-035
 - **Barra superior:** logo, usuário logado, botão "Ativar som", indicador de conexão (Conectado/Reconectando), "Sair".
-- **Indicadores:** contadores de Recebidas, Em atendimento, Resolvidas hoje.
+- **Indicadores (F2-7, S-52):** faixa no topo, em qualquer aba, com "Últimos 30 dias" e quatro números: Usuários cadastrados, Denúncias registradas, Em atendimento e Resolvidas (com "Taxa de resolução: 85%"). Atualiza com os eventos em tempo real. Se não carregar, avisa (`role="alert"`) com "Tentar novamente" e o resto do painel segue funcionando. O app não mostra indicadores.
 - **Filtros:** status, tipo e bairro, com "Limpar".
 - **Abas:** Lista | Mapa | Por bairro.
 - **Lista:** tabela com prioridade (ícone), protocolo, tipo, bairro/rua, status, tempo desde o envio e ação "Abrir"; prioritárias no topo com destaque.
@@ -293,7 +293,7 @@ RF-027 a RF-029, RF-034, RF-035
 - **Alerta de nova denúncia:** toast/banner "Nova denúncia: {tipo} em {bairro}", destaque temporário na linha e som.
 - Estados: carregando, vazio, erro, desconectado.
 
-- **Implementação (Passo 9):** barra superior com o nome do operador e "Sair" (som e indicador de conexão entram no Passo 10); filtros por status (padrão "Em aberto"), tipo, bairro e "Só prioritárias"; abas **Lista** e **Mapa** (a aba "Por bairro" e os indicadores ficam para a Fase 2). Pinos do mapa: vermelho = sem energia em aberto, âmbar = oscilação em aberto, cinza = encerrada; denúncias sem coordenadas aparecem só na lista.
+- **Implementação (Passo 9):** barra superior com o nome do operador e "Sair" (som e indicador de conexão entram no Passo 10); filtros por status (padrão "Em aberto"), tipo, bairro e "Só prioritárias"; abas **Lista** e **Mapa** (a aba "Por bairro" e os indicadores entraram na Fase 2, F2-6 e F2-7). Pinos do mapa: vermelho = sem energia em aberto, âmbar = oscilação em aberto, cinza = encerrada; denúncias sem coordenadas aparecem só na lista.
 - **Fase 2 (F2-6) – aba "Por bairro" e resolução em lote (RF-034, RN-016):** terceira aba ao lado de Lista e Mapa. Mostra **um cartão por bairro com denúncias em aberto** (nome e folha; "N denúncias em aberto" e "· N prioritárias"; "Sem energia: n · Oscilação: n"; "Recebidas: n · Em atendimento: n"), com os bairros de mais prioritárias e mais denúncias primeiro. Os filtros da lista não aparecem nesta aba (ela já agrupa por bairro). Cada cartão tem **"Resolver todas do bairro"**, que abre o diálogo **"Resolver todas do bairro {nome}?"**: avisa quantas denúncias serão marcadas como resolvidas (inclusive as ainda não atendidas), que os cidadãos verão a mudança no app e que a ação não pode ser desfeita. Botões **"Cancelar"** (foco inicial; não chama a API; `Esc` também cancela) e **"Resolver todas"**. Depois, o resultado é anunciado em texto ("3 denúncias resolvidas em Nova Marabá (Folha 28).") e os cartões se atualizam sozinhos, também com os eventos em tempo real. Estados: carregando, vazio ("Nenhum bairro com denúncias em aberto.") e erro (com "Tentar novamente"; erro do lote aparece dentro do diálogo, que continua aberto).
 
 - **Implementação (Passo 10):** a barra superior ganhou o indicador de conexão (Conectando… / Conectado / Reconectando…) e o botão "Ativar som" (o áudio só é criado depois do clique). Denúncia nova: faixa de alerta com "Abrir" e "Dispensar" (região `aria-live`), linha destacada por 10 s e, se o som estiver ativo, dois toques; ela entra na lista na ordem da RN-015 (no fim do seu grupo), não no topo.
