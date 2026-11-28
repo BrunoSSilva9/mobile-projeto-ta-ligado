@@ -45,3 +45,15 @@ export function previsaoParaIso(
   if (ms <= agoraMs) return 'passado';
   return new Date(ms).toISOString();
 }
+
+/**
+ * O inverso de `previsaoParaIso`: um ISO 8601 vira o valor de um `datetime-local` (hora do
+ * navegador, `AAAA-MM-DDTHH:mm`), para preencher o campo com a previsão que já existe.
+ */
+export function isoParaCampoDeData(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const data = new Date(iso);
+  if (Number.isNaN(data.getTime())) return '';
+  const dois = (n: number) => String(n).padStart(2, '0');
+  return `${data.getFullYear()}-${dois(data.getMonth() + 1)}-${dois(data.getDate())}T${dois(data.getHours())}:${dois(data.getMinutes())}`;
+}

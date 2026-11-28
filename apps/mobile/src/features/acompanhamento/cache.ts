@@ -14,8 +14,42 @@ export function aplicarEventoAoDetalhe(
 
   const mudouDeStatus = evento.statusAnterior !== evento.status;
   const jaTemNoHistorico = detalhe.historico.some(
-    (h) => h.statusNovo === evento.status && h.criadoEm === evento.alteradoEm,
+    (h) =>
+      h.statusNovo === evento.status &&
+      h.criadoEm === evento.alteradoEm &&
+      (h.evento ?? 'STATUS') === (mudouDeStatus ? 'STATUS' : 'PREVISAO'),
   );
+  // Mesmo status e previsão diferente = a operadora definiu, trocou ou removeu a previsão (S-60).
+  const mudouAPrevisao = !mudouDeStatus && evento.previsaoReparo !== detalhe.previsaoReparo;
+
+  let historico = detalhe.historico;
+  if (!jaTemNoHistorico && mudouDeStatus) {
+    historico = [
+      ...historico,
+      {
+        statusAnterior: evento.statusAnterior,
+        statusNovo: evento.status,
+        evento: 'STATUS',
+        previsaoReparo: evento.previsaoReparo,
+        por: evento.por,
+        justificativa: evento.justificativa,
+        criadoEm: evento.alteradoEm,
+      },
+    ];
+  } else if (!jaTemNoHistorico && mudouAPrevisao) {
+    historico = [
+      ...historico,
+      {
+        statusAnterior: evento.statusAnterior,
+        statusNovo: evento.status,
+        evento: 'PREVISAO',
+        previsaoReparo: evento.previsaoReparo,
+        por: evento.por,
+        justificativa: null,
+        criadoEm: evento.alteradoEm,
+      },
+    ];
+  }
 
   return {
     ...detalhe,
@@ -23,19 +57,7 @@ export function aplicarEventoAoDetalhe(
     previsaoReparo: evento.previsaoReparo,
     justificativa: evento.justificativa,
     atualizadoEm: evento.alteradoEm,
-    historico:
-      mudouDeStatus && !jaTemNoHistorico
-        ? [
-            ...detalhe.historico,
-            {
-              statusAnterior: evento.statusAnterior,
-              statusNovo: evento.status,
-              por: evento.por,
-              justificativa: evento.justificativa,
-              criadoEm: evento.alteradoEm,
-            },
-          ]
-        : detalhe.historico,
+    historico,
   };
 }
 

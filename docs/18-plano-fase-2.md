@@ -240,6 +240,8 @@ A remoção de metadados (S-57, só JPEG, segmentos APP1) fica em `apps/api/src/
 
 ### F2-5 · Previsão de reparo editável (P, 4 h) · B-034, RF-033, RN-009
 
+**Implementada.** Regra pura nova: `validarMudancaDePrevisao` (`domain/previsao.ts`). Ajustes em relação ao plano: pedir o mesmo valor que já está salvo é um `200` sem registro e sem evento (evita ruído no histórico); a previsão informada junto com "Iniciar atendimento" fica **no próprio registro `STATUS`** (campo `previsaoReparo`), e não num registro à parte; o app acrescenta a entrada `PREVISAO` ao histórico em cache quando o evento chega com o mesmo status e uma previsão diferente. O teste do app "só a previsão mudou: atualiza sem criar linha no histórico" foi trocado pelo comportamento novo (agora cria a entrada), como combinado.
+
 **Condições aprovadas (2026-11-25):** a migration dá `evento = STATUS` a todos os registros de histórico que já existem, sem perder nada; os payloads dos eventos WebSocket e as respostas de `docs/10` continuam compatíveis (só **somam** campos); se algum precisar mudar, o `docs/10` e os testes do painel e do app mudam na mesma etapa; o **painel** também mostra as mudanças de previsão no histórico do detalhe, não só o app.
 
 | Camada | Tarefas | Arquivos |

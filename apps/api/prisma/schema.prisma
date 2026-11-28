@@ -28,6 +28,12 @@ enum StatusDenuncia {
   CANCELADA
 }
 
+/// O que um registro do histórico guarda: uma mudança de status, ou só da previsão de reparo (S-60).
+enum EventoHistorico {
+  STATUS
+  PREVISAO
+}
+
 enum FaixaPessoas {
   ATE_3
   DE_4_A_8
@@ -116,6 +122,10 @@ model HistoricoStatus {
   denunciaId     String          @db.Uuid
   statusAnterior StatusDenuncia?
   statusNovo     StatusDenuncia
+  /// `PREVISAO`: só a previsão mudou (status anterior e novo são iguais). Os registros antigos são `STATUS`.
+  evento         EventoHistorico @default(STATUS)
+  /// Previsão de reparo definida neste registro; `null` num evento `PREVISAO` = previsão removida.
+  previsaoReparo DateTime?
   alteradoPorId  String?         @db.Uuid
   papelAutor     Papel
   justificativa  String?

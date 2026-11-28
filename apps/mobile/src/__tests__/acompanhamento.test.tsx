@@ -422,6 +422,105 @@ describe('T-07 Detalhe da denúncia (RF-014, RF-024, RF-036)', () => {
     expect(mockFetch.mock.calls.length).toBe(chamadas);
   });
 
+  it('o histórico mostra a previsão definida e a removida, com ícone e texto (S-60)', async () => {
+    simularApi({
+      detalhe: () =>
+        resposta(200, {
+          ...DETALHE,
+          status: 'EM_ATENDIMENTO',
+          previsaoReparo: null,
+          historico: [
+            ...DETALHE.historico,
+            {
+              statusAnterior: 'RECEBIDA',
+              statusNovo: 'EM_ATENDIMENTO',
+              evento: 'STATUS',
+              previsaoReparo: '2026-11-19T20:00:00.000Z',
+              por: 'Equatorial Pará',
+              justificativa: null,
+              criadoEm: '2026-11-19T17:10:00.000Z',
+            },
+            {
+              statusAnterior: 'EM_ATENDIMENTO',
+              statusNovo: 'EM_ATENDIMENTO',
+              evento: 'PREVISAO',
+              previsaoReparo: '2026-11-19T22:00:00.000Z',
+              por: 'Equatorial Pará',
+              justificativa: null,
+              criadoEm: '2026-11-19T18:00:00.000Z',
+            },
+            {
+              statusAnterior: 'EM_ATENDIMENTO',
+              statusNovo: 'EM_ATENDIMENTO',
+              evento: 'PREVISAO',
+              previsaoReparo: null,
+              por: 'Equatorial Pará',
+              justificativa: null,
+              criadoEm: '2026-11-19T19:00:00.000Z',
+            },
+          ],
+        }),
+    });
+    await renderizarTela(<DetalheScreen />);
+
+    expect(
+      await screen.findByLabelText(
+        'Previsão de reparo: 19/11/2026 às 19:00, por Equatorial Pará, em 19/11/2026 às 15:00',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        'Previsão de reparo removida, por Equatorial Pará, em 19/11/2026 às 16:00',
+      ),
+    ).toBeTruthy();
+    // A previsão que veio junto com "Em atendimento" aparece na própria entrada do status.
+    expect(screen.getByLabelText(/^Em atendimento, por Equatorial Pará/)).toBeTruthy();
+    expect(screen.getByText('Previsão de reparo: 19/11/2026 às 17:00')).toBeTruthy();
+  });
+
+  it('em tempo real: a operadora troca e remove a previsão e o histórico e o cartão acompanham, sem recarregar', async () => {
+    await renderizarTela(comTempoReal(<DetalheScreen />));
+    await screen.findByText('Rua das Flores, 10');
+    await act(async () => ultimoSocket()!.__emitir('denuncia:status-atualizado', evento()));
+    await screen.findByLabelText('Status: Em atendimento');
+    const chamadas = mockFetch.mock.calls.length;
+
+    await act(async () =>
+      ultimoSocket()!.__emitir(
+        'denuncia:status-atualizado',
+        evento({
+          statusAnterior: 'EM_ATENDIMENTO',
+          status: 'EM_ATENDIMENTO',
+          previsaoReparo: '2026-11-19T22:00:00.000Z',
+          alteradoEm: '2026-11-19T17:20:00.000Z',
+        }),
+      ),
+    );
+
+    expect(await screen.findByText('19/11/2026 às 19:00')).toBeTruthy(); // cartão da previsão
+    expect(
+      screen.getByLabelText(/^Previsão de reparo: 19\/11\/2026 às 19:00, por Equatorial Pará/),
+    ).toBeTruthy();
+
+    await act(async () =>
+      ultimoSocket()!.__emitir(
+        'denuncia:status-atualizado',
+        evento({
+          statusAnterior: 'EM_ATENDIMENTO',
+          status: 'EM_ATENDIMENTO',
+          previsaoReparo: null,
+          alteradoEm: '2026-11-19T17:30:00.000Z',
+        }),
+      ),
+    );
+
+    expect(
+      await screen.findByLabelText(/^Previsão de reparo removida, por Equatorial Pará/),
+    ).toBeTruthy();
+    expect(screen.queryByText('Previsão de reparo')).toBeNull(); // o cartão some sem previsão
+    expect(mockFetch.mock.calls.length).toBe(chamadas);
+  });
+
   it('improcedência em tempo real mostra a justificativa na hora', async () => {
     await renderizarTela(comTempoReal(<DetalheScreen />));
     await screen.findByText('Rua das Flores, 10');

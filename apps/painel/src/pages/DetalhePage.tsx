@@ -8,8 +8,14 @@ import {
   JUSTIFICATIVA_MAX,
   previsaoParaIso,
 } from '../features/denuncias/acoes';
+import { EditorDePrevisao } from '../components/EditorDePrevisao';
 import { GaleriaDeFotos } from '../components/GaleriaDeFotos';
-import { atualizarStatus, obterDetalhe, type MudancaDeStatus } from '../features/denuncias/api';
+import {
+  atualizarPrevisao,
+  atualizarStatus,
+  obterDetalhe,
+  type MudancaDeStatus,
+} from '../features/denuncias/api';
 import { CHAVE_LISTAS, chaveDoDetalhe } from '../features/denuncias/cache';
 import { formatarDataHora } from '../features/denuncias/formatacao';
 import {
@@ -18,6 +24,7 @@ import {
   rotuloDoTipo,
   statusEmAberto,
   textoDaNecessidade,
+  tituloDoHistorico,
   type DetalheDoPainel,
 } from '../features/denuncias/tipos';
 import { ErroDeApi } from '../services/http';
@@ -43,6 +50,20 @@ export function DetalhePage() {
     },
     onError: (erro) => {
       // Alguém (ou o cidadão) mudou o status antes: mostra a situação atual.
+      if (erro instanceof ErroDeApi && erro.codigo === 'TRANSICAO_INVALIDA') {
+        void queryClient.invalidateQueries({ queryKey: chaveDoDetalhe(id) });
+      }
+    },
+  });
+
+  const mudarPrevisao = useMutation({
+    mutationFn: (previsaoReparo: string | null) => atualizarPrevisao(id, previsaoReparo),
+    onSuccess: (detalhe) => {
+      queryClient.setQueryData(chaveDoDetalhe(id), detalhe);
+      void queryClient.invalidateQueries({ queryKey: CHAVE_LISTAS });
+    },
+    onError: (erro) => {
+      // O status mudou antes (ex.: o cidadão cancelou): mostra a situação atual.
       if (erro instanceof ErroDeApi && erro.codigo === 'TRANSICAO_INVALIDA') {
         void queryClient.invalidateQueries({ queryKey: chaveDoDetalhe(id) });
       }
@@ -85,6 +106,12 @@ export function DetalhePage() {
             mudar.reset();
             mudar.mutate(m);
           }}
+          salvandoPrevisao={mudarPrevisao.isPending}
+          erroDaPrevisao={mudarPrevisao.isError ? mudarPrevisao.error : null}
+          onSalvarPrevisao={(previsao) => {
+            mudarPrevisao.reset();
+            mudarPrevisao.mutate(previsao);
+          }}
         />
       )}
     </main>
@@ -96,11 +123,17 @@ function Conteudo({
   salvando,
   erro,
   onMudar,
+  salvandoPrevisao,
+  erroDaPrevisao,
+  onSalvarPrevisao,
 }: {
   d: DetalheDoPainel;
   salvando: boolean;
   erro: Error | null;
   onMudar: (mudanca: MudancaDeStatus) => void;
+  salvandoPrevisao: boolean;
+  erroDaPrevisao: Error | null;
+  onSalvarPrevisao: (previsaoReparo: string | null) => void;
 }) {
   const acoes = acoesDoOperador(d.status);
   const aberta = statusEmAberto(d.status);
@@ -219,16 +252,36 @@ function Conteudo({
           )}
         </section>
 
+        {aberta ? (
+          <section className="card" aria-labelledby="bloco-previsao">
+            <h2 id="bloco-previsao">Previsão de reparo</h2>
+            <EditorDePrevisao
+              // Recarrega o campo quando a previsão muda (salvou, removeu ou chegou por evento).
+              key={d.previsaoReparo ?? 'sem-previsao'}
+              previsao={d.previsaoReparo}
+              salvando={salvandoPrevisao}
+              erro={erroDaPrevisao}
+              onSalvar={onSalvarPrevisao}
+            />
+          </section>
+        ) : null}
+
         <section className="card" aria-labelledby="bloco-historico">
           <h2 id="bloco-historico">Histórico</h2>
           <ol className="historico">
-            {d.historico.map((h) => (
-              <li key={`${h.statusNovo}-${h.criadoEm}`}>
-                <strong>{rotuloDoStatus(h.statusNovo)}</strong>
+            {d.historico.map((h, indice) => (
+              <li key={`${h.evento ?? 'STATUS'}-${h.statusNovo}-${h.criadoEm}-${indice}`}>
+                <strong>{tituloDoHistorico(h, formatarDataHora)}</strong>
                 <span className="muted">
                   {' '}
                   · {h.por} · {formatarDataHora(h.criadoEm)}
                 </span>
+                {/* A previsão informada junto com a mudança de status (ex.: "Iniciar atendimento"). */}
+                {h.evento !== 'PREVISAO' && h.previsaoReparo ? (
+                  <p className="historico__just">
+                    Previsão de reparo: {formatarDataHora(h.previsaoReparo)}
+                  </p>
+                ) : null}
                 {h.justificativa ? <p className="historico__just">{h.justificativa}</p> : null}
               </li>
             ))}

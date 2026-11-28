@@ -125,6 +125,7 @@ export const DETALHE = {
 type Rotas = {
   detalhe?: () => Response;
   atualizar?: (corpo: Record<string, unknown>) => Response;
+  previsao?: (corpo: Record<string, unknown>) => Response;
   denuncias?: (url: string) => Response;
   bairros?: () => Response;
   login?: (corpo: unknown) => Response;
@@ -136,6 +137,11 @@ export function simularApi(rotas: Rotas = {}) {
     if (url.includes('/auth/login')) {
       return (rotas.login ?? (() => resposta(200, SESSAO_DE_OPERADOR)))(
         init?.body ? JSON.parse(init.body) : null,
+      );
+    }
+    if (url.includes('/painel/denuncias/') && url.endsWith('/previsao')) {
+      return (rotas.previsao ?? (() => resposta(200, DETALHE)))(
+        init?.body ? JSON.parse(init.body) : {},
       );
     }
     if (url.includes('/painel/denuncias/') && url.endsWith('/status')) {

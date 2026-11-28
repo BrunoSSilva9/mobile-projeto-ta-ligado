@@ -5,6 +5,7 @@ import {
   ehPrioritaria,
   ehStatusFinal,
   estaEmAberto,
+  validarMudancaDePrevisao,
   validarPrevisao,
   validarTransicao,
   type StatusDenuncia,
@@ -12,7 +13,7 @@ import {
 import { publicadorNulo, type Publicador } from '../../realtime/publicador';
 import { erros } from '../../shared/errors';
 import { paraSnapshot } from '../denuncias/snapshot';
-import type { DadosDeStatus, FiltrosDoPainel } from './schemas';
+import type { DadosDePrevisao, DadosDeStatus, FiltrosDoPainel } from './schemas';
 
 export type PainelDeps = {
   prisma: PrismaClient;
@@ -67,6 +68,10 @@ function paraDetalheDoPainel(d: DenunciaDetalhada) {
     historico: d.historico.map((h) => ({
       statusAnterior: h.statusAnterior,
       statusNovo: h.statusNovo,
+      // STATUS = mudança de status; PREVISAO = só a previsão mudou (S-60). `previsaoReparo` nulo
+      // num evento PREVISAO quer dizer "previsão removida".
+      evento: h.evento,
+      previsaoReparo: h.previsaoReparo?.toISOString() ?? null,
       papel: h.papelAutor,
       por: h.alteradoPor?.nome ?? (h.papelAutor === 'CIDADAO' ? 'Cidadão' : 'Operador'),
       justificativa: h.justificativa,
@@ -211,6 +216,8 @@ export function criarServicoPainel({
           alteradoPorId: operador.id,
           papelAutor: 'OPERADOR',
           justificativa,
+          // A previsão informada junto com a mudança de status também fica no registro.
+          previsaoReparo: previsao ?? null,
         },
       });
 
@@ -236,7 +243,84 @@ export function criarServicoPainel({
     return paraDetalheDoPainel(resultado.completa);
   }
 
-  return { listar, detalhe, atualizarStatus };
+  /**
+   * RF-033, RN-009, RN-011, decisão S-60: o operador **define, troca ou remove** só a previsão de
+   * reparo, **enquanto a denúncia está em aberto**. Cada mudança vira um registro no histórico
+   * (`evento: PREVISAO`, com o status igual antes e depois), na mesma transação (RNF-010).
+   * Pedir o mesmo valor que já está salvo não muda nada (sem registro nem evento). A gravação é
+   * condicional ao status lido: se o status mudou no meio tempo, a resposta é 422 (S-29).
+   * O evento sai depois do commit, no mesmo formato de sempre (`status` e `statusAnterior` iguais).
+   */
+  async function atualizarPrevisao(
+    operador: OperadorDaRequisicao,
+    id: string,
+    dados: DadosDePrevisao,
+  ) {
+    const agora = relogio();
+    const nova = dados.previsaoReparo === null ? null : new Date(dados.previsaoReparo);
+
+    const resultado = await prisma.$transaction(async (tx) => {
+      const atual = await tx.denuncia.findUnique({ where: { id } });
+      if (!atual) throw erros.naoEncontrado('Denúncia não encontrada.');
+
+      const validacao = validarMudancaDePrevisao({ status: atual.status, previsao: nova, agora });
+      if (!validacao.ok) {
+        if (validacao.codigo === 'PREVISAO_NO_PASSADO') {
+          throw erros.previsaoNoPassado(validacao.mensagem);
+        }
+        throw erros.transicaoInvalida(validacao.mensagem);
+      }
+
+      const igual = (atual.previsaoReparo?.getTime() ?? null) === (nova?.getTime() ?? null);
+      if (igual) return { mudou: false as const, id };
+
+      const alterada = await tx.denuncia.updateMany({
+        where: { id, status: atual.status }, // só altera se o status ainda for o que o operador viu
+        data: { previsaoReparo: nova },
+      });
+      if (alterada.count === 0) {
+        throw erros.transicaoInvalida(
+          'O status desta denúncia mudou enquanto você decidia. Atualize a tela e tente de novo.',
+        );
+      }
+
+      const historico = await tx.historicoStatus.create({
+        data: {
+          denunciaId: id,
+          evento: 'PREVISAO',
+          statusAnterior: atual.status,
+          statusNovo: atual.status,
+          previsaoReparo: nova,
+          alteradoPorId: operador.id,
+          papelAutor: 'OPERADOR',
+        },
+      });
+      return { mudou: true as const, id, status: atual.status, alteradoEm: historico.criadoEm };
+    });
+
+    const completa = await prisma.denuncia.findUniqueOrThrow({
+      where: { id },
+      include: INCLUIR_DETALHE,
+    });
+
+    // Depois do commit: uma falha ao emitir o evento não desfaz nem falha a operação.
+    if (resultado.mudou) {
+      try {
+        await publicador.statusAtualizado({
+          denuncia: paraSnapshot(completa),
+          statusAnterior: resultado.status,
+          alteradoEm: resultado.alteradoEm,
+          por: POR_OPERADORA,
+        });
+      } catch (erro) {
+        console.error('Falha ao publicar o evento denuncia:status-atualizado', erro);
+      }
+    }
+
+    return paraDetalheDoPainel(completa);
+  }
+
+  return { listar, detalhe, atualizarStatus, atualizarPrevisao };
 }
 
 export type ServicoPainel = ReturnType<typeof criarServicoPainel>;

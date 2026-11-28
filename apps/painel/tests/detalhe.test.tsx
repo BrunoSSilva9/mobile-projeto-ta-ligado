@@ -180,7 +180,9 @@ describe('P-03 Ações conforme o status (RN-004)', () => {
     expect(screen.getByRole('button', { name: 'Resolver' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Improcedente' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Iniciar atendimento' })).toBeNull();
-    expect(screen.queryByLabelText(/Previsão de reparo/)).toBeNull();
+    // O campo opcional do "Iniciar atendimento" some; a previsão passa a ser editada no próprio
+    // bloco "Previsão de reparo" (F2-5).
+    expect(screen.queryByLabelText('Previsão de reparo (opcional)')).toBeNull();
   });
 
   it.each(['RESOLVIDA', 'IMPROCEDENTE', 'CANCELADA'])(

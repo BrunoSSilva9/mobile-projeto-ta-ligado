@@ -17,6 +17,13 @@ export type MinhasDenuncias = { itens: DenunciaResumo[]; pagina: number; total: 
 export type EntradaDoHistorico = {
   statusAnterior: StatusDaDenuncia | null;
   statusNovo: StatusDaDenuncia;
+  /**
+   * `STATUS` = mudança de status; `PREVISAO` = só a previsão de reparo mudou (S-60). Registros
+   * antigos, sem o campo, são `STATUS`.
+   */
+  evento?: 'STATUS' | 'PREVISAO';
+  /** Previsão definida neste registro; `null` num evento `PREVISAO` = previsão removida. */
+  previsaoReparo?: string | null;
   /** "Você" ou "Equatorial Pará". */
   por: string;
   justificativa?: string | null;

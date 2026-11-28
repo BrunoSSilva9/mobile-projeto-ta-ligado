@@ -153,7 +153,9 @@ Máximo de 3 por denúncia (validado no serviço).
 | `id` | UUID | PK |
 | `denunciaId` | UUID | FK, `CASCADE` |
 | `statusAnterior` | enum? | nulo na criação |
-| `statusNovo` | enum | — |
+| `statusNovo` | enum | — (num registro `PREVISAO`, é igual ao `statusAnterior`) |
+| `evento` | enum | `STATUS` (mudança de status, padrão) ou `PREVISAO` (só a previsão de reparo mudou, S-60). A migration da F2-5 deu `STATUS` a todos os registros que já existiam |
+| `previsaoReparo` | data? | previsão definida neste registro; **nula num evento `PREVISAO` = previsão removida** |
 | `alteradoPorId` | UUID? | FK para `Usuario`, `SET NULL` |
 | `papelAutor` | enum | papel de quem alterou (auditoria, RN-011) |
 | `justificativa` | texto? | — |

@@ -290,6 +290,10 @@ export function criarServicoDenuncias({
       historico: d.historico.map((h) => ({
         statusAnterior: h.statusAnterior,
         statusNovo: h.statusNovo,
+        // STATUS = mudança de status; PREVISAO = só a previsão mudou (S-60); `previsaoReparo` nulo
+        // num evento PREVISAO quer dizer "previsão removida".
+        evento: h.evento,
+        previsaoReparo: h.previsaoReparo?.toISOString() ?? null,
         // Para o autor: as ações dele aparecem como "Você" e as da operadora como "Equatorial Pará".
         por: h.papelAutor === 'CIDADAO' ? 'Você' : 'Equatorial Pará',
         justificativa: h.justificativa,

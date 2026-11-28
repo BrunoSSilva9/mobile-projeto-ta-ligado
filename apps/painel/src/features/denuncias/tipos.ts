@@ -46,6 +46,13 @@ export type EntradaDoHistorico = {
   statusAnterior: StatusDaDenuncia | null;
   statusNovo: StatusDaDenuncia;
   papel: 'CIDADAO' | 'OPERADOR';
+  /**
+   * `STATUS` = mudança de status; `PREVISAO` = só a previsão de reparo mudou (S-60). Registros
+   * antigos, sem o campo, são `STATUS`.
+   */
+  evento?: 'STATUS' | 'PREVISAO';
+  /** Previsão definida neste registro; `null` num evento `PREVISAO` = previsão removida. */
+  previsaoReparo?: string | null;
   /** Nome de quem alterou. */
   por: string;
   justificativa: string | null;
@@ -118,4 +125,15 @@ export function textoDaNecessidade(
   }
   if (d.necessidadeEspecial === false) return 'Não';
   return statusEmAberto(d.status) ? 'Não informada' : 'Informação apagada ao encerrar a denúncia';
+}
+
+/** O texto de uma entrada do histórico (RN-011): o status, ou a mudança da previsão de reparo. */
+export function tituloDoHistorico(
+  h: Pick<EntradaDoHistorico, 'evento' | 'statusNovo' | 'previsaoReparo'>,
+  formatarData: (iso: string) => string,
+): string {
+  if (h.evento !== 'PREVISAO') return rotuloDoStatus(h.statusNovo);
+  return h.previsaoReparo
+    ? `Previsão de reparo: ${formatarData(h.previsaoReparo)}`
+    : 'Previsão de reparo removida';
 }

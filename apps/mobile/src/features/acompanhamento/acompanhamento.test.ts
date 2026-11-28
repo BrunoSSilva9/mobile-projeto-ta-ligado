@@ -117,18 +117,72 @@ describe('aplicarEventoAoDetalhe (RF-024)', () => {
     expect(aplicarEventoAoDetalhe(atual, antigo)).toBe(atual);
   });
 
-  it('só a previsão mudou (mesmo status): atualiza sem criar linha no histórico', () => {
-    const emAtendimento = aplicarEventoAoDetalhe(detalhe, evento);
-    const novo = aplicarEventoAoDetalhe(emAtendimento, {
+  describe('previsão de reparo no histórico (S-60, F2-5)', () => {
+    const emAtendimento = () => aplicarEventoAoDetalhe(detalhe, evento);
+    const soAPrevisao = (previsaoReparo: string | null, alteradoEm: string): EventoDeStatus => ({
       ...evento,
       statusAnterior: 'EM_ATENDIMENTO',
       status: 'EM_ATENDIMENTO',
-      previsaoReparo: '2026-11-19T18:00:00.000Z',
-      alteradoEm: '2026-11-19T12:20:00.000Z',
+      previsaoReparo,
+      alteradoEm,
     });
 
-    expect(novo.previsaoReparo).toBe('2026-11-19T18:00:00.000Z');
-    expect(novo.historico).toHaveLength(2);
+    it('só a previsão mudou: atualiza a previsão e acrescenta uma entrada PREVISAO ao histórico', () => {
+      const novo = aplicarEventoAoDetalhe(
+        emAtendimento(),
+        soAPrevisao('2026-11-19T18:00:00.000Z', '2026-11-19T12:20:00.000Z'),
+      );
+
+      expect(novo.status).toBe('EM_ATENDIMENTO');
+      expect(novo.previsaoReparo).toBe('2026-11-19T18:00:00.000Z');
+      expect(novo.historico).toHaveLength(3);
+      expect(novo.historico[2]).toMatchObject({
+        evento: 'PREVISAO',
+        statusAnterior: 'EM_ATENDIMENTO',
+        statusNovo: 'EM_ATENDIMENTO',
+        previsaoReparo: '2026-11-19T18:00:00.000Z',
+        por: 'Equatorial Pará',
+        criadoEm: '2026-11-19T12:20:00.000Z',
+      });
+    });
+
+    it('previsão removida: a entrada PREVISAO tem previsaoReparo nula', () => {
+      const novo = aplicarEventoAoDetalhe(
+        emAtendimento(),
+        soAPrevisao(null, '2026-11-19T12:30:00.000Z'),
+      );
+
+      expect(novo.previsaoReparo).toBeNull();
+      expect(novo.historico.at(-1)).toMatchObject({ evento: 'PREVISAO', previsaoReparo: null });
+    });
+
+    it('o mesmo evento da previsão recebido duas vezes não duplica a entrada', () => {
+      const e = soAPrevisao('2026-11-19T18:00:00.000Z', '2026-11-19T12:20:00.000Z');
+      const uma = aplicarEventoAoDetalhe(emAtendimento(), e);
+      const duas = aplicarEventoAoDetalhe({ ...uma, atualizadoEm: '2026-11-19T12:10:00.000Z' }, e);
+
+      expect(duas.historico).toHaveLength(3);
+    });
+
+    it('evento de status sem mudar nada (previsão igual) não cria entrada nenhuma', () => {
+      const base = emAtendimento();
+      const novo = aplicarEventoAoDetalhe(
+        base,
+        soAPrevisao(base.previsaoReparo, '2026-11-19T12:40:00.000Z'),
+      );
+
+      expect(novo.historico).toHaveLength(base.historico.length);
+    });
+
+    it('a mudança de status com previsão guarda a previsão na própria entrada de status', () => {
+      const novo = emAtendimento();
+
+      expect(novo.historico[1]).toMatchObject({
+        evento: 'STATUS',
+        statusNovo: 'EM_ATENDIMENTO',
+        previsaoReparo: '2026-11-19T16:00:00.000Z',
+      });
+    });
   });
 
   it('improcedente guarda a justificativa e a mostra no histórico', () => {

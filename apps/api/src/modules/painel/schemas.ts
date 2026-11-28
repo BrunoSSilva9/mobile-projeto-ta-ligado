@@ -73,3 +73,19 @@ export const atualizarStatusSchema = z.object({
 });
 
 export type DadosDeStatus = z.infer<typeof atualizarStatusSchema>;
+
+/**
+ * Previsão de reparo isolada (RF-033, decisão S-60): uma data e hora (ISO 8601) para **definir ou
+ * trocar**, ou `null` para **remover**. O campo é obrigatório (ausente é erro): assim um corpo
+ * vazio nunca remove a previsão sem querer.
+ */
+export const atualizarPrevisaoSchema = z.object({
+  previsaoReparo: z
+    .string({ error: 'Informe a previsão (data e hora) ou null para remover.' })
+    .pipe(
+      z.iso.datetime({ offset: true, error: 'Informe a previsão como data e hora (ISO 8601).' }),
+    )
+    .nullable(),
+});
+
+export type DadosDePrevisao = z.infer<typeof atualizarPrevisaoSchema>;

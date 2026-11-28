@@ -1,3 +1,5 @@
+import { estaEmAberto, type StatusDenuncia } from './tipos';
+
 export type ResultadoPrevisao =
   { ok: true } | { ok: false; codigo: 'PREVISAO_NO_PASSADO'; mensagem: string };
 
@@ -30,4 +32,29 @@ export function menorPrevisaoFutura(
     if (menor === null || previsao.getTime() < menor.getTime()) menor = previsao;
   }
   return menor;
+}
+
+export type ResultadoMudancaDePrevisao =
+  | { ok: true }
+  | { ok: false; codigo: 'TRANSICAO_INVALIDA' | 'PREVISAO_NO_PASSADO'; mensagem: string };
+
+/**
+ * Mudança da previsão de reparo pelo operador (RF-033, RN-009, decisão S-60): definir, trocar ou
+ * **remover** (`previsao: null`) só vale **enquanto a denúncia está em aberto**; encerrada, nada
+ * muda. Uma data nova precisa ser futura. A denúncia encerrada é recusada antes de olhar a data.
+ */
+export function validarMudancaDePrevisao(entrada: {
+  status: StatusDenuncia;
+  previsao: Date | null;
+  agora: Date;
+}): ResultadoMudancaDePrevisao {
+  if (!estaEmAberto(entrada.status)) {
+    return {
+      ok: false,
+      codigo: 'TRANSICAO_INVALIDA',
+      mensagem: 'A previsão de reparo só pode ser alterada enquanto a denúncia está em aberto.',
+    };
+  }
+  if (entrada.previsao === null) return { ok: true };
+  return validarPrevisao(entrada.previsao, entrada.agora);
 }

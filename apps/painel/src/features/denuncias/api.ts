@@ -16,6 +16,15 @@ export type MudancaDeStatus = {
 export const atualizarStatus = (id: string, mudanca: MudancaDeStatus) =>
   http.patch<DetalheDoPainel>(`/painel/denuncias/${encodeURIComponent(id)}/status`, mudanca);
 
+/**
+ * RF-033, S-60: define, troca ou remove (`null`) só a previsão de reparo, com a denúncia em aberto.
+ * Cada mudança vai para o histórico.
+ */
+export const atualizarPrevisao = (id: string, previsaoReparo: string | null) =>
+  http.patch<DetalheDoPainel>(`/painel/denuncias/${encodeURIComponent(id)}/previsao`, {
+    previsaoReparo,
+  });
+
 /** RF-028, RF-029, RF-035. */
 export const listarDenuncias = (filtros: Filtros, pagina = 1) =>
   http.get<ListaDoPainel>('/painel/denuncias', montarConsulta(filtros, pagina));

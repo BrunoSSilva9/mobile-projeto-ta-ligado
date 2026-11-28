@@ -696,6 +696,8 @@ describe('GET /api/v1/denuncias/:id (RF-014, RF-036)', () => {
       {
         statusAnterior: null,
         statusNovo: 'RECEBIDA',
+        evento: 'STATUS', // F2-5: o histórico passou a dizer o tipo do registro
+        previsaoReparo: null,
         por: 'Você',
         justificativa: null,
         criadoEm: criada.body.criadoEm,

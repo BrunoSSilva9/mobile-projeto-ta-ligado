@@ -170,10 +170,16 @@ Efeitos: grava denúncia e histórico inicial (transação); com "Sim", grava ta
   "previsaoReparo": "2026-11-18T16:20:00Z", "justificativa": null,
   "fotos": [ { "id": "uuid", "url": "/api/v1/denuncias/uuid/fotos/uuid" } ],
   "historico": [
-    { "statusAnterior": null, "statusNovo": "RECEBIDA", "por": "Você", "criadoEm": "2026-11-18T14:02:10Z" },
-    { "statusAnterior": "RECEBIDA", "statusNovo": "EM_ATENDIMENTO", "por": "Equatorial Pará",
-      "justificativa": null, "criadoEm": "2026-11-18T14:10:41Z" } ] }
+    { "statusAnterior": null, "statusNovo": "RECEBIDA", "evento": "STATUS", "previsaoReparo": null,
+      "por": "Você", "criadoEm": "2026-11-18T14:02:10Z" },
+    { "statusAnterior": "RECEBIDA", "statusNovo": "EM_ATENDIMENTO", "evento": "STATUS",
+      "previsaoReparo": "2026-11-18T16:20:00Z", "por": "Equatorial Pará",
+      "justificativa": null, "criadoEm": "2026-11-18T14:10:41Z" },
+    { "statusAnterior": "EM_ATENDIMENTO", "statusNovo": "EM_ATENDIMENTO", "evento": "PREVISAO",
+      "previsaoReparo": null, "por": "Equatorial Pará", "justificativa": null,
+      "criadoEm": "2026-11-18T15:00:00Z" } ] }
 ```
+**Histórico (F2-5, S-60):** cada registro agora traz `evento` (`STATUS` ou `PREVISAO`) e `previsaoReparo`. Um registro `PREVISAO` quer dizer que **só a previsão mudou** (`statusAnterior` e `statusNovo` são iguais): `previsaoReparo` com data = definida ou trocada; **`null` = previsão removida**. Num registro `STATUS`, `previsaoReparo` é a previsão informada junto com a mudança (ex.: "Iniciar atendimento"), ou `null`. **Só somam campos**: quem lia só `statusAnterior`, `statusNovo`, `por`, `justificativa` e `criadoEm` continua funcionando (o painel e o app tratam a falta de `evento` como `STATUS`).
 Erros: 404/403 se a denúncia não for do autor.
 
 **`POST /denuncias/{id}/cancelar`** (RF-015, RN-005; **implementada na F2-1**), sem corpo → `200` com o detalhe completo (mesma forma de `GET /denuncias/{id}`), já com `status: CANCELADA` e a entrada `{ statusAnterior: RECEBIDA, statusNovo: CANCELADA, por: "Você" }` no histórico. Só o autor cancela, e só em `RECEBIDA`. A gravação é condicional ao status lido: se a operadora iniciar o atendimento ao mesmo tempo, só uma das duas vence e a outra recebe `422`.
@@ -205,7 +211,7 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 | GET | `/painel/denuncias?status=&tipo=&bairroId=&prioritarias=&page=&limite=` | Lista com filtros; prioritárias primeiro e, em cada grupo, a mais antiga primeiro (RN-015) | RF-028, RF-029, RF-035 |
 | GET | `/painel/denuncias/{id}` | Detalhe completo (autor, telefone, fotos, histórico) | RF-030 |
 | PATCH | `/painel/denuncias/{id}/status` | Atualiza status (e previsão opcional) | RF-031 a RF-033, RF-036 |
-| PATCH | `/painel/denuncias/{id}/previsao` | Define/altera só a previsão de reparo | RF-033 |
+| PATCH | `/painel/denuncias/{id}/previsao` | Define, troca ou **remove** só a previsão de reparo (denúncia em aberto; cada mudança vai para o histórico) | RF-033 |
 | GET | `/painel/bairros` | Agrupado por bairro (contagem por tipo e status) | RF-034 |
 | POST | `/painel/bairros/{bairroId}/resolver` | Resolve em lote todas as em aberto do bairro (RN-016) | RF-034 |
 
@@ -222,6 +228,16 @@ Sem `autor`, protocolo, fotos, pessoas ou necessidade especial; coordenadas arre
 **`GET /painel/denuncias/{id}`** → `200`: igual a `GET /denuncias/{id}` mais `autor: { id, nome, telefone }`, `cep`, `pontoReferencia`, `consentimentoNecessidadeEm` e `historico[].por` com o nome do operador.
 
 **Necessidade especial nas respostas (RN-015, RN-026):** `necessidadeEspecial` é `true`, `false` ou `null` (não informada, ou **apagada** quando a denúncia fica Resolvida, Improcedente ou Cancelada). `prioritaria` é `true` só com `necessidadeEspecial === true`. Na lista do painel, a ordem é prioritárias primeiro (nulas no fim do grupo comum) e `prioritarias=false` traz as "Não" e as sem resposta. Toda mudança para status final (operador, cancelamento pelo autor e, na F2-6, o lote) apaga a resposta e o consentimento na mesma gravação.
+
+**`PATCH /painel/denuncias/{id}/previsao`** (RF-033, RN-009, decisão S-60; **implementada na F2-5**) → `200` com o detalhe do painel atualizado.
+```json
+// definir ou trocar (data e hora no futuro, ISO 8601 com fuso)
+{ "previsaoReparo": "2026-11-18T16:20:00Z" }
+// remover
+{ "previsaoReparo": null }
+```
+O campo é **obrigatório** (um corpo vazio nunca remove a previsão sem querer). Só vale **enquanto a denúncia está em aberto** (`RECEBIDA` ou `EM_ATENDIMENTO`); encerrada: `422 TRANSICAO_INVALIDA`, tanto para definir quanto para remover. Data no passado ou igual a agora: `422 PREVISAO_NO_PASSADO`. Corpo inválido: `400 VALIDACAO_ERRO`. Pedir o mesmo valor que já está salvo é `200` **sem** registro no histórico e **sem** evento. A gravação é condicional ao status lido (se o cidadão cancelou no meio tempo, `422 TRANSICAO_INVALIDA`, S-29).
+Efeitos: a previsão e **um registro `PREVISAO` no histórico** na mesma transação (RNF-010); depois do commit emite `denuncia:status-atualizado` (autor e operadores; **mesmo formato de sempre**, com `status` e `statusAnterior` iguais e `previsaoReparo` novo ou `null`), `ocorrencia:atualizada` e `bairro:status-atualizado` (a previsão do bairro é a menor entre as denúncias em aberto, RN-009). Sem push.
 
 **`PATCH /painel/denuncias/{id}/status`**
 ```json

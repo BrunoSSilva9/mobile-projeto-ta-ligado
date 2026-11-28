@@ -4,7 +4,7 @@ import type { Autenticacao } from '../../shared/auth';
 import { erros } from '../../shared/errors';
 import { analisar, validarCorpo } from '../../shared/validacao';
 import { idValido } from '../denuncias/schemas';
-import { atualizarStatusSchema, filtrosDoPainelSchema } from './schemas';
+import { atualizarPrevisaoSchema, atualizarStatusSchema, filtrosDoPainelSchema } from './schemas';
 import type { ServicoPainel } from './service';
 
 type Deps = {
@@ -38,6 +38,17 @@ export function criarRotasPainel({ servico, autenticacao }: Deps): Router {
       const id = String(req.params.id);
       if (!idValido(id)) throw erros.naoEncontrado('Denúncia não encontrada.');
       res.json(await servico.atualizarStatus({ id: req.usuario!.id }, id, req.body));
+    },
+  );
+
+  // RF-033, S-60: define, troca ou remove só a previsão de reparo (denúncia em aberto)
+  router.patch(
+    '/painel/denuncias/:id/previsao',
+    validarCorpo(atualizarPrevisaoSchema),
+    async (req, res) => {
+      const id = String(req.params.id);
+      if (!idValido(id)) throw erros.naoEncontrado('Denúncia não encontrada.');
+      res.json(await servico.atualizarPrevisao({ id: req.usuario!.id }, id, req.body));
     },
   );
 
